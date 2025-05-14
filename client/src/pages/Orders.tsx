@@ -20,20 +20,11 @@ const TRANSPORT_STATUSES = [
   { value: 'zaplanowany', label: 'Zaplanowany' },
   { value: 'dostarczony', label: 'Dostarczony' }
 ];
-
-// Typy usług
-const SERVICE_TYPES = [
-  { value: 'Montaż drzwi', label: 'Montaż drzwi' },
-  { value: 'Montaż podłogi', label: 'Montaż podłogi' },
-  { value: 'Transport', label: 'Transport' },
-];
-
 import { 
   Eye, Plus, Search, Filter, X, CalendarClock, Phone, MapPin, 
   Navigation, Calendar, Loader2, Pencil, Truck, Hammer, 
   Check, CheckCircle, CalendarDays, Clock, Calendar as CalendarIcon,
-  SlidersHorizontal, Tag, XCircle, Home, DoorOpen, Download, ArrowRight,
-  Save, Users, UserCircle
+  SlidersHorizontal, Tag, XCircle, Home, DoorOpen, Download, ArrowRight
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { Order } from '@shared/schema';
@@ -53,7 +44,6 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Dialog,
   DialogContent,
@@ -106,34 +96,65 @@ interface FilterGroup {
 function getStatusBadgeVariant(status: string | null | undefined) {
   if (!status) return 'bg-gray-100 text-gray-800 border-gray-200';
   
-  status = status.toLowerCase();
+  // Przekształć status na małe litery dla spójności
+  const normalizedStatus = status.toLowerCase();
   
-  switch (status) {
+  switch (normalizedStatus) {
+    // Statusy montażu
     case 'nowe':
       return 'bg-blue-100 text-blue-800 border-blue-200';
-    case 'zaplanowany':
-    case 'montaż zaplanowany':
-      return 'bg-purple-100 text-purple-800 border-purple-200';
     case 'w trakcie':
-    case 'w trakcie montażu':
       return 'bg-yellow-100 text-yellow-800 border-yellow-200';
     case 'zakończony':
-    case 'montaż wykonany':
       return 'bg-green-100 text-green-800 border-green-200';
     case 'reklamacja':
       return 'bg-red-100 text-red-800 border-red-200';
-    // Statusy transportu
+    
+    // Status 'zaplanowany' - używany zarówno dla montażu jak i transportu
+    case 'zaplanowany':
+      return 'bg-purple-100 text-purple-800 border-purple-200';
+    
+    // Ujednolicone statusy transportu
     case 'skompletowany':
+      return 'bg-blue-100 text-blue-800 border-blue-200';
+    case 'dostarczony':
+      return 'bg-green-100 text-green-800 border-green-200';
+      
+    // Stare statusy transportu dla kompatybilności
     case 'gotowe do transportu':
       return 'bg-blue-100 text-blue-800 border-blue-200';
     case 'transport zaplanowany':
       return 'bg-purple-100 text-purple-800 border-purple-200';
     case 'w drodze':
       return 'bg-amber-100 text-amber-800 border-amber-200';
-    case 'dostarczony':
+    case 'dostarczono':
+    case 'transport dostarczony':
       return 'bg-green-100 text-green-800 border-green-200';
     case 'problem z transportem':
       return 'bg-red-100 text-red-800 border-red-200';
+      
+    // Pozostałe statusy
+    case 'złożone':
+      return 'bg-blue-100 text-blue-800 border-blue-200';
+    case 'transport wykonany':
+      return 'bg-indigo-100 text-indigo-800 border-indigo-200';
+    case 'w realizacji':
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    case 'zakończone':
+      return 'bg-green-100 text-green-800 border-green-200';
+    case 'zafakturowane':
+      return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+    
+    // Obsługa starych formatów
+    case 'zlecenie złożone':
+      return 'bg-blue-100 text-blue-800 border-blue-200';
+    case 'montaż zaplanowany':
+      return 'bg-purple-100 text-purple-800 border-purple-200';
+    case 'w trakcie montażu':
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    case 'montaż wykonany':
+      return 'bg-green-100 text-green-800 border-green-200';
+    
     default:
       return 'bg-gray-100 text-gray-800 border-gray-200';
   }
@@ -142,10 +163,16 @@ function getStatusBadgeVariant(status: string | null | undefined) {
 // Funkcja do formatowania statusów transportu na bardziej zwięzłe
 function formatTransportStatus(status: string | null | undefined): string {
   if (!status) return 'Brak';
-  
-  status = status.toLowerCase();
-  
   switch (status) {
+    // Ujednolicone nazwy statusów
+    case 'skompletowany':
+      return 'Skompletowany';
+    case 'zaplanowany':
+      return 'Zaplanowany';
+    case 'dostarczony':
+      return 'Dostarczony';
+    
+    // Stare formaty statusów transportu dla kompatybilności
     case 'gotowe do transportu':
       return 'Skompletowany';
     case 'transport zaplanowany':
@@ -165,18 +192,30 @@ function formatTransportStatus(status: string | null | undefined): string {
 // Funkcja do formatowania statusów montażu na bardziej zwięzłe
 function formatInstallationStatus(status: string | null | undefined): string {
   if (!status) return 'Nowe';
-  
-  status = status.toLowerCase();
-  
   switch (status) {
+    // Ujednolicone nazwy statusów:
+    case 'nowe':
+      return 'Nowe';
+    case 'zaplanowany':
+      return 'Zaplanowany';
+    case 'w trakcie':
+      return 'W trakcie';
+    case 'zakończony':
+      return 'Zakończony';
+    case 'reklamacja':
+      return 'Reklamacja';
+    
+    // Stare formaty dla kompatybilności:
     case 'montaż zaplanowany':
       return 'Zaplanowany';
     case 'w trakcie montażu':
       return 'W trakcie';
     case 'montaż wykonany':
       return 'Zakończony';
-    case 'reklamacja':
-      return 'Reklamacja';
+    case 'zlecenie złożone':
+      return 'Nowe';
+      
+    // Potencjalnie inne statusy, które mogą wystąpić w bazie:
     default:
       return status;
   }
@@ -197,49 +236,136 @@ export default function Orders() {
   const [installationDate, setInstallationDate] = useState<Date | undefined>(undefined);
   const [selectedTransportStatus, setSelectedTransportStatus] = useState<string>('');
   const [selectedInstallationStatus, setSelectedInstallationStatus] = useState<string>('');
-
-  // Stan dla wyboru montażystów i transporterów
-  const [editingInstallerOrderId, setEditingInstallerOrderId] = useState<number | null>(null);
-  const [editingTransporterOrderId, setEditingTransporterOrderId] = useState<number | null>(null);
-  const [selectedInstallerId, setSelectedInstallerId] = useState<number | undefined>();
-  const [selectedTransporterId, setSelectedTransporterId] = useState<number | undefined>();
   
   // Stan dla zaawansowanego filtrowania
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
+  
+  // Dodatkowy stan dla filtrowania mobilnego
+  const [settlementFilter, setSettlementFilter] = useState<boolean | null>(null);
+  
+  // Funkcja otwierająca dialog filtrowania (dla desktopa)
+  const openFilterDialog = () => {
+    console.log("Otwieranie dialogu filtrowania");
+    setIsFilterDialogOpen(true);
+  };
+  
+  // Usunięte - już zdefiniowane niżej
+
+  // Funkcja otwierająca drawer filtrowania (dla mobile)
+  const openFilterDrawer = () => {
+    console.log("Otwieranie drawera filtrowania z ulepszonymi kontrolkami");
+    console.log("Aktualny stan filtrów: ", {
+      dateOffset: currentDateOffset,
+      activeFilters
+    });
+    setIsFilterDrawerOpen(true);
+  };
+  
+  // Pomocnicza funkcja dla testów
+  const testFilterDialog = () => {
+    console.log("Stan dialogu:", isFilterDialogOpen);
+    console.log("Stan drawera:", isFilterDrawerOpen);
+    setIsFilterDialogOpen(!isFilterDialogOpen);
+  };
   const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
   const [dateFilterStart, setDateFilterStart] = useState<Date | undefined>(undefined);
   const [dateFilterEnd, setDateFilterEnd] = useState<Date | undefined>(undefined);
   const [dateFilterType, setDateFilterType] = useState<'installationDate' | 'transportDate'>('installationDate');
   const [currentDateOffset, setCurrentDateOffset] = useState<number>(0); // 0 = dzisiaj, 1 = jutro, -1 = wczoraj
   
-  // Stan dla filtrów w mobilnym drawerze
-  const [tempDateRange, setTempDateRange] = useState<{
-    from?: Date,
-    to?: Date,
-    type: 'installationDate' | 'transportDate'
-  }>({
-    from: undefined,
-    to: undefined,
-    type: 'installationDate'
-  });
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
-  const [selectedServiceTypes, setSelectedServiceTypes] = useState<string[]>([]);
-  const [withTransport, setWithTransport] = useState<boolean | null>(null);
-  const [settlementFilter, setSettlementFilter] = useState<boolean | null>(null);
+  // Zapis/odczyt filtrów z localStorage
+  useEffect(() => {
+    try {
+      // Wyczyśćmy najpierw localStorage żeby mieć pewność, że nie ma starych duplikatów
+      localStorage.removeItem('orderFilters');
+      
+      // Następnie spróbujmy ponownie załadować filtry
+      const savedFilters = localStorage.getItem('orderFilters');
+      if (savedFilters) {
+        const filters = JSON.parse(savedFilters);
+        
+        // Deduplikacja filtrów - używamy obiektu, żeby zapewnić unikalność typów
+        const uniqueFilters = {} as Record<string, any>;
+        
+        // Konwertujemy daty i jednocześnie deduplikujemy
+        filters.forEach((filter: any) => {
+          if (filter.type === 'dateRange' && typeof filter.value === 'object') {
+            uniqueFilters[filter.type] = {
+              ...filter,
+              value: {
+                from: filter.value.from ? new Date(filter.value.from) : undefined,
+                to: filter.value.to ? new Date(filter.value.to) : undefined
+              }
+            };
+          } else {
+            uniqueFilters[filter.type] = filter;
+          }
+        });
+        
+        // Konwersja z powrotem do tablicy
+        const parsedFilters = Object.values(uniqueFilters);
+        setActiveFilters(parsedFilters);
+      }
+    } catch (error) {
+      console.error('Error loading filters from localStorage', error);
+      // W przypadku błędu wyczyść localStorage i zresetuj stan
+      localStorage.removeItem('orderFilters');
+      setActiveFilters([]);
+    }
+  }, []);
+  
+  // Automatyczne zapisywanie filtrów do localStorage zostało przeniesione
+  // bezpośrednio do metod addFilter/removeFilter/clearAllFilters
+  
+  // Kiedy użytkownik otwiera kalendarz transportu, zamykamy kalendarz montażu i odwrotnie
+  const openTransportDateEditor = (orderId: number, date?: Date | null) => {
+    setEditingInstallationDateOrderId(null);
+    setEditingTransportDateOrderId(orderId);
+    
+    // Znajdź aktualny status transportu dla tego zlecenia
+    const order = ordersQuery.data?.find(o => o.id === orderId);
+    if (order?.transportStatus) {
+      setSelectedTransportStatus(order.transportStatus);
+    } else {
+      setSelectedTransportStatus('transport zaplanowany');
+    }
+    
+    if (date) {
+      setTransportDate(new Date(date));
+    } else {
+      setTransportDate(undefined);
+    }
+  };
+  
+  const openInstallationDateEditor = (orderId: number, date?: Date | null) => {
+    setEditingTransportDateOrderId(null);
+    setEditingInstallationDateOrderId(orderId);
+    
+    // Znajdź aktualny status montażu dla tego zlecenia
+    const order = ordersQuery.data?.find(o => o.id === orderId);
+    if (order?.installationStatus) {
+      setSelectedInstallationStatus(order.installationStatus);
+    } else {
+      setSelectedInstallationStatus('montaż zaplanowany');
+    }
+    
+    if (date) {
+      setInstallationDate(new Date(date));
+    } else {
+      setInstallationDate(undefined);
+    }
+  };
   
   // Określenie, czy zalogowany użytkownik jest transporterem
-  // Uwaga: Dla obu typów firm (jednoosobowych i z pracownikami) chcemy identyczny interfejs
-  // Dlatego ustawiamy isTransporter na true dla obu typów firm
   const isTransporter = 
-    (user?.role === 'installer' && user?.services?.some(s => s.toLowerCase().includes('transport'))) ||
-    user?.role === 'company';
+    user?.role === 'installer' && 
+    user?.services?.some(s => s.toLowerCase().includes('transport'));
     
   // Określenie, czy zalogowany użytkownik jest montażystą
   const isInstaller = 
     user?.role === 'installer' || 
-    user?.services?.some(s => s.toLowerCase().includes('montaż')) ||
-    user?.role === 'company';
+    user?.services?.some(s => s.toLowerCase().includes('montaż'));
     
   // Sprawdzenie czy to firma jednoosobowa (montażysta z przypisaną firmą)
   const isOnePersonCompany = 
@@ -247,19 +373,14 @@ export default function Orders() {
     user?.companyId !== undefined && 
     user?.companyName;
   
-  // Sprawdzenie czy to firma montażowa (bez uwzględnienia firm jednoosobowych)
-  const isCompany = user?.role === 'company';
-  
-  // Sprawdzenie czy to właściciel firmy montażowej (companyOwnerOnly = true)
-  const isCompanyOwner = isCompany && user?.companyOwnerOnly === true;
-  
-  // Sprawdzenie czy to jakikolwiek typ firmy (firma właściwa lub montażysta z przypisaną firmą)
-  const isAnyCompany = isCompany || isOnePersonCompany;
-  
   // Uprawnienia do edycji pól finansowych mają mieć:
   // 1. admin
   // 2. kierownicy i zastępcy kierowników w sklepach
   // 3. właściciel firmy montażowej, który NIE jest montażystą (companyOwnerOnly = true)
+  // !! Pozostali NIE mają dostępu do edycji pól finansowych:
+  // - Zwykli pracownicy sklepu (nie kierownicy)
+  // - Montażyści (nawet jeśli są przypisani do firmy, która jest właścicielem zlecenia)
+  // - Właściciele firm, którzy są również montażystami (companyOwnerOnly = false)
   const canModifyFinancialStatus = 
     user?.role === 'admin' || 
     (user?.role === 'worker' && (user?.position === 'kierownik' || user?.position === 'zastępca')) ||
@@ -268,598 +389,416 @@ export default function Orders() {
   // Prawo do oznaczenia "do rozliczenia" - rozszerzamy o firmy jednoosobowe
   const canMarkForSettlement = canModifyFinancialStatus || isOnePersonCompany;
     
-  // Stan dla filtrów zapisanych w bazie
-  const [savedFilters, setSavedFilters] = useState<any[]>([]);
-  const [isSaveFilterDialogOpen, setIsSaveFilterDialogOpen] = useState(false);
-  const [filterNameToSave, setFilterNameToSave] = useState('');
-  const [isDefaultFilter, setIsDefaultFilter] = useState(false);
-
-  // Zapytanie o zapisane filtry użytkownika
-  const userFiltersQuery = useQuery({
-    queryKey: ['/api/user-filters'],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const response = await fetch('/api/user-filters');
-      if (!response.ok) {
-        throw new Error("Nie udało się pobrać zapisanych filtrów");
-      }
-      return response.json();
-    },
-    enabled: !!user?.id
-  });
+  // UWAGA: W widoku listy pokazujemy przyciski tylko uprawnionym użytkownikom
+  // Polegamy również na serwerowym sprawdzeniu uprawnień poprzez middleware canEditFinancialFields
   
-  // Ustaw zapisane filtry po załadowaniu
-  useEffect(() => {
-    if (userFiltersQuery.data) {
-      setSavedFilters(userFiltersQuery.data);
-      
-      // Jeśli jest filtr domyślny i brak aktywnych filtrów, załaduj domyślny
-      const defaultFilter = userFiltersQuery.data.find((f: any) => f.isDefault);
-      if (defaultFilter && activeFilters.length === 0 && !sessionStorage.getItem('ignoreDefaultFilter')) {
-        loadSavedFilter(defaultFilter, true);
-        // Zapisujemy informację, że już załadowaliśmy domyślny filtr w tej sesji
-        sessionStorage.setItem('ignoreDefaultFilter', 'true');
-      }
-    }
-  }, [userFiltersQuery.data]);
+  // Only allow admins to change store filter
+  const canChangeStore = user?.role === 'admin';
   
-  // Funkcja otwierająca dialog zapisywania filtra
-  const openSaveFilterDialog = () => {
-    setFilterNameToSave('');
-    setIsDefaultFilter(false);
-    setIsSaveFilterDialogOpen(true);
-  };
-  
-  // Funkcja do zapisywania aktualnego filtra
-  const saveCurrentFilter = () => {
-    if (!user?.id || !filterNameToSave.trim() || activeFilters.length === 0) return;
-    
-    createFilterMutation.mutate({
-      name: filterNameToSave.trim(),
-      filtersData: activeFilters,
-      isDefault: isDefaultFilter
-    });
-  };
-  
-  // Funkcja do wczytywania zapisanego filtra
-  const loadSavedFilter = (filter: any, silent = false) => {
-    try {
-      // Konwertuj daty w filtrach, jeśli są
-      const parsedFilters = filter.filtersData.map((filter: any) => {
-        if (filter.type === 'dateRange' && typeof filter.value === 'object') {
-          return {
-            ...filter,
-            value: {
-              from: filter.value.from ? new Date(filter.value.from as string) : undefined,
-              to: filter.value.to ? new Date(filter.value.to as string) : undefined
-            }
-          };
-        }
-        return filter;
-      });
-      
-      // Ustawiamy aktywne filtry na załadowane
-      setActiveFilters(parsedFilters);
-      
-      // Zamykamy dialog filtrów jeśli jest otwarty
-      setIsFilterDialogOpen(false);
-      
-      // Odświeżamy listę zleceń
-      ordersQuery.refetch();
-      
-      // Pokazujemy powiadomienie tylko jeśli nie jest tryb cichy
-      if (!silent) {
-        toast({
-          title: "Filtr załadowany",
-          description: `Załadowano filtr: ${filter.name}`,
-        });
-      }
-    } catch (error) {
-      console.error('Błąd podczas wczytywania filtra:', error);
-      toast({
-        title: "Błąd",
-        description: "Nie udało się załadować filtra",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  // Mutacje do zapisywania filtrów
-  const createFilterMutation = useMutation({
-    mutationFn: async (data: { name: string, filtersData: ActiveFilter[], isDefault: boolean }) => {
-      return await apiRequest('POST', '/api/user/filters', data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/user/filters'] });
-      setIsSaveFilterDialogOpen(false);
-      setFilterNameToSave('');
-      setIsDefaultFilter(false);
-      toast({
-        title: "Filtr zapisany",
-        description: "Twój filtr został zapisany pomyślnie",
-      });
-    },
-    onError: (error: Error) => {
-      console.error('Błąd podczas zapisywania filtra:', error);
-      toast({
-        title: "Błąd",
-        description: "Nie udało się zapisać filtra",
-        variant: "destructive"
-      });
-    }
-  });
-  
-  // Mutacja do ustawienia filtra jako domyślnego
-  const setDefaultFilterMutation = useMutation({
-    mutationFn: async (filterId: number) => {
-      return await apiRequest('POST', `/api/user/filters/${filterId}/set-default`, {});
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/user/filters'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/user/filters/default'] });
-      toast({
-        title: "Filtr domyślny",
-        description: "Ustawiono filtr jako domyślny",
-      });
-    }
-  });
-  
-  // Mutacja do usunięcia filtra
-  const deleteFilterMutation = useMutation({
-    mutationFn: async (filterId: number) => {
-      return await apiRequest('DELETE', `/api/user/filters/${filterId}`, {});
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/user/filters'] });
-      toast({
-        title: "Filtr usunięty",
-        description: "Filtr został usunięty pomyślnie",
-      });
-    }
-  });
-  
-  // Funkcja zmieniająca filtr domyślny
-  const setDefaultFilter = (filterId: number) => {
-    setDefaultFilterMutation.mutate(filterId);
-  };
-  
-  // Kiedy użytkownik otwiera kalendarz transportu, zamykamy kalendarz montażu i odwrotnie
-  const openTransportDateEditor = (orderId: number, date?: Date) => {
-    setEditingInstallationDateOrderId(null);
-    setEditingTransporterOrderId(null);
-    setEditingInstallerOrderId(null);
-    setEditingTransportDateOrderId(orderId);
-    
-    // Znajdź aktualne zlecenie
-    const order = ordersQuery.data?.find(o => o.id === orderId);
-    
-    // Ustaw status transportu
-    if (order?.transportStatus) {
-      setSelectedTransportStatus(order.transportStatus);
-    } else {
-      setSelectedTransportStatus('transport zaplanowany');
-    }
-    
-    // Ustaw transportera (jeśli firma ma pracowników)
-    if (isCompanyOwner) {
-      if (order?.transporterId) {
-        setSelectedTransporterId(order.transporterId);
-      } else {
-        setSelectedTransporterId(undefined);
-      }
-    }
-    
-    // Ustaw datę
-    if (date) {
-      setTransportDate(new Date(date));
-    } else {
-      setTransportDate(undefined);
-    }
-  };
-  
-  const openInstallationDateEditor = (orderId: number, date?: Date) => {
-    setEditingTransportDateOrderId(null);
-    setEditingTransporterOrderId(null);
-    setEditingInstallerOrderId(null);
-    setEditingInstallationDateOrderId(orderId);
-    
-    // Znajdź aktualne zlecenie
-    const order = ordersQuery.data?.find(o => o.id === orderId);
-    
-    // Ustaw status montażu
-    if (order?.installationStatus) {
-      setSelectedInstallationStatus(order.installationStatus);
-    } else {
-      setSelectedInstallationStatus('montaż zaplanowany');
-    }
-    
-    // Ustaw montażystę (jeśli firma ma pracowników)
-    if (isCompanyOwner) {
-      if (order?.installerId) {
-        setSelectedInstallerId(order.installerId);
-      } else {
-        setSelectedInstallerId(undefined);
-      }
-    }
-    
-    // Ustaw datę
-    if (date) {
-      setInstallationDate(new Date(date));
-    } else {
-      setInstallationDate(undefined);
-    }
-  };
-
-  // Obsługa otwierania/zamykania dialogu przypisywania montażysty
-  const openInstallerDialog = (orderId: number) => {
-    setEditingTransportDateOrderId(null);
-    setEditingInstallationDateOrderId(null);
-    setEditingTransporterOrderId(null);
-    setEditingInstallerOrderId(orderId);
-    
-    // Pobierz aktualne dane zlecenia, aby ustawić domyślnego montażystę
-    const order = ordersQuery.data?.find(o => o.id === orderId);
-    if (order?.installerId) {
-      setSelectedInstallerId(order.installerId);
-    } else {
-      setSelectedInstallerId(undefined);
-    }
-  };
-  
-  // Obsługa otwierania/zamykania dialogu przypisywania transportera
-  const openTransporterDialog = (orderId: number) => {
-    setEditingTransportDateOrderId(null);
-    setEditingInstallationDateOrderId(null);
-    setEditingInstallerOrderId(null);
-    setEditingTransporterOrderId(orderId);
-    
-    // Pobierz aktualne dane zlecenia, aby ustawić domyślnego transportera
-    const order = ordersQuery.data?.find(o => o.id === orderId);
-    if (order?.transporterId) {
-      setSelectedTransporterId(order.transporterId);
-    } else {
-      setSelectedTransporterId(undefined);
-    }
-  };
-  
-  // Zapytanie o zamówienia
-  const ordersQuery = useQuery<Order[]>({
-    queryKey: ['/api/orders'],
-    onError: (error: Error) => {
-      toast({
-        title: "Błąd",
-        description: `Nie udało się pobrać zleceń: ${error.message}`,
-        variant: "destructive"
-      });
-    }
-  });
-
-  // Pobieranie montażystów
-  const { data: installers = [] } = useQuery<any[]>({
-    queryKey: ['/api/installers'],
-    enabled: isCompanyOwner && editingInstallerOrderId !== null,
-  });
-  
-  // Pobieranie transporterów
-  const { data: transporters = [] } = useQuery<any[]>({
-    queryKey: ['/api/transporters'],
-    enabled: isCompanyOwner && editingTransporterOrderId !== null,
-  });
-  
-  // Mutacja do przypisywania montażysty
-  const assignInstallerMutation2 = useMutation({
-    mutationFn: async (params: { id: number; installerId: number }) => {
-      const response = await apiRequest('PATCH', `/api/orders/${params.id}/assign-installer`, {
-        installerId: params.installerId
-      });
-      
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error || 'Nie można przypisać montażysty');
-      }
-      
-      return await response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-      toast({
-        title: 'Montażysta przypisany',
-        description: 'Montażysta został pomyślnie przypisany do zlecenia',
-      });
-      
-      // Czyścimy stan
-      setEditingInstallerOrderId(null);
-      setSelectedInstallerId(undefined);
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Błąd przypisywania',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  });
-  
-  // Mutacja do przypisywania transportera
-  const assignTransporterMutation = useMutation({
-    mutationFn: async (params: { id: number; transporterId: number }) => {
-      const response = await apiRequest('PATCH', `/api/orders/${params.id}/assign-transporter`, {
-        transporterId: params.transporterId
-      });
-      
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error || 'Nie można przypisać transportera');
-      }
-      
-      return await response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-      toast({
-        title: 'Transporter przypisany',
-        description: 'Transporter został pomyślnie przypisany do zlecenia',
-      });
-      
-      // Czyścimy stan
-      setEditingTransporterOrderId(null);
-      setSelectedTransporterId(undefined);
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Błąd przypisywania',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  });
-  
-  // Mutacja do aktualizacji daty montażu
-  const updateInstallationDateMutation = useMutation({
-    mutationFn: async (params: { id: number; installationDate: Date; installationStatus?: string }) => {
-      const { id, installationDate, installationStatus } = params;
-      
-      const response = await apiRequest('PATCH', `/api/orders/${id}/installation-date`, {
-        installationDate: installationDate.toISOString(),
-        installationStatus
-      });
-      
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error || 'Nie można zaktualizować daty montażu');
-      }
-      
-      return await response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-      toast({
-        title: 'Data montażu zaktualizowana',
-        description: 'Data montażu została pomyślnie zaktualizowana',
-      });
-      setEditingInstallationDateOrderId(null);
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Błąd aktualizacji',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  });
-  
-  // Mutacja do aktualizacji daty transportu
-  const updateTransportDateMutation = useMutation({
-    mutationFn: async (params: { id: number; transportDate: Date; transportStatus?: string }) => {
-      const { id, transportDate, transportStatus } = params;
-      
-      const response = await apiRequest('PATCH', `/api/orders/${id}/transport-date`, {
-        transportDate: transportDate.toISOString(),
-        transportStatus
-      });
-      
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error || 'Nie można zaktualizować daty transportu');
-      }
-      
-      return await response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-      toast({
-        title: 'Data transportu zaktualizowana',
-        description: 'Data transportu została pomyślnie zaktualizowana',
-      });
-      setEditingTransportDateOrderId(null);
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Błąd aktualizacji',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  });
-
-  // Mutacja do aktualizacji pól zamówienia
-  const updateOrderMutation = useMutation({
-    mutationFn: async ({ id, field, value }: { id: number; field: string; value: any }) => {
-      const requestData: any = {};
-      requestData[field] = value;
-      
-      const response = await apiRequest('PATCH', `/api/orders/${id}`, requestData);
-      
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error || 'Nie można zaktualizować zlecenia');
-      }
-      
-      return await response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Błąd aktualizacji',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  });
-  
-  // Mutacja do rozliczenia zleceń przez pracowników
-  const dateSettlementStatusMutation = useMutation({
-    mutationFn: async (params: { id: number; value: boolean }) => {
-      const { id, value } = params;
-      
-      const response = await apiRequest('PATCH', `/api/orders/${id}/settlement-status`, {
-        willBeSettled: value
-      });
-      
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error || 'Nie można zaktualizować statusu rozliczenia');
-      }
-      
-      return await response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-      toast({
-        title: 'Status rozliczenia zaktualizowany',
-        description: 'Status rozliczenia został pomyślnie zaktualizowany',
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Błąd aktualizacji',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  });
-
-  // Can create orders logic
-  const canCreateOrders = ['admin', 'worker'].includes(user?.role || '');
-  
-  // Funkcja do dodawania filtrów
+  // Funkcja dodająca nowy filtr
   const addFilter = (filter: ActiveFilter) => {
-    // Najpierw usuń filtr o tym samym typie, jeśli istnieje
-    const existingFilterIndex = activeFilters.findIndex(f => f.type === filter.type);
-    
-    if (existingFilterIndex !== -1) {
-      // Sprawdź, czy wartość jest taka sama - jeśli tak, usuń filtr (toggle)
-      if (JSON.stringify(activeFilters[existingFilterIndex].value) === JSON.stringify(filter.value)) {
-        const newFilters = [...activeFilters];
-        newFilters.splice(existingFilterIndex, 1);
-        setActiveFilters(newFilters);
+    // Dla statusów montażu i transportu zezwalamy na wiele filtrów tego samego typu
+    if (filter.type === 'status' || filter.type === 'transportStatus') {
+      // Sprawdź czy identyczny filtr już istnieje
+      const filterAlreadyExists = activeFilters.some(
+        f => f.type === filter.type && f.value === filter.value
+      );
+      
+      // Jeśli filtr już istnieje, nie dodawaj go ponownie
+      if (filterAlreadyExists) {
         return;
       }
-      // W przeciwnym razie zastąp go nowym filtrem
-      const newFilters = [...activeFilters];
-      newFilters[existingFilterIndex] = filter;
+      
+      // Dodaj nowy filtr do istniejących
+      const newFilters = [...activeFilters, filter];
       setActiveFilters(newFilters);
+      
+      // Zapisz aktualne filtry w localStorage
+      try {
+        localStorage.setItem('orderFilters', JSON.stringify(newFilters));
+      } catch (error) {
+        console.error('Error saving filters to localStorage', error);
+      }
     } else {
-      // Dodaj nowy filtr
-      setActiveFilters([...activeFilters, filter]);
+      // Dla pozostałych typów filtrów zachowujemy stare zachowanie - tylko jeden filtr danego typu
+      const updatedFilters = activeFilters.filter(f => f.type !== filter.type);
+      const newFilters = [...updatedFilters, filter];
+      setActiveFilters(newFilters);
+      
+      // Zapisz aktualne filtry w localStorage
+      try {
+        localStorage.setItem('orderFilters', JSON.stringify(newFilters));
+      } catch (error) {
+        console.error('Error saving filters to localStorage', error);
+      }
     }
-    
-    // Odśwież listę zleceń
-    ordersQuery.refetch();
   };
   
-  // Funkcja do usuwania filtrów
+  // Funkcja usuwająca filtr
   const removeFilter = (filterId: string) => {
-    setActiveFilters(activeFilters.filter(f => f.id !== filterId));
+    const updatedFilters = activeFilters.filter(filter => filter.id !== filterId);
+    setActiveFilters(updatedFilters);
     
-    // Odśwież listę zleceń
-    ordersQuery.refetch();
+    // Zapisz zaktualizowane filtry w localStorage
+    try {
+      localStorage.setItem('orderFilters', JSON.stringify(updatedFilters));
+    } catch (error) {
+      console.error('Error saving filters to localStorage', error);
+    }
   };
   
-  // Funkcja do czyszczenia wszystkich filtrów
+  // Funkcja czyszcząca wszystkie filtry
   const clearAllFilters = () => {
     setActiveFilters([]);
+    setSearchTerm('');
+    setStatusFilter('all');
+    setStoreFilter(user?.storeId ? user.storeId.toString() : 'all');
+    setCurrentDateOffset(0); // Reset offsetu daty
     
-    // Odśwież listę zleceń
+    // Wyczyść również localStorage
+    try {
+      localStorage.removeItem('orderFilters');
+    } catch (error) {
+      console.error('Error clearing filters from localStorage', error);
+    }
+  };
+  
+
+  
+  // Funkcja dodająca filtr zakresu dat (z kalendarza)
+  const addDateRangeFilter = () => {
+    if (dateFilterStart) {
+      const filterLabel = `${dateFilterType === 'installationDate' ? 'Montaż' : 'Transport'}: ${formatDate(dateFilterStart)}${dateFilterEnd ? ` - ${formatDate(dateFilterEnd)}` : ''}`;
+      
+      const filter: ActiveFilter = {
+        id: `date-range-${dateFilterType}-${Date.now()}`,
+        type: 'dateRange',
+        label: filterLabel,
+        value: {
+          from: startOfDay(dateFilterStart),
+          to: dateFilterEnd ? endOfDay(dateFilterEnd) : endOfDay(dateFilterStart)
+        }
+      };
+      
+      addFilter(filter);
+      
+      // Resetuj pola kalendarza
+      setDateFilterStart(undefined);
+      setDateFilterEnd(undefined);
+    }
+  };
+  
+  // Ujednolicona funkcja do dodawania szybkich filtrów datowych
+  const addQuickDateFilter = (option: string) => {
+    const today = new Date();
+    let filter: ActiveFilter;
+    let filterLabel = '';
+    let fromDate: Date;
+    let toDate: Date;
+    
+    switch (option) {
+      case 'today':
+        filterLabel = 'Dzisiaj';
+        fromDate = startOfDay(today);
+        toDate = endOfDay(today);
+        break;
+      case 'tomorrow':
+        const tomorrow = addDays(today, 1);
+        filterLabel = 'Jutro';
+        fromDate = startOfDay(tomorrow);
+        toDate = endOfDay(tomorrow);
+        break;
+      case 'thisWeek':
+        const endOfWeek = addDays(today, 7);
+        filterLabel = 'Ten tydzień';
+        fromDate = startOfDay(today);
+        toDate = endOfDay(endOfWeek);
+        break;
+      default:
+        return;
+    }
+    
+    // Określanie typu filtra (montaż/transport) na podstawie roli użytkownika
+    const typePrefix = isInstaller ? 'Montaż' : 'Transport';
+    
+    filter = {
+      id: `date-quick-${option}-${Date.now()}`,
+      type: 'dateRange',
+      label: `${typePrefix}: ${filterLabel}`,
+      value: {
+        from: fromDate,
+        to: toDate
+      }
+    };
+    
+    addFilter(filter);
+  };
+  
+  // Funkcja dodająca filtr statusu montażu
+  const addStatusFilter = (status: string, label: string) => {
+    const filter: ActiveFilter = {
+      id: `status-${status}-${Date.now()}`,
+      type: 'status',
+      label: label,
+      value: status
+    };
+    addFilter(filter);
+    // Odświeżamy dane po dodaniu filtra statusu
     ordersQuery.refetch();
   };
-
-  // Filtrowanie zamówień
-  const filterOrders = (orders: Order[] = []) => {
-    if (!orders) return [];
+  
+  // Funkcja dodająca filtr statusu transportu
+  const addTransportStatusFilter = (status: string, label: string) => {
+    const filter: ActiveFilter = {
+      id: `transport-status-${status}-${Date.now()}`,
+      type: 'transportStatus',
+      label: label,
+      value: status
+    };
+    addFilter(filter);
+    // Odświeżamy dane po dodaniu filtra statusu transportu
+    ordersQuery.refetch();
+  };
+  
+  // Funkcja dodająca filtr typu usługi
+  const addServiceTypeFilter = (serviceType: string) => {
+    const label = serviceType === 'Montaż podłogi' ? 'Usługa: Podłogi' : 'Usługa: Drzwi';
     
+    const filter: ActiveFilter = {
+      id: `service-type-${Date.now()}`,
+      type: 'serviceType',
+      label: label,
+      value: serviceType
+    };
+    
+    addFilter(filter);
+  };
+  
+  // Funkcja obsługująca filtry z przesunięciem dat (wczoraj, dziś, jutro itd.)
+  const addDateOffsetFilter = (offset: number) => {
+    // Oblicz nowy offset
+    let newOffset: number;
+    
+    if (offset === -1) {
+      // Jeśli offset jest null, ustawiamy na -1, w przeciwnym razie zmniejszamy o 1
+      newOffset = currentDateOffset === null ? -1 : currentDateOffset - 1;
+    } else if (offset === 1) {
+      // Jeśli offset jest null, ustawiamy na 1, w przeciwnym razie zwiększamy o 1
+      newOffset = currentDateOffset === null ? 1 : currentDateOffset + 1;
+    } else {
+      newOffset = offset; // 0 = dziś
+    }
+    setCurrentDateOffset(newOffset);
+    
+    // Oblicz konkretną datę
+    const today = new Date();
+    const targetDate = addDays(today, newOffset);
+    
+    // Przygotuj etykietę 
+    let labelText: string;
+    if (newOffset === 0) labelText = 'Dzisiaj';
+    else if (newOffset === -1) labelText = 'Wczoraj';
+    else if (newOffset === 1) labelText = 'Jutro';
+    else if (newOffset < 0) labelText = `${Math.abs(newOffset)} dni temu`;
+    else labelText = `Za ${newOffset} dni`;
+    
+    // Określ typ filtra zależnie od roli
+    const filterTypePrefix = isInstaller ? 'Montaż' : 'Transport';
+    
+    // Utwórz filtr
+    const filter: ActiveFilter = {
+      id: `date-offset-${Date.now()}`, 
+      type: 'dateRange',
+      label: `${filterTypePrefix}: ${labelText}`,
+      value: {
+        from: startOfDay(targetDate),
+        to: endOfDay(targetDate)
+      }
+    };
+    
+    // Zastosuj filtr
+    addFilter(filter);
+  };
+  
+  // Funkcja dodająca filtr do rozliczenia
+  const addSettlementFilter = (value: boolean) => {
+    const filter: ActiveFilter = {
+      id: `settlement-${value ? 'yes' : 'no'}-${Date.now()}`,
+      type: 'settlement',
+      label: value ? 'Do rozliczenia' : 'Nie do rozliczenia',
+      value: value
+    };
+    addFilter(filter);
+    // Po dodaniu filtra odświeżamy dane
+    ordersQuery.refetch();
+    // Zamknij dialog/drawer po dodaniu filtra
+    setIsFilterDialogOpen(false);
+    setIsFilterDrawerOpen(false);
+  };
+  
+  // Funkcja dodająca filtr transportu
+  const addTransportFilter = (value: boolean) => {
+    const filter: ActiveFilter = {
+      id: `transport-${value ? 'yes' : 'no'}-${Date.now()}`,
+      type: 'transport',
+      label: value ? 'Z transportem' : 'Bez transportu',
+      value: value
+    };
+    addFilter(filter);
+    // Po dodaniu filtra odświeżamy dane
+    ordersQuery.refetch();
+  };
+  
+  // Funkcja dodająca filtr sklepu
+  const addStoreFilter = (storeId: number, storeName: string) => {
+    const filter: ActiveFilter = {
+      id: `store-${storeId}-${Date.now()}`,
+      type: 'store',
+      label: `Sklep: ${storeName}`,
+      value: storeId
+    };
+    addFilter(filter);
+  };
+  
+  // Przygotowanie URL z parametrami zapytania
+  const getOrdersUrl = () => {
+    let url = '/api/orders';
+    const params = new URLSearchParams();
+    
+    if (searchTerm) params.append('search', searchTerm);
+    if (statusFilter !== 'all') params.append('status', statusFilter);
+    if (storeFilter !== 'all') params.append('store', storeFilter);
+    
+    const queryString = params.toString();
+    if (queryString) url += `?${queryString}`;
+    
+    return url;
+  };
+  
+  // Pobieranie danych z API z właściwym URL zawierającym parametry
+  const ordersQuery = useQuery<Order[]>({
+    queryKey: [getOrdersUrl(), searchTerm, statusFilter, storeFilter],
+  });
+  const { data: fetchedOrders, isLoading, error } = ordersQuery;
+  
+  // Zmodyfikowana funkcja filtrowania zamówień na podstawie aktywnych filtrów
+  const filterOrders = (orders: Order[] | undefined) => {
+    if (!orders) return [];
+    if (activeFilters.length === 0) return orders;
+    
+    // Grupujemy filtry według typu
+    const statusFilters: string[] = [];
+    const transportStatusFilters: string[] = [];
+    const serviceTypeFilters: string[] = [];
+    const settlementFilters: boolean[] = [];
+    const transportFilters: boolean[] = [];
+    const storeFilters: number[] = [];
+    const dateRangeFilters: Array<{label: string, value: {from?: Date, to?: Date}}> = [];
+    
+    // Organizujemy filtry według typu
+    activeFilters.forEach(filter => {
+      switch (filter.type) {
+        case 'status':
+          statusFilters.push(filter.value as string);
+          break;
+        case 'transportStatus':
+          transportStatusFilters.push(filter.value as string);
+          break;
+        case 'serviceType':
+          serviceTypeFilters.push(filter.value as string);
+          break;
+        case 'settlement':
+          settlementFilters.push(filter.value as boolean);
+          break;
+        case 'transport':
+          transportFilters.push(filter.value as boolean);
+          break;
+        case 'store':
+          storeFilters.push(Number(filter.value));
+          break;
+        case 'dateRange':
+          dateRangeFilters.push({
+            label: filter.label,
+            value: filter.value as {from?: Date, to?: Date}
+          });
+          break;
+      }
+    });
+    
+    // Filtrujemy zamówienia
     return orders.filter(order => {
-      // Filtrowanie wg wyszukiwanego tekstu
-      if (searchTerm && !order.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          !order.installationAddress?.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          !order.clientPhone?.includes(searchTerm)) {
-        return false;
+      // Sprawdzanie statusu montażu (OR)
+      if (statusFilters.length > 0) {
+        if (!statusFilters.includes(order.installationStatus || '')) {
+          return false;
+        }
       }
       
-      // Filtrowanie na podstawie aktywnych filtrów
-      for (const filter of activeFilters) {
-        switch (filter.type) {
-          case 'status':
-            if (filter.value !== order.installationStatus?.toLowerCase()) {
-              return false;
-            }
-            break;
-          case 'transportStatus':
-            if (filter.value !== order.transportStatus?.toLowerCase()) {
-              return false;
-            }
-            break;
-          case 'settlement':
-            if (filter.value !== order.willBeSettled) {
-              return false;
-            }
-            break;
-          case 'serviceType':
-            if (filter.value !== order.serviceType) {
-              return false;
-            }
-            break;
-          case 'transport':
-            if (filter.value !== order.withTransport) {
-              return false;
-            }
-            break;
-          case 'store':
-            if (filter.value !== order.storeId) {
-              return false;
-            }
-            break;
-          case 'dateRange':
-            {
-              const { from, to } = filter.value as { from?: Date, to?: Date };
-              if (!from) break;
-              
-              let dateToCheck: Date | undefined;
-              
-              // Określ, którą datę sprawdzamy (transport czy montaż) 
-              // na podstawie etykiety filtra
-              if (filter.label.includes('Montaż')) {
-                dateToCheck = order.installationDate ? new Date(order.installationDate) : undefined;
-              } else {
-                dateToCheck = order.transportDate ? new Date(order.transportDate) : undefined;
-              }
-              
-              if (!dateToCheck) return false;
-              
-              // Sprawdzenie przedziału dat
-              if (to) {
-                if (!isWithinInterval(dateToCheck, { start: startOfDay(from), end: endOfDay(to) })) {
-                  return false;
-                }
-              } else {
-                if (!isSameDay(dateToCheck, from)) {
-                  return false;
-                }
-              }
-            }
-            break;
+      // Sprawdzanie statusu transportu (OR)
+      if (transportStatusFilters.length > 0) {
+        if (!transportStatusFilters.includes(order.transportStatus || '')) {
+          return false;
+        }
+      }
+      
+      // Sprawdzanie typu usługi (OR)
+      if (serviceTypeFilters.length > 0) {
+        if (!serviceTypeFilters.includes(order.serviceType)) {
+          return false;
+        }
+      }
+      
+      // Sprawdzanie statusu rozliczenia (OR)
+      if (settlementFilters.length > 0) {
+        if (!settlementFilters.includes(order.willBeSettled || false)) {
+          return false;
+        }
+      }
+      
+      // Sprawdzanie transportu (OR)
+      if (transportFilters.length > 0) {
+        // Przekształć null/undefined w false lub zachowaj prawdziwą wartość boolean
+        const orderHasTransport = order.withTransport === true;
+        if (!transportFilters.includes(orderHasTransport)) {
+          return false;
+        }
+      }
+      
+      // Sprawdzanie sklepu (OR)
+      if (storeFilters.length > 0) {
+        if (!storeFilters.includes(order.storeId || 0)) {
+          return false;
+        }
+      }
+      
+      // Sprawdzanie przedziału dat (AND)
+      for (const dateFilter of dateRangeFilters) {
+        const dateRange = dateFilter.value;
+        if (!dateRange.from) continue;
+        
+        let dateToCheck: Date | null = null;
+        
+        if (dateFilter.label.toLowerCase().includes('transport')) {
+          if (!order.transportDate) return false;
+          dateToCheck = new Date(order.transportDate);
+        } else {
+          if (!order.installationDate) return false;
+          dateToCheck = new Date(order.installationDate);
+        }
+        
+        if (!dateToCheck || isNaN(dateToCheck.getTime())) return false;
+        
+        if (dateRange.to) {
+          if (!isWithinInterval(dateToCheck, {
+            start: startOfDay(dateRange.from),
+            end: endOfDay(dateRange.to)
+          })) {
+            return false;
+          }
+        } else {
+          if (!isSameDay(dateToCheck, dateRange.from)) {
+            return false;
+          }
         }
       }
       
@@ -867,54 +806,88 @@ export default function Orders() {
       return true;
     });
   };
+  
+
 
   // Filtrujemy zamówienia
-  const filteredOrders = filterOrders(ordersQuery.data);
+  const filteredOrders = filterOrders(fetchedOrders);
   
-  // Funkcja przypisywania montażysty
-  const handleAssignInstaller = (orderId: number) => {
-    if (!selectedInstallerId) return;
-    
-    assignInstallerMutation.mutate({
-      id: orderId,
-      installerId: selectedInstallerId
-    });
-  };
+  // Mutation for updating order financial status
+  const updateOrderMutation = useMutation({
+    mutationFn: async (params: { id: number, field: string, value: boolean }) => {
+      const { id, field, value } = params;
+      const response = await apiRequest(
+        'PATCH', 
+        `/api/orders/${id}/financial-status`, 
+        { [field]: value }
+      );
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Nie można zaktualizować statusu zamówienia');
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      // Invalidate orders query to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      // Invalidate specific order queries to ensure details page is updated
+      if (fetchedOrders) {
+        fetchedOrders.forEach((order) => {
+          queryClient.invalidateQueries({ queryKey: [`/api/orders/${order.id}`] });
+        });
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Błąd aktualizacji',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  });
   
-  // Funkcja przypisywania transportera
-  const handleAssignTransporter = (orderId: number) => {
-    if (!selectedTransporterId) return;
-    
-    assignTransporterMutation.mutate({
-      id: orderId,
-      transporterId: selectedTransporterId
-    });
-  };
-    
-  // Obsługa przycisku ustawiania daty montażu
-  const handleSetInstallationDate = (orderId: number) => {
-    if (!installationDate) return;
-    
-    updateInstallationDateMutation.mutate({
-      id: orderId,
-      installationDate,
-      installationStatus: selectedInstallationStatus
-    });
-  };
+  // Dedykowana mutacja do aktualizacji statusu "do rozliczenia" dla firm jednoosobowych
+  // Używa specjalnego endpointu, który omija middleware kontroli finansowej
+  const updateSettlementStatusMutation = useMutation({
+    mutationFn: async (params: { id: number, value: boolean }) => {
+      const { id, value } = params;
+      const response = await apiRequest(
+        'PATCH', 
+        `/api/orders/${id}/settlement-status`, 
+        { value }
+      );
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Nie można zaktualizować statusu rozliczenia');
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      // Invalidate orders query to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      // Invalidate specific order queries to ensure details page is updated
+      if (fetchedOrders) {
+        fetchedOrders.forEach((order) => {
+          queryClient.invalidateQueries({ queryKey: [`/api/orders/${order.id}`] });
+        });
+      }
+      toast({
+        title: 'Status zaktualizowany',
+        description: 'Status "do rozliczenia" został zaktualizowany',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Błąd aktualizacji',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  });
   
-  // Obsługa przycisku ustawiania daty transportu
-  const handleSetTransportDate = (orderId: number) => {
-    if (!transportDate) return;
-    
-    updateTransportDateMutation.mutate({
-      id: orderId,
-      transportDate,
-      transportStatus: selectedTransportStatus
-    });
-  };
-  
-  // Obsługa przycisku oznaczania faktury jako wystawionej
   const handleToggleInvoice = (orderId: number, currentValue: boolean) => {
+    if (!canModifyFinancialStatus) return;
+    
     updateOrderMutation.mutate({ 
       id: orderId, 
       field: 'invoiceIssued', 
@@ -922,12 +895,14 @@ export default function Orders() {
     });
   };
   
-  // Obsługa przycisku oznaczania zlecenia do rozliczenia
   const handleToggleSettlement = (orderId: number, currentValue: boolean) => {
-    // Gdy firma jednoosobowa lub pracownik sklepu (nie kierownik) klika w "do rozliczenia"
-    if ((isOnePersonCompany || (user?.role === 'worker' && user?.position !== 'kierownik' && user?.position !== 'zastępca')) && !canModifyFinancialStatus) {
-      // Używamy specjalnej ścieżki przez endopoint settlement-status
-      dateSettlementStatusMutation.mutate({
+    // Firmy jednoosobowe też mogą oznaczać zlecenia jako "do rozliczenia"
+    if (!canModifyFinancialStatus && !isOnePersonCompany) return;
+    
+    // Użyj dedykowanego endpointu dla firm jednoosobowych, które nie mają pełnych uprawnień finansowych
+    if (isOnePersonCompany && !canModifyFinancialStatus) {
+      // Wywołaj dedykowaną mutację dla firm jednoosobowych
+      updateSettlementStatusMutation.mutate({
         id: orderId,
         value: !currentValue
       });
@@ -949,174 +924,980 @@ export default function Orders() {
     setLocation(`/orders/${id}`);
   };
   
-  // Komponent dialogu wyboru montażysty
-  const InstallerDialog = () => {
-    // Jeśli nie ma aktywnego dialogu, nie renderujemy niczego
-    if (!editingInstallerOrderId) return null;
+  // Mutacja do aktualizacji daty transportu
+  const updateTransportDateMutation = useMutation({
+    mutationFn: async (params: { id: number; transportDate: Date; transportStatus?: string }) => {
+      const { id, transportDate, transportStatus } = params;
+      // Pobieramy dane zlecenia, żeby uzyskać ID transportera
+      const orderResponse = await apiRequest('GET', `/api/orders/${id}`);
+      if (!orderResponse.ok) {
+        throw new Error('Nie można pobrać danych zlecenia');
+      }
+      const orderData = await orderResponse.json();
+      
+      // Wysyłamy zarówno ID transportera jak i datę transportu oraz status
+      const response = await apiRequest('PATCH', `/api/orders/${id}/assign-transporter`, {
+        transporterId: orderData.transporterId || user?.id,
+        // Dostosujmy datę tak, aby uwzględniała strefę czasową
+        transportDate: new Date(
+          transportDate.getFullYear(),
+          transportDate.getMonth(),
+          transportDate.getDate(),
+          12, 0, 0
+        ).toISOString(),
+        transportStatus: transportStatus || 'transport zaplanowany',
+      });
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Nie można zaktualizować daty transportu');
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      // Invalidate orders query to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      toast({
+        title: 'Data zaktualizowana',
+        description: 'Data transportu została pomyślnie zaktualizowana',
+      });
+      // Clear state
+      setEditingTransportDateOrderId(null);
+      setTransportDate(undefined);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Błąd aktualizacji',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  });
+  
+  // Mutacja do aktualizacji daty montażu
+  const updateInstallationDateMutation = useMutation({
+    mutationFn: async (params: { id: number; installationDate: Date; installationStatus?: string }) => {
+      const { id, installationDate, installationStatus } = params;
+      // Pobieramy dane zlecenia, żeby uzyskać ID montażysty
+      const orderResponse = await apiRequest('GET', `/api/orders/${id}`);
+      if (!orderResponse.ok) {
+        throw new Error('Nie można pobrać danych zlecenia');
+      }
+      const orderData = await orderResponse.json();
+      
+      // Wysyłamy zarówno ID montażysty jak i datę montażu oraz status
+      const response = await apiRequest('PATCH', `/api/orders/${id}/assign-installer`, {
+        installerId: orderData.installerId || user?.id,
+        // Dostosujmy datę tak, aby uwzględniała strefę czasową
+        installationDate: new Date(
+          installationDate.getFullYear(),
+          installationDate.getMonth(),
+          installationDate.getDate(),
+          12, 0, 0
+        ).toISOString(),
+        installationStatus: installationStatus || 'zaplanowany',
+      });
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Nie można zaktualizować daty montażu');
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      // Invalidate orders query to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      toast({
+        title: 'Data zaktualizowana',
+        description: 'Data montażu została pomyślnie zaktualizowana',
+      });
+      // Clear state
+      setEditingInstallationDateOrderId(null);
+      setInstallationDate(undefined);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Błąd aktualizacji',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  });
+  
+  // Obsługa aktualizacji daty transportu
+  const handleUpdateTransportDate = (orderId: number) => {
+    if (!transportDate) return;
     
-    // Pobierz aktualny serviceType z zamówienia
-    const order = ordersQuery.data?.find(o => o.id === editingInstallerOrderId);
-    const serviceType = order?.serviceType || '';
+    // Wysyłamy także status transportu, jeśli został wybrany
+    const transportStatus = selectedTransportStatus || 'transport zaplanowany';
     
-    // Filtruj montażystów według specjalizacji (serviceType)
-    const filteredInstallers = installers.filter((installer: any) => {
-      // Sprawdź, czy specjalizacja montażysty pasuje do typu usługi
-      return Array.isArray(installer.services) && installer.services.some(
-        (service: string) => service.toLowerCase().includes(serviceType.toLowerCase())
-      );
+    updateTransportDateMutation.mutate({
+      id: orderId,
+      transportDate,
+      transportStatus
     });
     
-    const closeInstallerDialog = () => {
-      setEditingInstallerOrderId(null);
-      setSelectedInstallerId(undefined);
-    };
+    // Zamykamy kalendarz po wysłaniu żądania
+    setEditingTransportDateOrderId(null);
+    setSelectedTransportStatus('');
+  };
+  
+  // Obsługa aktualizacji daty montażu
+  const handleUpdateInstallationDate = (orderId: number) => {
+    if (!installationDate) return;
     
+    // Wysyłamy także status montażu, jeśli został wybrany
+    const installationStatus = selectedInstallationStatus || 'montaż zaplanowany';
+    
+    updateInstallationDateMutation.mutate({
+      id: orderId,
+      installationDate,
+      installationStatus
+    });
+    
+    // Zamykamy kalendarz po wysłaniu żądania
+    setEditingInstallationDateOrderId(null);
+    setSelectedInstallationStatus('');
+  };
+  
+  // Can create orders logic
+  const canCreateOrders = ['admin', 'worker'].includes(user?.role || '');
+  
+  // Komponent wyświetlający centralny kalendarz
+  const CalendarDialog = () => {
+    // Jeśli nie ma aktywnego kalendarza, nie renderujemy niczego
+    if (!editingTransportDateOrderId && !editingInstallationDateOrderId) {
+      return null;
+    }
+
+    // Ustalamy, który kalendarz jest otwarty
+    const isTransportCalendar = editingTransportDateOrderId !== null;
+    const currentDate = isTransportCalendar ? transportDate : installationDate;
+    const setCurrentDate = isTransportCalendar ? setTransportDate : setInstallationDate;
+    const orderId = isTransportCalendar ? editingTransportDateOrderId : editingInstallationDateOrderId;
+    const handleUpdate = isTransportCalendar ? handleUpdateTransportDate : handleUpdateInstallationDate;
+    const isPending = isTransportCalendar 
+      ? updateTransportDateMutation.isPending 
+      : updateInstallationDateMutation.isPending;
+    const closeCalendar = () => {
+      if (isTransportCalendar) {
+        setEditingTransportDateOrderId(null);
+        setTransportDate(undefined);
+      } else {
+        setEditingInstallationDateOrderId(null);
+        setInstallationDate(undefined);
+      }
+    };
+
     return (
-      <Dialog open={true} onOpenChange={closeInstallerDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Wybierz montażystę</DialogTitle>
-            <DialogDescription>
-              Przypisz montażystę do zlecenia zgodnie z jego specjalizacją.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-4">
-            <div className="space-y-4">
-              <div className="grid w-full gap-2">
-                <p className="text-sm font-medium">Typ usługi: {serviceType}</p>
-                <Select
-                  value={selectedInstallerId?.toString()}
-                  onValueChange={(value) => setSelectedInstallerId(Number(value))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Wybierz montażystę" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredInstallers.length > 0 ? (
-                      filteredInstallers.map((installer: any) => (
-                        <SelectItem key={installer.id} value={installer.id.toString()}>
-                          {installer.firstName} {installer.lastName} 
-                          {installer.services && <span className="text-xs text-gray-500"> ({installer.services.join(', ')})</span>}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="none" disabled>
-                        Brak montażystów z wymaganą specjalizacją
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-lg p-4 max-w-md w-full">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium">
+              {isTransportCalendar ? "Wybierz datę transportu" : "Wybierz datę montażu"}
+            </h3>
+            <button 
+              className="p-1 rounded-full hover:bg-gray-100"
+              onClick={closeCalendar}
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
           
-          <DialogFooter className="flex justify-between">
-            <Button variant="outline" onClick={closeInstallerDialog}>
+          {/* Pole wyboru statusu nad kalendarzem */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">
+              {isTransportCalendar ? "Status transportu:" : "Status montażu:"}
+            </label>
+            <Select
+              value={isTransportCalendar ? selectedTransportStatus : selectedInstallationStatus}
+              onValueChange={(value) => {
+                if (isTransportCalendar) {
+                  setSelectedTransportStatus(value);
+                } else {
+                  setSelectedInstallationStatus(value);
+                }
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={isTransportCalendar ? "Wybierz status transportu" : "Wybierz status montażu"} />
+              </SelectTrigger>
+              <SelectContent>
+                {isTransportCalendar ? (
+                  TRANSPORT_STATUSES.map(status => (
+                    <SelectItem key={status.value} value={status.value}>
+                      {status.label}
+                    </SelectItem>
+                  ))
+                ) : (
+                  INSTALLATION_STATUSES.map(status => (
+                    <SelectItem key={status.value} value={status.value}>
+                      {status.label}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <CalendarUI
+            mode="single"
+            selected={currentDate}
+            onSelect={setCurrentDate}
+            initialFocus
+            className="mx-auto"
+          />
+          
+          <div className="flex justify-end gap-2 mt-4">
+            <Button 
+              variant="outline"
+              onClick={closeCalendar}
+            >
               Anuluj
             </Button>
-            <Button 
-              onClick={() => handleAssignInstaller(editingInstallerOrderId)}
-              disabled={!selectedInstallerId || assignInstallerMutation.isPending}
+            <Button
+              onClick={() => orderId && handleUpdate(orderId)}
+              disabled={!currentDate || isPending}
             >
-              {assignInstallerMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Przypisywanie...
-                </>
-              ) : (
-                <>
-                  <UserCircle className="mr-2 h-4 w-4" />
-                  Przypisz montażystę
-                </>
-              )}
+              {isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              ) : null}
+              Zapisz
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Komponent wyświetlający aktywne filtry
+  const ActiveFiltersDisplay = () => {
+    if (activeFilters.length === 0) return null;
+    
+    return (
+      <div className="flex flex-wrap gap-2 mb-4">
+        {activeFilters.map(filter => (
+          <Badge 
+            key={filter.id} 
+            variant="secondary"
+            className="flex items-center gap-1 px-3 py-1"
+          >
+            {filter.label}
+            <button 
+              className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
+              onClick={() => removeFilter(filter.id)}
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </Badge>
+        ))}
+        
+        <button 
+          className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1"
+          onClick={clearAllFilters}
+        >
+          <XCircle className="h-3.5 w-3.5" />
+          Wyczyść wszystkie
+        </button>
+      </div>
     );
   };
   
-  // Komponent dialogu wyboru transportera
-  const TransporterDialog = () => {
-    // Jeśli nie ma aktywnego dialogu, nie renderujemy niczego
-    if (!editingTransporterOrderId) return null;
-    
-    // Typ usługi
-    const serviceType = "Transport";
-    
-    // Filtruj transporterów
-    const filteredTransporters = transporters.filter((transporter: any) => {
-      // Sprawdź, czy specjalizacja transportera pasuje do transportu
-      return Array.isArray(transporter.services) && transporter.services.some(
-        (service: string) => service.toLowerCase().includes('transport')
-      );
+  // Komponent dla mobilnych filtrów (drawer)
+  const MobileFilterDrawer = () => {
+    // Lokalne stany dla filtrów (będą zastosowane dopiero po zatwierdzeniu)
+    const [tempDateRange, setTempDateRange] = useState<{
+      from?: Date,
+      to?: Date,
+      type: 'installationDate' | 'transportDate'
+    }>({
+      from: undefined,
+      to: undefined,
+      type: 'installationDate'
     });
     
-    const closeTransporterDialog = () => {
-      setEditingTransporterOrderId(null);
-      setSelectedTransporterId(undefined);
+    // Checkbox stany
+    const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+    const [selectedServiceTypes, setSelectedServiceTypes] = useState<string[]>([]);
+    const [withTransport, setWithTransport] = useState<boolean | null>(null);
+    
+    // Zastosowanie filtrów i zamknięcie drawera
+    const applyFilters = () => {
+      // Dodaj filtr daty, jeśli ustawiony
+      if (tempDateRange.from) {
+        const filterLabel = tempDateRange.type === 'installationDate' 
+          ? 'Montaż: ' 
+          : 'Transport: ';
+        
+        const fromDate = tempDateRange.from ? startOfDay(tempDateRange.from) : undefined;
+        const toDate = tempDateRange.to ? endOfDay(tempDateRange.to) : fromDate ? endOfDay(fromDate) : undefined;
+        
+        const dateRangeLabel = `${filterLabel}${formatDate(fromDate!)}${toDate && fromDate?.getTime() !== toDate.getTime() ? ` - ${formatDate(toDate)}` : ''}`;
+        
+        const filter: ActiveFilter = {
+          id: `date_range_${Date.now()}`,
+          type: 'dateRange',
+          label: dateRangeLabel,
+          value: {
+            from: fromDate,
+            to: toDate
+          }
+        };
+        
+        setActiveFilters(prev => [...prev.filter(f => f.type !== 'dateRange'), filter]);
+      }
+      
+      // Dodaj filtry statusów
+      selectedStatuses.forEach(status => {
+        const statusInfo = [...INSTALLATION_STATUSES, ...TRANSPORT_STATUSES].find(s => s.value === status);
+        if (statusInfo) {
+          const type = INSTALLATION_STATUSES.some(s => s.value === status) ? 'status' : 'transportStatus';
+          const label = type === 'status' ? `Status: ${statusInfo.label}` : `Transport: ${statusInfo.label}`;
+          
+          const filter: ActiveFilter = {
+            id: `${type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            type: type as any,
+            label,
+            value: status
+          };
+          
+          // Usuwamy poprzednie filtry tego samego typu
+          setActiveFilters(prev => [...prev.filter(f => f.type !== type), filter]);
+        }
+      });
+      
+      // Dodaj filtry usług
+      selectedServiceTypes.forEach(serviceType => {
+        const filter: ActiveFilter = {
+          id: `service_type_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          type: 'serviceType',
+          label: `Usługa: ${serviceType}`,
+          value: serviceType
+        };
+        
+        setActiveFilters(prev => [...prev.filter(f => f.type !== 'serviceType'), filter]);
+      });
+      
+      // Dodaj filtr transportu, jeśli wybrano
+      if (withTransport !== null) {
+        const filter: ActiveFilter = {
+          id: `transport_${Date.now()}`,
+          type: 'transport',
+          label: withTransport ? 'Z transportem' : 'Bez transportu',
+          value: withTransport
+        };
+        
+        setActiveFilters(prev => [...prev.filter(f => f.type !== 'transport'), filter]);
+      }
+      
+      // Zamknij drawer i odśwież listę
+      setIsFilterDrawerOpen(false);
+      ordersQuery.refetch();
     };
     
+    // Resetowanie wszystkich filtrów w mobilnym drawerze
+    const resetFilters = () => {
+      // Resetujemy lokalne stany filtrów w drawerze
+      setTempDateRange({
+        from: undefined,
+        to: undefined,
+        type: 'installationDate'
+      });
+      setSelectedStatuses([]);
+      setSelectedServiceTypes([]);
+      setWithTransport(null);
+      setSettlementFilter(null);
+      
+      // Czyścimy również globalne filtry
+      clearAllFilters();
+      
+      // Odświeżamy listę
+      ordersQuery.refetch();
+    };
+    
+    // Inicjalizacja wybranych filtrów na podstawie aktywnych
+    useEffect(() => {
+      // Statusy
+      const activeInstallationStatus = activeFilters.find(f => f.type === 'status')?.value as string;
+      const activeTransportStatus = activeFilters.find(f => f.type === 'transportStatus')?.value as string;
+      
+      const statuses = [];
+      if (activeInstallationStatus) statuses.push(activeInstallationStatus);
+      if (activeTransportStatus) statuses.push(activeTransportStatus);
+      setSelectedStatuses(statuses);
+      
+      // Typy usług
+      const serviceType = activeFilters.find(f => f.type === 'serviceType')?.value as string;
+      setSelectedServiceTypes(serviceType ? [serviceType] : []);
+      
+      // Transport
+      const transportFilter = activeFilters.find(f => f.type === 'transport')?.value;
+      setWithTransport(transportFilter !== undefined ? Boolean(transportFilter) : null);
+      
+      // Daty
+      const dateRange = activeFilters.find(f => f.type === 'dateRange')?.value as { from?: Date, to?: Date } | undefined;
+      const dateFilterType = activeFilters.find(f => f.type === 'dateRange')?.label.startsWith('Montaż') 
+        ? 'installationDate' 
+        : 'transportDate';
+      
+      if (dateRange) {
+        setTempDateRange({
+          from: dateRange.from,
+          to: dateRange.to,
+          type: dateFilterType as any
+        });
+      }
+    }, [isFilterDrawerOpen]);
+    
     return (
-      <Dialog open={true} onOpenChange={closeTransporterDialog}>
-        <DialogContent className="sm:max-w-md">
+      <Drawer open={isFilterDrawerOpen} onOpenChange={setIsFilterDrawerOpen}>
+        <DrawerContent className="max-h-[90%] px-4">
+          <DrawerHeader>
+            <DrawerTitle>Filtry zleceń</DrawerTitle>
+            <DrawerDescription>
+              Wybierz filtry, aby znaleźć zlecenia
+            </DrawerDescription>
+          </DrawerHeader>
+          
+          <div className="space-y-6 px-1 overflow-y-auto">
+            {/* Sekcja - Zakres dat */}
+            <div className="space-y-3 border-b pb-4">
+              <h4 className="text-sm font-medium">Zakres dat:</h4>
+              <Select
+                value={tempDateRange.type}
+                onValueChange={(value: 'installationDate' | 'transportDate') => 
+                  setTempDateRange(prev => ({ ...prev, type: value }))
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <span>
+                    {tempDateRange.type === 'installationDate' ? 'Data montażu' : 'Data transportu'}
+                  </span>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="installationDate">Data montażu</SelectItem>
+                  <SelectItem value="transportDate">Data transportu</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              {/* Data OD */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center">
+                  <p className="text-sm font-medium">Od:</p>
+                  {tempDateRange.from && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setTempDateRange(prev => ({ ...prev, from: undefined }))}
+                      className="h-6 text-xs text-gray-500"
+                    >
+                      <X className="h-3 w-3 mr-1" />
+                      Wyczyść
+                    </Button>
+                  )}
+                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {tempDateRange.from ? (
+                        formatDate(tempDateRange.from)
+                      ) : (
+                        <span>Wybierz datę początkową</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <CalendarUI
+                      mode="single"
+                      selected={tempDateRange.from}
+                      onSelect={(date) => 
+                        setTempDateRange(prev => ({ ...prev, from: date }))
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              {/* Data DO */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center">
+                  <p className="text-sm font-medium">Do:</p>
+                  {tempDateRange.to && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setTempDateRange(prev => ({ ...prev, to: undefined }))}
+                      className="h-6 text-xs text-gray-500"
+                    >
+                      <X className="h-3 w-3 mr-1" />
+                      Wyczyść
+                    </Button>
+                  )}
+                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                      disabled={!tempDateRange.from}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {tempDateRange.to ? (
+                        formatDate(tempDateRange.to)
+                      ) : (
+                        <span>{tempDateRange.from ? 'Wybierz datę końcową' : 'Najpierw wybierz datę początkową'}</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <CalendarUI
+                      mode="single"
+                      selected={tempDateRange.to}
+                      onSelect={(date) => 
+                        setTempDateRange(prev => ({ ...prev, to: date }))
+                      }
+                      disabled={(date) => 
+                        tempDateRange.from ? date < tempDateRange.from : false
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+            
+            {/* Sekcja - Statusy */}
+            <div className="space-y-3 border-b pb-4">
+              <h4 className="text-sm font-medium">Status:</h4>
+              {isTransporter ? (
+                // Statusy dla transportera
+                <div className="grid grid-cols-1 gap-2">
+                  {TRANSPORT_STATUSES.map(status => (
+                    <div key={status.value} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={`status-${status.value}`}
+                        checked={selectedStatuses.includes(status.value)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedStatuses(prev => [...prev, status.value]);
+                          } else {
+                            setSelectedStatuses(prev => prev.filter(s => s !== status.value));
+                          }
+                        }}
+                      />
+                      <label 
+                        htmlFor={`status-${status.value}`}
+                        className="text-sm flex items-center cursor-pointer"
+                      >
+                        <Tag className="h-4 w-4 mr-2 text-gray-500" />
+                        {status.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                // Statusy dla zwykłego użytkownika
+                <div className="grid grid-cols-1 gap-2">
+                  {INSTALLATION_STATUSES.map(status => (
+                    <div key={status.value} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={`status-${status.value}`}
+                        checked={selectedStatuses.includes(status.value)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedStatuses(prev => [...prev, status.value]);
+                          } else {
+                            setSelectedStatuses(prev => prev.filter(s => s !== status.value));
+                          }
+                        }}
+                      />
+                      <label 
+                        htmlFor={`status-${status.value}`}
+                        className="text-sm flex items-center cursor-pointer"
+                      >
+                        <Tag className="h-4 w-4 mr-2 text-gray-500" />
+                        {status.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Sekcja - Typ usługi */}
+            <div className="space-y-3 border-b pb-4">
+              <h4 className="text-sm font-medium">Typ usługi:</h4>
+              <div className="grid grid-cols-1 gap-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="service-doors"
+                    checked={selectedServiceTypes.includes('Montaż drzwi')}
+                    onCheckedChange={(checked) => {
+                      if (checked === true) {
+                        setSelectedServiceTypes(prev => [...prev, 'Montaż drzwi']);
+                      } else {
+                        setSelectedServiceTypes(prev => prev.filter(s => s !== 'Montaż drzwi'));
+                      }
+                    }}
+                  />
+                  <label 
+                    htmlFor="service-doors"
+                    className="text-sm flex items-center cursor-pointer"
+                  >
+                    <DoorOpen className="h-4 w-4 mr-2 text-gray-500" />
+                    Montaż drzwi
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="service-floor"
+                    checked={selectedServiceTypes.includes('Montaż podłogi')}
+                    onCheckedChange={(checked) => {
+                      if (checked === true) {
+                        setSelectedServiceTypes(prev => [...prev, 'Montaż podłogi']);
+                      } else {
+                        setSelectedServiceTypes(prev => prev.filter(s => s !== 'Montaż podłogi'));
+                      }
+                    }}
+                  />
+                  <label 
+                    htmlFor="service-floor"
+                    className="text-sm flex items-center cursor-pointer"
+                  >
+                    <Home className="h-4 w-4 mr-2 text-gray-500" />
+                    Montaż podłogi
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            {/* Sekcja - Transport */}
+            <div className="space-y-3 pb-4">
+              <h4 className="text-sm font-medium">Transport:</h4>
+              <div className="grid grid-cols-1 gap-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="with-transport"
+                    checked={withTransport === true}
+                    onCheckedChange={(checked) => {
+                      if (checked === true) {
+                        setWithTransport(true);
+                      } else {
+                        setWithTransport(null);
+                      }
+                    }}
+                  />
+                  <label 
+                    htmlFor="with-transport"
+                    className="text-sm flex items-center cursor-pointer"
+                  >
+                    <Truck className="h-4 w-4 mr-2 text-gray-500" />
+                    Z transportem
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="without-transport"
+                    checked={withTransport === false}
+                    onCheckedChange={(checked) => {
+                      if (checked === true) {
+                        setWithTransport(false);
+                      } else {
+                        setWithTransport(null);
+                      }
+                    }}
+                  />
+                  <label 
+                    htmlFor="without-transport"
+                    className="text-sm cursor-pointer"
+                  >
+                    Bez transportu
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            {/* Do rozliczenia - tylko dla firm jednoosobowych */}
+            {isOnePersonCompany && (
+              <div className="space-y-3 border-t pt-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="to-settle"
+                    checked={settlementFilter === true}
+                    onCheckedChange={(checked) => {
+                      setSettlementFilter(checked === true ? true : null);
+                    }}
+                  />
+                  <label 
+                    htmlFor="to-settle"
+                    className="text-sm flex items-center cursor-pointer font-medium"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2 text-gray-500" />
+                    Tylko zlecenia do rozliczenia
+                  </label>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <DrawerFooter className="pt-2 space-y-2">
+            <Button 
+              variant="outline" 
+              onClick={resetFilters}
+              className="w-full"
+            >
+              <XCircle className="h-4 w-4 mr-2" />
+              Wyczyść wszystkie filtry
+            </Button>
+            <Button 
+              className="w-full"
+              onClick={applyFilters}
+            >
+              Zastosuj filtry
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    );
+  };
+  
+  // Komponent dla filtrów w widoku desktopowym
+  const DesktopFiltersDialog = () => {
+    return (
+      <Dialog open={isFilterDialogOpen} onOpenChange={setIsFilterDialogOpen}>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Wybierz transportera</DialogTitle>
+            <DialogTitle>Zaawansowane filtrowanie zleceń</DialogTitle>
             <DialogDescription>
-              Przypisz transportera do zlecenia.
+              Wybierz filtry, aby precyzyjnie wyszukać zlecenia
             </DialogDescription>
           </DialogHeader>
           
-          <div className="py-4">
-            <div className="space-y-4">
-              <div className="grid w-full gap-2">
-                <p className="text-sm font-medium">Typ usługi: {serviceType}</p>
-                <Select
-                  value={selectedTransporterId?.toString()}
-                  onValueChange={(value) => setSelectedTransporterId(Number(value))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Wybierz transportera" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredTransporters.length > 0 ? (
-                      filteredTransporters.map((transporter: any) => (
-                        <SelectItem key={transporter.id} value={transporter.id.toString()}>
-                          {transporter.firstName} {transporter.lastName} 
-                          {transporter.services && <span className="text-xs text-gray-500"> (Transport)</span>}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="none" disabled>
-                        Brak transporterów
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
+          <Accordion type="multiple" className="w-full">
+            <AccordionItem value="quick-filters" className="border-b">
+              <AccordionTrigger className="hover:no-underline py-4">
+                <span className="flex items-center text-base font-medium">
+                  <CalendarDays className="mr-2 h-5 w-5" />
+                  Szybkie filtry
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="pb-4">
+                <div className="grid grid-cols-3 gap-3">
+                  <Button 
+                    variant="outline" 
+                    className="justify-start"
+                    onClick={() => addQuickDateFilter('today')}
+                  >
+                    <CalendarDays className="h-4 w-4 mr-2" />
+                    Na dziś
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="justify-start"
+                    onClick={() => addQuickDateFilter('tomorrow')}
+                  >
+                    <CalendarDays className="h-4 w-4 mr-2" />
+                    Na jutro
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="justify-start"
+                    onClick={() => addQuickDateFilter('thisWeek')}
+                  >
+                    <CalendarDays className="h-4 w-4 mr-2" />
+                    Na ten tydzień
+                  </Button>
+                  
+                  {/* Pierwsza linia statusów */}
+                  <Button 
+                    variant="outline" 
+                    className="justify-start"
+                    onClick={() => isTransporter 
+                      ? addTransportStatusFilter('transport zaplanowany', 'Transport zaplanowany')
+                      : addStatusFilter('nowe', 'Nowe')
+                    }
+                  >
+                    <Tag className="h-4 w-4 mr-2" />
+                    {isTransporter ? 'Transport zaplanowany' : 'Nowe'}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="justify-start"
+                    onClick={() => isTransporter 
+                      ? addTransportStatusFilter('w trakcie transportu', 'W drodze')
+                      : addStatusFilter('w trakcie montażu', 'W realizacji')
+                    }
+                  >
+                    <Clock className="h-4 w-4 mr-2" />
+                    {isTransporter ? 'W drodze' : 'W realizacji'}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="justify-start"
+                    onClick={() => isTransporter
+                      ? addTransportStatusFilter('transport dostarczony', 'Zakończony')
+                      : addStatusFilter('montaż wykonany', 'Zakończony')
+                    }
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Zakończone
+                  </Button>
+                  
+                  {/* Druga linia statusów */}
+                  {isOnePersonCompany && (
+                    <Button 
+                      variant="outline" 
+                      className="justify-start"
+                      onClick={() => addSettlementFilter(true)}
+                    >
+                      <Check className="h-4 w-4 mr-2" />
+                      Do rozliczenia
+                    </Button>
+                  )}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+            
+            <AccordionItem value="date-range" className="border-b">
+              <AccordionTrigger className="hover:no-underline py-4">
+                <span className="flex items-center text-base font-medium">
+                  <CalendarIcon className="mr-2 h-5 w-5" />
+                  Zakres dat
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="pb-4">
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <Select
+                      value={dateFilterType}
+                      onValueChange={(value: 'installationDate' | 'transportDate') => setDateFilterType(value)}
+                    >
+                      <SelectTrigger className="w-[200px]">
+                        <span>
+                          {dateFilterType === 'installationDate' ? 'Data montażu' : 'Data transportu'}
+                        </span>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="installationDate">Data montażu</SelectItem>
+                        <SelectItem value="transportDate">Data transportu</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-500">Od:</p>
+                      <CalendarUI
+                        mode="single"
+                        selected={dateFilterStart}
+                        onSelect={setDateFilterStart}
+                        className="rounded border"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-500">Do:</p>
+                      <CalendarUI
+                        mode="single"
+                        selected={dateFilterEnd}
+                        onSelect={setDateFilterEnd}
+                        disabled={(date) => 
+                          dateFilterStart ? date < dateFilterStart : false
+                        }
+                        className="rounded border"
+                      />
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    className="w-full"
+                    onClick={addDateRangeFilter}
+                    disabled={!dateFilterStart}
+                  >
+                    Dodaj filtr dat
+                  </Button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+            
+            <AccordionItem value="service-type" className="border-b">
+              <AccordionTrigger className="hover:no-underline py-4">
+                <span className="flex items-center text-base font-medium">
+                  <Tag className="mr-2 h-5 w-5" />
+                  Typ usługi
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="pb-4">
+                <div className="grid grid-cols-3 gap-3">
+                  <Button 
+                    variant="outline" 
+                    className="justify-start"
+                    onClick={() => addServiceTypeFilter('Montaż drzwi')}
+                  >
+                    Montaż drzwi
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="justify-start"
+                    onClick={() => addServiceTypeFilter('Montaż podłogi')}
+                  >
+                    Montaż podłogi
+                  </Button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+            
+            <AccordionItem value="transport-options" className="border-b">
+              <AccordionTrigger className="hover:no-underline py-4">
+                <span className="flex items-center text-base font-medium">
+                  <Truck className="mr-2 h-5 w-5" />
+                  Opcje transportu
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="pb-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <Button 
+                    variant="outline" 
+                    className="justify-start"
+                    onClick={() => addTransportFilter(true)}
+                  >
+                    Z transportem
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="justify-start"
+                    onClick={() => addTransportFilter(false)}
+                  >
+                    Bez transportu
+                  </Button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
           
-          <DialogFooter className="flex justify-between">
-            <Button variant="outline" onClick={closeTransporterDialog}>
-              Anuluj
-            </Button>
+          <DialogFooter className="flex gap-2">
             <Button 
-              onClick={() => handleAssignTransporter(editingTransporterOrderId)}
-              disabled={!selectedTransporterId || assignTransporterMutation.isPending}
+              type="button"
+              variant="outline" 
+              onClick={() => {
+                clearAllFilters();
+                // Odświeżamy listę zleceń po wyczyszczeniu filtrów
+                ordersQuery.refetch();
+              }}
             >
-              {assignTransporterMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Przypisywanie...
-                </>
-              ) : (
-                <>
-                  <Truck className="mr-2 h-4 w-4" />
-                  Przypisz transportera
-                </>
-              )}
+              Wyczyść wszystkie filtry
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                setIsFilterDialogOpen(false);
+                // Odświeżamy listę zleceń, aby zastosować filtry
+                ordersQuery.refetch();
+              }}
+            >
+              Zastosuj filtry
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1125,277 +1906,643 @@ export default function Orders() {
   };
   
   return (
-    <div className="container mx-auto px-4 py-4">
-      {/* Nagłówek strony */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+    <div className="space-y-6 pb-32 md:pb-0">
+      {/* Wykorzystujemy CalendarDialog */}
+      <CalendarDialog />
+      <BackButton fallbackPath="/" className="mb-4" />
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold">Zamówienia</h1>
-          <p className="text-gray-500 mt-1">Zarządzaj wszystkimi zleceniami</p>
+          <h1 className="text-2xl font-bold">
+            Zlecenia
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">
+            {isTransporter 
+              ? "Zarządzaj dostawami i statusami transportu"
+              : "Zarządzaj zleceniami montażu i transportu"
+            }
+          </p>
         </div>
         
-        {/* Przycisk dodawania nowego zamówienia */}
         {canCreateOrders && (
-          <Button onClick={handleCreateNewOrder} className="mt-4 sm:mt-0">
-            <Plus className="h-4 w-4 mr-1" />
+          <Button onClick={handleCreateNewOrder}>
+            <Plus className="h-4 w-4 mr-2" />
             Nowe zlecenie
           </Button>
         )}
       </div>
       
-      {/* Sekcja filtrowania i wyszukiwania */}
-      <div className="mb-6 grid grid-cols-1 md:grid-cols-12 gap-4">
-        {/* Pole wyszukiwania */}
-        <div className="md:col-span-4 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Szukaj po nazwie, adresie lub numerze telefonu"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        
-        {/* Przyciski filtrowania */}
-        <div className="md:col-span-8 flex flex-wrap gap-2 items-center">
-          {/* Mobile filter button (visible only on small screens) */}
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="md:hidden flex items-center"
-            onClick={() => setIsFilterDrawerOpen(true)}
-          >
-            <Filter className="h-4 w-4 mr-1" />
-            Filtry
-          </Button>
-          
-          {/* Desktop filter button (hidden on small screens) */}
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="hidden md:flex items-center"
-            onClick={() => setIsFilterDialogOpen(true)}
-          >
-            <Filter className="h-4 w-4 mr-1" />
-            Filtruj
-          </Button>
-          
-          {/* Aktywne filtry */}
-          <div className="flex flex-wrap gap-2">
-            {activeFilters.map((filter) => (
-              <div 
-                key={filter.id} 
-                className="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm flex items-center"
-              >
-                <span>{filter.label}</span>
-                <button 
-                  onClick={() => removeFilter(filter.id)}
-                  className="ml-2 text-primary-600 hover:text-primary-800"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-            
-            {activeFilters.length > 0 && (
-              <button 
-                onClick={clearAllFilters}
-                className="text-gray-500 hover:text-gray-700 text-sm"
-              >
-                Wyczyść filtry
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-      
-      {/* Lista zamówień */}
-      <Card>
-        <CardHeader className="p-4 pb-0">
-          <CardTitle>Lista zleceń</CardTitle>
+      <Card className="bg-white shadow-sm border">
+        <CardHeader className="pb-3">
+          <CardTitle>
+            Zlecenia
+          </CardTitle>
           <CardDescription>
-            {ordersQuery.isLoading ? (
-              "Wczytywanie danych..."
-            ) : filteredOrders.length === 0 ? (
-              "Brak zleceń spełniających wybrane kryteria"
-            ) : (
-              `Znaleziono ${filteredOrders.length} zleceń spełniających wybrane kryteria`
-            )}
+            {storeFilter === '1' && 'Sklep: Santocka 39'}
+            {storeFilter === '2' && 'Sklep: Struga 31A'}
+            {storeFilter === 'all' && 'Wszystkie sklepy'}
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-4">
-          {ordersQuery.isLoading ? (
-            <div className="text-center py-8">
-              <Loader2 className="w-8 h-8 mx-auto animate-spin text-primary" />
-              <p className="mt-2 text-gray-500">Wczytywanie zleceń...</p>
+        
+        <CardContent>
+          {/* Search and filters */}
+          <div className="mb-6 flex flex-col lg:flex-row gap-4">
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <Search className="w-4 h-4 text-gray-500" />
+              </div>
+              <Input
+                type="search"
+                className="pl-10"
+                placeholder={isTransporter 
+                  ? "Szukaj klienta, adresu dostawy..." 
+                  : "Szukaj zlecenia, klienta, adresu..."
+                }
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              {searchTerm && (
+                <button 
+                  className="absolute inset-y-0 right-0 flex items-center pr-3"
+                  onClick={() => setSearchTerm('')}
+                >
+                  <X className="w-4 h-4 text-gray-500 hover:text-gray-700" />
+                </button>
+              )}
             </div>
-          ) : (
-            <>
-              {/* Widok mobilny - karty */}
-              <div className="md:hidden space-y-4">
-                {filteredOrders.map((order) => (
-                  <div key={order.id} className="bg-white rounded-lg border p-4 space-y-3">
-                    {/* Pierwsza sekcja: Nazwa klienta i adres */}
-                    <div className="flex flex-col">
-                      <div className="font-semibold text-lg">{order.clientName}</div>
-                      <div className="text-gray-600 text-sm">
-                        <div className="flex items-start mt-1">
-                          <MapPin className="h-4 w-4 mr-1 text-gray-500 mt-0.5 flex-shrink-0" />
-                          <span>{order.installationAddress}</span>
+            
+            {/* Przyciski filtrowania dla urządzeń mobilnych */}
+            <div className="flex md:hidden flex-wrap justify-between w-full mt-3">
+              {/* Przyciski nawigacji dla dat */}
+              <div className="flex items-center">
+                <div className="flex items-center border rounded-md overflow-hidden mr-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => addDateOffsetFilter(-1)}
+                    className="px-2 h-8 rounded-none border-r"
+                  >
+                    <ArrowRight className="h-3.5 w-3.5 rotate-180" />
+                  </Button>
+                  
+                  <Button 
+                    variant={currentDateOffset === 0 ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => addDateOffsetFilter(0)}
+                    className="px-3 h-8 rounded-none border-r text-xs"
+                  >
+                    Dziś
+                  </Button>
+                  
+                  <Button 
+                    variant={currentDateOffset === 1 ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => addDateOffsetFilter(1)}
+                    className="px-3 h-8 rounded-none border-r text-xs"
+                  >
+                    Jutro
+                  </Button>
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => addDateOffsetFilter(1)}
+                    className="px-2 h-8 rounded-none"
+                  >
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Przycisk zaawansowanego filtrowania */}
+              <div className="flex">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="flex items-center"
+                  onClick={openFilterDrawer}
+                >
+                  <SlidersHorizontal className="h-4 w-4 mr-2" />
+                  Filtruj
+                </Button>
+              </div>
+            </div>
+            
+            {/* Przyciski filtrów - desktop */}
+            <div className="hidden md:flex flex-wrap gap-2">
+              
+              {/* Przyciski szybkiego filtrowania dat i usług */}
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center border rounded-md overflow-hidden">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => addDateOffsetFilter(-1)}
+                    className="px-2 h-8 rounded-none border-r"
+                  >
+                    <ArrowRight className="h-3.5 w-3.5 rotate-180" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => addDateOffsetFilter(0)}
+                    className="flex items-center px-2 h-8 rounded-none"
+                  >
+                    <Calendar className="h-3.5 w-3.5 mr-1" />
+                    <span className="hidden sm:inline">
+                      {currentDateOffset === 0 && 'Dzisiaj'}
+                      {currentDateOffset === 1 && 'Jutro'}
+                      {currentDateOffset === -1 && 'Wczoraj'}
+                      {currentDateOffset > 1 && `Za ${currentDateOffset} dni`}
+                      {currentDateOffset < -1 && `${Math.abs(currentDateOffset)} dni temu`}
+                    </span>
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => addDateOffsetFilter(1)}
+                    className="px-2 h-8 rounded-none border-l"
+                  >
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Button>
+                  {/* Przycisk resetowania filtra daty - pokaż tylko gdy filtr jest aktywny */}
+                  {activeFilters.some(f => f.type === 'dateRange') && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        // Usuń filtry typu dateRange
+                        const updatedFilters = activeFilters.filter(filter => filter.type !== 'dateRange');
+                        setActiveFilters(updatedFilters);
+                        localStorage.setItem('orderFilters', JSON.stringify(updatedFilters));
+                      }}
+                      className="px-2 h-8 rounded-none border-l text-red-500 hover:text-red-700"
+                      title="Wyczyść filtr daty"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
+                
+                {!isTransporter && (
+                  <div className="hidden sm:flex items-center space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => addServiceTypeFilter('Montaż podłóg')}
+                      className="flex items-center"
+                    >
+                      <Home className="h-3.5 w-3.5 mr-1" />
+                      <span className="hidden md:inline">Podłogi</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => addServiceTypeFilter('Montaż drzwi')}
+                      className="flex items-center"
+                    >
+                      <DoorOpen className="h-3.5 w-3.5 mr-1" />
+                      <span className="hidden md:inline">Drzwi</span>
+                    </Button>
+                  </div>
+                )}
+              </div>
+              
+              {/* Przycisk zaawansowanego filtrowania - desktop */}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="hidden md:flex items-center"
+                  >
+                    <SlidersHorizontal className="h-4 w-4 mr-2" />
+                    Filtruj
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Zaawansowane filtrowanie zleceń</DialogTitle>
+                    <DialogDescription>
+                      Wybierz filtry według statusu montażu lub transportu
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="space-y-4">
+                      {/* Statusy montażu i transportu obok siebie w dwóch kolumnach */}
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Status montażu - lewa kolumna */}
+                        <div className="space-y-2">
+                          <h3 className="text-sm font-medium">Status montażu:</h3>
+                          <div className="grid grid-cols-1 gap-2">
+                            {INSTALLATION_STATUSES.map(status => (
+                              <div className="flex items-center space-x-2" key={`mont-${status.value}`}>
+                                <Checkbox 
+                                  id={`mont-${status.value}`} 
+                                  onCheckedChange={(checked) => {
+                                    if (checked) addStatusFilter(status.value, `Montaż: ${status.label}`);
+                                  }} 
+                                />
+                                <label htmlFor={`mont-${status.value}`} className="text-sm">{status.label}</label>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                        <div className="flex items-center mt-1">
-                          <Phone className="h-4 w-4 mr-1 text-gray-500" />
-                          <a href={`tel:${order.clientPhone}`} className="text-primary-600">
-                            {order.clientPhone}
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Linia oddzielająca */}
-                    <div className="border-t border-gray-200 mb-3"></div>
-                    
-                    {/* Druga sekcja: Typ usługi i status */}
-                    <div className="flex justify-between items-center">
-                      <div className="space-y-1">
-                        <div className="flex items-center text-sm font-medium">
-                          {order.serviceType?.includes('drzwi') ? (
-                            <DoorOpen className="h-4 w-4 mr-1 text-gray-500" />
-                          ) : (
-                            <Home className="h-4 w-4 mr-1 text-gray-500" />
-                          )}
-                          {order.serviceType}
-                        </div>
-                        <div>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeVariant(order.installationStatus || '')}`}>
-                            {formatInstallationStatus(order.installationStatus) || 'Nowe'}
-                          </span>
+
+                        {/* Status transportu - prawa kolumna */}
+                        <div className="space-y-2">
+                          <h3 className="text-sm font-medium">Status transportu:</h3>
+                          <div className="grid grid-cols-1 gap-2">
+                            {TRANSPORT_STATUSES.map(status => (
+                              <div className="flex items-center space-x-2" key={`trans-${status.value}`}>
+                                <Checkbox 
+                                  id={`trans-${status.value}`} 
+                                  onCheckedChange={(checked) => {
+                                    if (checked) addTransportStatusFilter(status.value, `Transport: ${status.label}`);
+                                  }} 
+                                />
+                                <label htmlFor={`trans-${status.value}`} className="text-sm">{status.label}</label>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                       
-                      {/* Przyciski przypisywania montażysty i transportera (widoczne tylko dla właściciela firmy) */}
-                      {isCompanyOwner && order.companyId === user?.companyId && (
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openInstallerDialog(order.id)}
-                            title="Przypisz montażystę"
-                          >
-                            <Hammer className="h-4 w-4" />
-                          </Button>
-                          
-                          {order.withTransport && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openTransporterDialog(order.id)}
-                              title="Przypisz transportera"
-                            >
-                              <Truck className="h-4 w-4" />
-                            </Button>
+                      {/* Dodatkowe opcje filtrowania z checkboxami */}
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium">Dodatkowe filtry:</h3>
+                        <div className="grid grid-cols-1 gap-2">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox 
+                              id="filter-with-transport" 
+                              onCheckedChange={(checked) => {
+                                if (checked) addTransportFilter(true);
+                              }}
+                            />
+                            <label htmlFor="filter-with-transport" className="text-sm flex items-center">
+                              <Truck className="h-4 w-4 mr-1" />
+                              Z transportem
+                            </label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox 
+                              id="filter-without-transport" 
+                              onCheckedChange={(checked) => {
+                                if (checked) addTransportFilter(false);
+                              }}
+                            />
+                            <label htmlFor="filter-without-transport" className="text-sm">
+                              Bez transportu
+                            </label>
+                          </div>
+                          {isOnePersonCompany && (
+                            <div className="flex items-center space-x-2">
+                              <Checkbox 
+                                id="filter-to-settle" 
+                                onCheckedChange={(checked) => {
+                                  if (checked) addSettlementFilter(true);
+                                }}
+                              />
+                              <label htmlFor="filter-to-settle" className="text-sm">
+                                Do rozliczenia
+                              </label>
+                            </div>
                           )}
                         </div>
-                      )}
+                      </div>
+                    </div>
+                  </div>
+                  <DialogFooter className="space-x-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        clearAllFilters();
+                        ordersQuery.refetch();
+                        setIsFilterDialogOpen(false);
+                      }}
+                    >
+                      Wyczyść filtry
+                    </Button>
+                    <DialogClose asChild>
+                      <Button 
+                        onClick={() => {
+                          ordersQuery.refetch();
+                        }}
+                      >
+                        Zastosuj filtry
+                      </Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              
+              {/* Przycisk zaawansowanego filtrowania - mobile */}
+              <Drawer>
+                <DrawerTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="md:hidden flex items-center"
+                  >
+                    <SlidersHorizontal className="h-4 w-4 mr-2" />
+                    Filtruj
+                  </Button>
+                </DrawerTrigger>
+                <DrawerContent>
+                  <DrawerHeader className="text-left">
+                    <DrawerTitle>Zaawansowane filtrowanie zleceń</DrawerTitle>
+                    <DrawerDescription>
+                      Wybierz filtry według statusu montażu lub transportu
+                    </DrawerDescription>
+                  </DrawerHeader>
+                  <div className="px-4 space-y-4">
+                    {/* Statusy montażu i transportu w mobilnej wersji */}
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Status montażu - lewa kolumna */}
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium">Status montażu:</h3>
+                        <div className="grid grid-cols-1 gap-2">
+                          {INSTALLATION_STATUSES.map(status => (
+                            <div className="flex items-center space-x-2" key={`drawer-mont-${status.value}`}>
+                              <Checkbox 
+                                id={`drawer-mont-${status.value}`} 
+                                onCheckedChange={(checked) => {
+                                  if (checked) addStatusFilter(status.value, `Montaż: ${status.label}`);
+                                }} 
+                              />
+                              <label htmlFor={`drawer-mont-${status.value}`} className="text-sm">{status.label}</label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Status transportu - prawa kolumna */}
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium">Status transportu:</h3>
+                        <div className="grid grid-cols-1 gap-2">
+                          {TRANSPORT_STATUSES.map(status => (
+                            <div className="flex items-center space-x-2" key={`drawer-trans-${status.value}`}>
+                              <Checkbox 
+                                id={`drawer-trans-${status.value}`} 
+                                onCheckedChange={(checked) => {
+                                  if (checked) addTransportStatusFilter(status.value, `Transport: ${status.label}`);
+                                }} 
+                              />
+                              <label htmlFor={`drawer-trans-${status.value}`} className="text-sm">{status.label}</label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Dodatkowe opcje filtrowania z checkboxami */}
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium">Dodatkowe filtry:</h3>
+                      <div className="grid grid-cols-1 gap-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox 
+                            id="drawer-filter-with-transport" 
+                            onCheckedChange={(checked) => {
+                              if (checked) addTransportFilter(true);
+                            }}
+                          />
+                          <label htmlFor="drawer-filter-with-transport" className="text-sm flex items-center">
+                            <Truck className="h-4 w-4 mr-1" />
+                            Z transportem
+                          </label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox 
+                            id="drawer-filter-without-transport" 
+                            onCheckedChange={(checked) => {
+                              if (checked) addTransportFilter(false);
+                            }}
+                          />
+                          <label htmlFor="drawer-filter-without-transport" className="text-sm">
+                            Bez transportu
+                          </label>
+                        </div>
+                        {isOnePersonCompany && (
+                          <div className="flex items-center space-x-2">
+                            <Checkbox 
+                              id="drawer-filter-to-settle" 
+                              onCheckedChange={(checked) => {
+                                if (checked) addSettlementFilter(true);
+                              }}
+                            />
+                            <label htmlFor="drawer-filter-to-settle" className="text-sm">
+                              Do rozliczenia
+                            </label>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <DrawerFooter className="pt-2 space-y-2">
+                    <Button 
+                      onClick={() => {
+                        clearAllFilters();
+                        ordersQuery.refetch();
+                        setIsFilterDrawerOpen(false);
+                      }} 
+                      variant="outline" 
+                      className="w-full"
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Wyczyść filtry
+                    </Button>
+                    <DrawerClose asChild>
+                      <Button 
+                        onClick={() => {
+                          ordersQuery.refetch();
+                        }} 
+                        className="w-full"
+                      >
+                        Zastosuj filtry
+                      </Button>
+                    </DrawerClose>
+                    <DrawerClose asChild>
+                      <Button variant="outline" className="w-full">Anuluj</Button>
+                    </DrawerClose>
+                  </DrawerFooter>
+                </DrawerContent>
+              </Drawer>
+              
+              {/* Zdublowany filtr statusu transportu został usunięty */}
+              
+              {canChangeStore && (
+                <div className="w-44">
+                  <Select
+                    value={storeFilter}
+                    onValueChange={setStoreFilter}
+                  >
+                    <SelectTrigger>
+                      <span className="truncate">
+                        {storeFilter === '1' ? 'Santocka 39' : 
+                         storeFilter === '2' ? 'Struga 31A' : 'Wszystkie sklepy'}
+                      </span>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Wszystkie sklepy</SelectItem>
+                      <SelectItem value="1">Santocka 39</SelectItem>
+                      <SelectItem value="2">Struga 31A</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Wyświetlanie aktywnych filtrów */}
+          {activeFilters.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {activeFilters.map((filter) => (
+                <Badge 
+                  key={filter.id} 
+                  variant="outline"
+                  className="pl-2 pr-1 py-1 flex items-center gap-1 text-sm bg-blue-50"
+                >
+                  <span>
+                    {filter.type === 'dateRange' && filter.value && typeof filter.value === 'object' ? (
+                      <>
+                        {filter.label}: {filter.value.from ? formatDate(filter.value.from) : ''} 
+                        {filter.value.from && filter.value.to ? ' - ' : ''}
+                        {filter.value.to ? formatDate(filter.value.to) : ''}
+                      </>
+                    ) : (
+                      `${filter.label}`
+                    )}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-5 w-5 p-0 rounded-full hover:bg-blue-100"
+                    onClick={() => removeFilter(filter.id)}
+                  >
+                    <X className="h-3 w-3" />
+                    <span className="sr-only">Usuń filtr</span>
+                  </Button>
+                </Badge>
+              ))}
+              {activeFilters.length > 1 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs h-6 hover:bg-blue-100"
+                  onClick={() => clearAllFilters()}
+                >
+                  Wyczyść wszystkie
+                </Button>
+              )}
+            </div>
+          )}
+          
+          {/* Orders table/cards */}
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8 text-red-600">
+              Wystąpił błąd podczas ładowania danych. Spróbuj odświeżyć stronę.
+            </div>
+          ) : filteredOrders && filteredOrders.length > 0 ? (
+            <>
+              {/* Mobilny widok kart - widoczny tylko na małych ekranach */}
+              <div className="md:hidden space-y-4">
+                {filteredOrders.map((order) => (
+                  <div key={order.id} className="border rounded-lg bg-white shadow-sm p-4">
+                    {/* Pierwsza sekcja: Imię/nazwisko i typ zlecenia */}
+                    <div className="flex justify-between items-center mb-3">
+                      <div className="font-medium text-base">{order.clientName}</div>
+                      <div className="text-sm text-gray-700 text-right">{order.serviceType}</div>
+                    </div>
+                    
+                    {/* Druga sekcja: Adres (klikalny) */}
+                    <div className="mb-2">
+                      <a 
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.installationAddress || '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center text-primary-600 text-sm"
+                      >
+                        <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
+                        {order.installationAddress}
+                      </a>
+                    </div>
+                    
+                    {/* Trzecia sekcja: Telefon (klikalny) */}
+                    <div className="mb-3">
+                      <a 
+                        href={`tel:${order.clientPhone}`} 
+                        className="flex items-center text-primary-600 text-sm"
+                      >
+                        <Phone className="h-4 w-4 mr-2 flex-shrink-0" />
+                        {order.clientPhone}
+                      </a>
                     </div>
                     
                     {/* Linia oddzielająca */}
                     <div className="border-t border-gray-200 mb-3"></div>
                     
-                    {/* Trzecia sekcja: Informacje o transporcie (jeśli jest) */}
-                    {order.withTransport && (
-                      <>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                              <Truck className="h-4 w-4 mr-1 text-gray-500" />
-                              <span className="text-sm font-medium">Transport:</span>
-                            </div>
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeVariant(order.transportStatus || '')}`}>
-                              {formatTransportStatus(order.transportStatus) || 'Nowy'}
-                            </span>
-                          </div>
-                          
-                          <div className="flex items-center text-xs text-gray-600">
-                            <button 
-                              className="flex items-center hover:bg-gray-100 p-0.5 rounded"
-                              onClick={() => {
-                                // Otwarcie edytora daty transportu
-                                const currentOrder = order;
-                                openTransportDateEditor(order.id, order.transportDate);
-                                
-                                // Ustaw aktualny status transportu
-                                if (currentOrder.transportStatus) {
-                                  setSelectedTransportStatus(currentOrder.transportStatus);
-                                } else {
-                                  setSelectedTransportStatus('transport zaplanowany');
-                                }
-                              }}
-                            >
-                              <Calendar className="h-3.5 w-3.5 mr-1 text-gray-500" />
-                              {order.transportDate ? (
-                                <span>{new Date(order.transportDate).toLocaleDateString('pl-PL')}</span>
-                              ) : (
-                                <span className="text-gray-400 italic">nieustalona</span>
-                              )}
-                              <Pencil className="h-3 w-3 text-gray-500 ml-1" />
-                            </button>
-                          </div>
-                        </div>
-                        
-                        {/* Linia oddzielająca */}
-                        <div className="border-t border-gray-200 mb-3"></div>
-                      </>
-                    )}
-                    
-                    {/* Czwarta sekcja: Dane montażysty (jeśli jest przypisany) */}
-                    {order.installerName && (
-                      <>
-                        <div className="space-y-2">
-                          <div className="flex items-center">
-                            <Hammer className="h-4 w-4 mr-1 text-gray-500" />
-                            <span className="text-sm font-medium">Montażysta:</span>
-                          </div>
-                          <div className="text-sm text-gray-600">
-                            {order.installerName}
-                          </div>
-                        </div>
-                        
-                        {/* Linia oddzielająca */}
-                        <div className="border-t border-gray-200 mb-3"></div>
-                      </>
-                    )}
-                    
-                    {/* Piąta sekcja: Data montażu */}
-                    <div className="space-y-2">
+                    {/* Czwarta sekcja: Transport (status i data) */}
+                    <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center">
-                        <CalendarClock className="h-4 w-4 mr-1 text-gray-500" />
-                        <span className="text-sm font-medium">Data montażu:</span>
+                        <Truck className="h-4 w-4 mr-2 text-gray-500" />
+                        <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeVariant(order.transportStatus || '')}`}>
+                          {formatTransportStatus(order.transportStatus) || 'Brak'}
+                        </div>
                       </div>
-                      <div className="flex items-center text-xs text-gray-600">
+                      
+                      {order.withTransport ? (
                         <button 
-                          className="flex items-center hover:bg-gray-100 p-0.5 rounded"
-                          onClick={() => {
-                            // Otwarcie edytora daty montażu
-                            const currentOrder = order;
-                            openInstallationDateEditor(order.id, order.installationDate);
-                            
-                            // Ustaw aktualny status montażu
-                            if (currentOrder.installationStatus) {
-                              setSelectedInstallationStatus(currentOrder.installationStatus);
-                            } else {
-                              setSelectedInstallationStatus('montaż zaplanowany');
-                            }
-                          }}
+                          className="flex items-center text-xs text-gray-600 hover:bg-gray-100 p-1 rounded"
+                          onClick={() => openTransportDateEditor(order.id, order.transportDate || undefined)}
                         >
                           <Calendar className="h-3.5 w-3.5 mr-1 text-gray-500" />
-                          {order.installationDate ? (
-                            <span>{new Date(order.installationDate).toLocaleDateString('pl-PL')}</span>
+                          {order.transportDate ? (
+                            <span>{new Date(order.transportDate).toLocaleDateString('pl-PL')}</span>
                           ) : (
                             <span className="text-gray-400 italic">nieustalona</span>
                           )}
                           <Pencil className="h-3 w-3 text-gray-500 ml-1" />
                         </button>
+                      ) : (
+                        <span className="text-xs text-gray-400 italic">brak transportu</span>
+                      )}
+                    </div>
+                    
+                    {/* Piąta sekcja: Montaż (status i data) */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center">
+                        <Hammer className="h-4 w-4 mr-2 text-gray-500" />
+                        <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeVariant(order.installationStatus || '')}`}>
+                          {order.installationStatus || 'Nie określono'}
+                        </div>
                       </div>
+                      
+                      <button 
+                        className="flex items-center text-xs text-gray-600 hover:bg-gray-100 p-1 rounded"
+                        onClick={() => {
+                          // Otwarcie edytora daty montażu
+                          const currentOrder = order;
+                          openInstallationDateEditor(order.id, order.installationDate || undefined);
+                          
+                          // Ustaw aktualny status montażu
+                          if (currentOrder.installationStatus) {
+                            setSelectedInstallationStatus(currentOrder.installationStatus);
+                          } else {
+                            setSelectedInstallationStatus('montaż zaplanowany');
+                          }
+                        }}
+                      >
+                        <Calendar className="h-3.5 w-3.5 mr-1 text-gray-500" />
+                        {order.installationDate ? (
+                          <span>{new Date(order.installationDate).toLocaleDateString('pl-PL')}</span>
+                        ) : (
+                          <span className="text-gray-400 italic">nieustalona</span>
+                        )}
+                        <Pencil className="h-3 w-3 text-gray-500 ml-1" />
+                      </button>
                     </div>
                     
                     {/* Linia oddzielająca */}
@@ -1403,7 +2550,7 @@ export default function Orders() {
                     
                     {/* Szósta sekcja: "Do rozliczenia" i przycisk szczegółów */}
                     <div className="flex items-center justify-between">
-                      {isAnyCompany && (
+                      {isOnePersonCompany && (
                         <div className="flex items-center">
                           <button 
                             onClick={() => handleToggleSettlement(order.id, order.willBeSettled || false)}
@@ -1456,6 +2603,7 @@ export default function Orders() {
                         {isTransporter ? "Telefon (połącz)" : "Telefon"}
                       </th>
                       <th scope="col" className="px-4 py-3">Usługa</th>
+{/* Usunięto kolumnę Data transportu */}
                       {/* Dla transporterów pokazujemy status transportu zamiast statusu zamówienia */}
                       <th scope="col" className="px-4 py-3">
                         {isTransporter ? "Transport" : "Status"}
@@ -1464,13 +2612,16 @@ export default function Orders() {
                       {isTransporter && (
                         <th scope="col" className="px-4 py-3">Montaż</th>
                       )}
-                      {/* Dla wszystkich firm pokazujemy kolumnę "Do rozliczenia" */}
-                      {isAnyCompany && (
-                        <th scope="col" className="px-3 py-3 text-center">Do rozliczenia</th>
+                      {/* Pola finansowe widoczne tylko dla adminów, pracowników i firm */}
+                      {canModifyFinancialStatus && !isTransporter && (
+                        <>
+                          <th scope="col" className="px-3 py-3 text-center">Faktura</th>
+                          <th scope="col" className="px-3 py-3 text-center">Do rozliczenia</th>
+                        </>
                       )}
-                      {/* Kolumny przypisywania montażysty i transportera (widoczne tylko dla właściciela firmy) */}
-                      {isCompanyOwner && (
-                        <th scope="col" className="px-4 py-3">Przypisz</th>
+                      {/* Kolumna "Do rozliczenia" widoczna dla firm jednoosobowych */}
+                      {isOnePersonCompany && !canModifyFinancialStatus && (
+                        <th scope="col" className="px-3 py-3 text-center">Do rozliczenia</th>
                       )}
                       <th scope="col" className="px-4 py-3"><span className="sr-only">Akcje</span></th>
                     </tr>
@@ -1517,67 +2668,53 @@ export default function Orders() {
                                           {addressParts.slice(1).join(',').trim()}
                                         </div>
                                       </>
-                                    ) : (
-                                      <div className="font-medium">{fullAddress}</div>
-                                    )}
+                                    ) : fullAddress}
                                   </div>
                                 </a>
                               );
                             }
                             
-                            // Dla pozostałych użytkowników adres nie jest klikalny
-                            return (
-                              <div className="flex flex-col">
-                                {addressParts.length >= 2 ? (
-                                  <>
-                                    <div className="font-medium">{addressParts[0].trim()}</div>
-                                    <div className="text-sm text-gray-600">
-                                      {addressParts.slice(1).join(',').trim()}
-                                    </div>
-                                  </>
-                                ) : (
-                                  <div className="font-medium">{fullAddress}</div>
-                                )}
-                              </div>
-                            );
+                            // Dla innych użytkowników zwykły tekst
+                            if (addressParts.length >= 2) {
+                              return (
+                                <>
+                                  <div className="font-medium">{addressParts[0].trim()}</div>
+                                  <div className="text-sm text-gray-600">
+                                    {addressParts.slice(1).join(',').trim()}
+                                  </div>
+                                </>
+                              );
+                            }
+                            
+                            // Jeśli jest tylko jedna część lub pusty adres
+                            return order.installationAddress;
                           })()}
                         </td>
                         <td className="px-4 py-3">
-                          {isTransporter ? (
+                          {isTransporter && order.clientPhone ? (
                             <a 
                               href={`tel:${order.clientPhone}`}
                               className="text-primary-600 hover:underline flex items-center"
                             >
-                              <Phone className="h-4 w-4 mr-1 text-primary-600" />
-                              {order.clientPhone}
+                              <Phone className="h-5 w-5 mr-2 text-primary-600 flex-shrink-0" />
+                              <span>{order.clientPhone}</span>
                             </a>
                           ) : (
-                            <span>{order.clientPhone}</span>
+                            order.clientPhone
                           )}
                         </td>
                         <td className="px-4 py-3">
-                          <div className="flex items-center">
-                            {order.serviceType?.includes('drzwi') ? (
-                              <DoorOpen className="h-4 w-4 mr-1.5 text-gray-500" />
-                            ) : (
-                              <Home className="h-4 w-4 mr-1.5 text-gray-500" />
-                            )}
-                            <span>{order.serviceType}</span>
-                          </div>
-                          
-                          {/* Montażysta przypisany do zlecenia */}
-                          {order.installerName && (
-                            <div className="text-xs text-gray-500 mt-1 flex items-center">
-                              <Users className="h-3 w-3 mr-1" />
-                              {order.installerName}
-                            </div>
-                          )}
+                          <div className="font-medium">{order.serviceType}</div>
+                          {order.withTransport && 
+                            <div className="text-xs text-gray-600">+ transport</div>
+                          }
                         </td>
+{/* Usunięto osobną kolumnę daty transportu */}
                         <td className="px-4 py-3">
                           {isTransporter ? (
                             <div className="flex flex-col space-y-1">
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeVariant(order.transportStatus || '')}`}>
-                                {formatTransportStatus(order.transportStatus) || 'Nowy'}
+                                {formatTransportStatus(order.transportStatus) || 'Brak'}
                               </span>
                               <div className="flex items-center text-xs text-gray-600">
                                 {order.withTransport ? (
@@ -1586,7 +2723,7 @@ export default function Orders() {
                                     onClick={() => {
                                       // Otwarcie edytora daty transportu
                                       const currentOrder = order;
-                                      openTransportDateEditor(order.id, order.transportDate);
+                                      openTransportDateEditor(order.id, order.transportDate || undefined);
                                       
                                       // Ustaw aktualny status transportu
                                       if (currentOrder.transportStatus) {
@@ -1614,11 +2751,10 @@ export default function Orders() {
                             </div>
                           ) : (
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeVariant(order.installationStatus || '')}`}>
-                              {formatInstallationStatus(order.installationStatus) || 'Nie określono'}
+                              {order.installationStatus || 'Nie określono'}
                             </span>
                           )}
                         </td>
-                        
                         {/* Kolumna Montaż dla transporterów */}
                         {isTransporter && (
                           <td className="px-4 py-3">
@@ -1632,7 +2768,7 @@ export default function Orders() {
                                   onClick={() => {
                                     // Otwarcie edytora daty montażu
                                     const currentOrder = order;
-                                    openInstallationDateEditor(order.id, order.installationDate);
+                                    openInstallationDateEditor(order.id, order.installationDate || undefined);
                                     
                                     // Ustaw aktualny status montażu
                                     if (currentOrder.installationStatus) {
@@ -1654,9 +2790,54 @@ export default function Orders() {
                             </div>
                           </td>
                         )}
+                        {/* Pola finansowe widoczne tylko dla adminów, pracowników i firm (nie dla transporterów) */}
+                        {canModifyFinancialStatus && !isTransporter && (
+                          <>
+                            <td className="px-3 py-3 text-center">
+                              <button 
+                                onClick={() => handleToggleInvoice(order.id, order.invoiceIssued || false)}
+                                className={`w-6 h-6 flex items-center justify-center rounded-sm transition-colors ${
+                                  updateOrderMutation.isPending ? 'opacity-50 cursor-wait' : 'hover:bg-gray-100'
+                                }`}
+                                disabled={updateOrderMutation.isPending}
+                                title={order.invoiceIssued ? "Faktura wystawiona - kliknij, aby odznaczyć" : "Kliknij, aby oznaczyć fakturę jako wystawioną"}
+                              >
+                                {order.invoiceIssued ? (
+                                  <div className="w-5 h-5 bg-green-600 text-white flex items-center justify-center rounded-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                      <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                  </div>
+                                ) : (
+                                  <div className="w-5 h-5 border border-gray-300 rounded-sm"></div>
+                                )}
+                              </button>
+                            </td>
+                            <td className="px-3 py-3 text-center">
+                              <button 
+                                onClick={() => handleToggleSettlement(order.id, order.willBeSettled || false)}
+                                className={`w-6 h-6 flex items-center justify-center rounded-sm transition-colors ${
+                                  updateOrderMutation.isPending ? 'opacity-50 cursor-wait' : 'hover:bg-gray-100'
+                                }`}
+                                disabled={updateOrderMutation.isPending}
+                                title={order.willBeSettled ? "Zlecenie do rozliczenia - kliknij, aby odznaczyć" : "Kliknij, aby oznaczyć zlecenie do rozliczenia"}
+                              >
+                                {order.willBeSettled ? (
+                                  <div className="w-5 h-5 bg-green-600 text-white flex items-center justify-center rounded-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                      <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                  </div>
+                                ) : (
+                                  <div className="w-5 h-5 border border-gray-300 rounded-sm"></div>
+                                )}
+                              </button>
+                            </td>
+                          </>
+                        )}
                         
-                        {/* Kolumna "Do rozliczenia" - dla wszystkich firm, jednakowy interfejs */}
-                        {isAnyCompany && (
+                        {/* Kolumna Do rozliczenia dla firm jednoosobowych */}
+                        {isOnePersonCompany && !canModifyFinancialStatus && (
                           <td className="px-3 py-3 text-center">
                             <button 
                               onClick={() => handleToggleSettlement(order.id, order.willBeSettled || false)}
@@ -1679,41 +2860,6 @@ export default function Orders() {
                           </td>
                         )}
                         
-
-                        
-                        {/* Kolumna przypisywania montażysty i transportera (widoczna tylko dla właściciela firmy) */}
-                        {isCompanyOwner && (
-                          <td className="px-4 py-3">
-                            <div className="flex space-x-2">
-                              {/* Przycisk przypisywania montażysty */}
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => openInstallerDialog(order.id)}
-                                title="Przypisz montażystę"
-                                className={order.companyId === user?.companyId ? "" : "opacity-50 cursor-not-allowed"}
-                                disabled={order.companyId !== user?.companyId}
-                              >
-                                <Hammer className="h-4 w-4" />
-                              </Button>
-                              
-                              {/* Przycisk przypisywania transportera (tylko jeśli zlecenie ma transport) */}
-                              {order.withTransport && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => openTransporterDialog(order.id)}
-                                  title="Przypisz transportera"
-                                  className={order.companyId === user?.companyId ? "" : "opacity-50 cursor-not-allowed"}
-                                  disabled={order.companyId !== user?.companyId}
-                                >
-                                  <Truck className="h-4 w-4" />
-                                </Button>
-                              )}
-                            </div>
-                          </td>
-                        )}
-                        
                         <td className="px-4 py-3 text-center">
                           <Button
                             variant="ghost"
@@ -1721,8 +2867,8 @@ export default function Orders() {
                             onClick={() => handleViewOrder(order.id)}
                             className="text-primary-600 hover:text-primary-800"
                           >
-                            <Eye className="h-4 w-4 mr-1" />
-                            Szczegóły
+                            <Eye className="h-5 w-5" />
+                            <span className="sr-only">Zobacz szczegóły</span>
                           </Button>
                         </td>
                       </tr>
@@ -1730,261 +2876,59 @@ export default function Orders() {
                   </tbody>
                 </table>
               </div>
+              
+              {/* Przycisk czyszczenia wszystkich filtrów - widoczny tylko gdy są filtry */}
+              {(searchTerm || (statusFilter !== 'all') || activeFilters.length > 0) && (
+                <div className="flex justify-center mt-6">
+                  <Button 
+                    variant="outline"
+                    size="lg"
+                    onClick={clearAllFilters}
+                    className="flex items-center space-x-2 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                  >
+                    <XCircle className="h-4 w-4" />
+                    <span>Wyczyść wszystkie filtry</span>
+                  </Button>
+                </div>
+              )}
             </>
+          ) : (
+            <div className="text-center py-8">
+              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <Search className="h-8 w-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">Brak zleceń do wyświetlenia</h3>
+              <p className="text-gray-500 mb-6">
+                {searchTerm || (statusFilter !== 'all') || activeFilters.length > 0 ? 
+                  'Brak wyników dla podanych kryteriów wyszukiwania.' : 
+                  'Nie znaleziono żadnych zleceń.'}
+              </p>
+              {/* Przyciski - nowe zlecenie i czyszczenie filtrów */}
+              <div className="flex flex-col sm:flex-row justify-center gap-3">
+                {canCreateOrders && (
+                  <Button onClick={handleCreateNewOrder}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Utwórz nowe zlecenie
+                  </Button>
+                )}
+                {(searchTerm || (statusFilter !== 'all') || activeFilters.length > 0) && (
+                  <Button 
+                    variant="outline"
+                    onClick={clearAllFilters}
+                    className="flex items-center space-x-2 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                  >
+                    <XCircle className="h-4 w-4 mr-2" />
+                    <span>Wyczyść filtry</span>
+                  </Button>
+                )}
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
       
-      {/* Dialog kalendarza dla daty transportu */}
-      <Popover open={!!editingTransportDateOrderId} onOpenChange={(open) => !open && setEditingTransportDateOrderId(null)}>
-        <PopoverContent className="w-auto p-0" align="start">
-          <div className="p-4">
-            <div className="space-y-2">
-              <h3 className="font-medium text-base">Ustaw datę transportu</h3>
-              <p className="text-sm text-gray-500">
-                Wybierz datę i status transportu
-              </p>
-            </div>
-            
-            {/* Status transportu */}
-            <div className="mt-4">
-              <label className="text-sm font-medium">Status transportu:</label>
-              <Select
-                value={selectedTransportStatus}
-                onValueChange={setSelectedTransportStatus}
-              >
-                <SelectTrigger className="w-full mt-1">
-                  <SelectValue placeholder="Wybierz status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {TRANSPORT_STATUSES.map((status) => (
-                    <SelectItem key={status.value} value={status.value}>
-                      {status.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {/* Wybór transportera - widoczny tylko dla właściciela firmy z pracownikami */}
-            {isCompanyOwner && (
-              <div className="mt-4">
-                <label className="text-sm font-medium">Transporter:</label>
-                <Select
-                  value={selectedTransporterId?.toString()}
-                  onValueChange={(value) => setSelectedTransporterId(Number(value))}
-                >
-                  <SelectTrigger className="w-full mt-1">
-                    <SelectValue placeholder="Wybierz transportera" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {transporters.length > 0 ? (
-                      transporters
-                        .filter((transporter: any) => 
-                          Array.isArray(transporter.services) && 
-                          transporter.services.some((service: string) => service.toLowerCase().includes('transport'))
-                        )
-                        .map((transporter: any) => (
-                          <SelectItem key={transporter.id} value={transporter.id.toString()}>
-                            {transporter.firstName} {transporter.lastName}
-                            <span className="text-xs text-gray-500"> (Transport)</span>
-                          </SelectItem>
-                        ))
-                    ) : (
-                      <SelectItem value="none" disabled>
-                        Brak transporterów
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            
-            {/* Wybór daty */}
-            <div className="mt-4">
-              <label className="text-sm font-medium">Data transportu:</label>
-              <div className="mt-1">
-                <CalendarUI
-                  mode="single"
-                  selected={transportDate}
-                  onSelect={setTransportDate}
-                  initialFocus
-                />
-              </div>
-            </div>
-            
-            {/* Przyciski */}
-            <div className="flex justify-between mt-4">
-              <Button 
-                variant="outline" 
-                onClick={() => setEditingTransportDateOrderId(null)}
-              >
-                Anuluj
-              </Button>
-              
-              <Button 
-                onClick={() => {
-                  if (editingTransportDateOrderId && transportDate) {
-                    // Jeśli wybrano transportera, przypisz go najpierw
-                    if (isCompanyOwner && selectedTransporterId) {
-                      assignTransporterMutation.mutate({
-                        id: editingTransportDateOrderId,
-                        transporterId: selectedTransporterId
-                      });
-                    }
-                    
-                    // Ustaw datę transportu
-                    handleSetTransportDate(editingTransportDateOrderId);
-                  }
-                }}
-                disabled={!transportDate || updateTransportDateMutation.isPending || assignTransporterMutation.isPending}
-              >
-                {updateTransportDateMutation.isPending || assignTransporterMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Zapisywanie...
-                  </>
-                ) : (
-                  <>
-                    <Check className="mr-2 h-4 w-4" />
-                    Zapisz
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </PopoverContent>
-      </Popover>
-      
-      {/* Dialog kalendarza dla daty montażu */}
-      <Popover open={!!editingInstallationDateOrderId} onOpenChange={(open) => !open && setEditingInstallationDateOrderId(null)}>
-        <PopoverContent className="w-auto p-0" align="start">
-          <div className="p-4">
-            <div className="space-y-2">
-              <h3 className="font-medium text-base">Ustaw datę montażu</h3>
-              <p className="text-sm text-gray-500">
-                Wybierz datę i status montażu
-              </p>
-            </div>
-            
-            {/* Status montażu */}
-            <div className="mt-4">
-              <label className="text-sm font-medium">Status montażu:</label>
-              <Select
-                value={selectedInstallationStatus}
-                onValueChange={setSelectedInstallationStatus}
-              >
-                <SelectTrigger className="w-full mt-1">
-                  <SelectValue placeholder="Wybierz status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {INSTALLATION_STATUSES.map((status) => (
-                    <SelectItem key={status.value} value={status.value}>
-                      {status.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {/* Wybór montażysty - widoczny tylko dla właściciela firmy z pracownikami */}
-            {isCompanyOwner && (
-              <div className="mt-4">
-                <label className="text-sm font-medium">Montażysta:</label>
-                <Select
-                  value={selectedInstallerId?.toString()}
-                  onValueChange={(value) => setSelectedInstallerId(Number(value))}
-                >
-                  <SelectTrigger className="w-full mt-1">
-                    <SelectValue placeholder="Wybierz montażystę" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {installers.length > 0 ? (
-                      installers
-                        .filter((installer: any) => {
-                          // Pobierz typ usługi z zamówienia
-                          const order = ordersQuery.data?.find((o: any) => o.id === editingInstallationDateOrderId);
-                          const serviceType = order?.serviceType || '';
-                          
-                          // Sprawdź czy montażysta ma odpowiednią specjalizację
-                          return Array.isArray(installer.services) && 
-                            installer.services.some(
-                              (service: string) => service.toLowerCase().includes(serviceType.toLowerCase())
-                            );
-                        })
-                        .map((installer: any) => (
-                          <SelectItem key={installer.id} value={installer.id.toString()}>
-                            {installer.firstName} {installer.lastName}
-                            <span className="text-xs text-gray-500"> ({installer.services?.join(', ')})</span>
-                          </SelectItem>
-                        ))
-                    ) : (
-                      <SelectItem value="none" disabled>
-                        Brak montażystów z wymaganą specjalizacją
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            
-            {/* Wybór daty */}
-            <div className="mt-4">
-              <label className="text-sm font-medium">Data montażu:</label>
-              <div className="mt-1">
-                <CalendarUI
-                  mode="single"
-                  selected={installationDate}
-                  onSelect={setInstallationDate}
-                  initialFocus
-                />
-              </div>
-            </div>
-            
-            {/* Przyciski */}
-            <div className="flex justify-between mt-4">
-              <Button 
-                variant="outline" 
-                onClick={() => setEditingInstallationDateOrderId(null)}
-              >
-                Anuluj
-              </Button>
-              
-              <Button 
-                onClick={() => {
-                  if (editingInstallationDateOrderId && installationDate) {
-                    // Jeśli wybrano montażystę, przypisz go najpierw
-                    if (isCompanyOwner && selectedInstallerId) {
-                      assignInstallerMutation.mutate({
-                        id: editingInstallationDateOrderId,
-                        installerId: selectedInstallerId
-                      });
-                    }
-                    
-                    // Ustaw datę montażu
-                    handleSetInstallationDate(editingInstallationDateOrderId);
-                  }
-                }}
-                disabled={!installationDate || updateInstallationDateMutation.isPending || assignInstallerMutation.isPending}
-              >
-                {updateInstallationDateMutation.isPending || assignInstallerMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Zapisywanie...
-                  </>
-                ) : (
-                  <>
-                    <Check className="mr-2 h-4 w-4" />
-                    Zapisz
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </PopoverContent>
-      </Popover>
-      
-      {/* Usuwamy niepotrzebne komponenty dialogów */}
+      {/* Drawer filtrów dla urządzeń mobilnych */}
+      <MobileFilterDrawer />
     </div>
   );
 }
