@@ -1,0 +1,30 @@
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+main.tsx:10 Service Worker registered with scope: https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/
+/login:1 <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes">Understand this warning
+/api/auth/me:1 
+            
+            
+           Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+client:536 WebSocket connection to 'wss://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/?token=LZgWEZiJNO4g' failed: 
+setupWebSocket @ client:536Understand this error
+client:536 Uncaught (in promise) SyntaxError: Failed to construct 'WebSocket': The URL 'wss://localhost:undefined/?token=LZgWEZiJNO4g' is invalid.
+    at setupWebSocket (client:536:19)
+    at fallback (client:509:16)
+    at WebSocket.<anonymous> (client:555:7)Understand this error
+chunk-WERSD76P.js?v=a51f9aa5:521 Warning: validateDOMNesting(...): <a> cannot appear as a descendant of <a>.
+    at a
+    at a
+    at https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=04789880:337:18
+    at div
+    at div
+    at Sidebar (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/src/components/layout/Sidebar.tsx:45:35)
+    at div
+    at AppShell (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/src/components/layout/AppShell.tsx:23:36)
+    at Route (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=04789880:323:16)
+    at Switch (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=04789880:379:17)
+    at Router (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/src/App.tsx?v=ppjOPcjfmOPUwbTgSPT02:35:22)
+    at Provider (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-VIFX6DEG.js?v=a51f9aa5:48:15)
+    at TooltipProvider (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=2e65c729:59:5)
+    at AuthProvider (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/src/lib/auth.tsx:23:32)
+    at QueryClientProvider (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=9923f616:2805:3)
+    at App

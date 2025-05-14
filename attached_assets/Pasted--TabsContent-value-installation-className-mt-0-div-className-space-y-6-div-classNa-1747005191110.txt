@@ -1,0 +1,134 @@
+<TabsContent value="installation" className="mt-0">
+  <div className="space-y-6">
+    <div className="bg-green-50 p-6 rounded-lg border border-green-100">
+      <h3 className="text-lg font-semibold mb-4 text-green-800">Panel Montażu</h3>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Szczegóły montażu */}
+        <div>
+          <h4 className="text-sm font-medium text-gray-600 mb-2">Szczegóły montażu</h4>
+          <dl className="space-y-3">
+            <div>
+              <dt className="text-xs text-gray-500">Adres montażu</dt>
+              <dd className="font-medium">
+                <ClickableAddress address={order.installationAddress || ''} iconSize={16} />
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-gray-500">Telefon klienta</dt>
+              <dd className="font-medium">
+                <a href={`tel:${order.clientPhone}`} className="text-green-700 hover:underline flex items-center">
+                  <Phone className="h-3 w-3 mr-1" />
+                  {order.clientPhone}
+                </a>
+              </dd>
+            </div>
+            {order.installationDate && (
+              <div>
+                <dt className="text-xs text-gray-500">Data montażu</dt>
+                <dd className="font-medium flex items-center">
+                  <Calendar className="h-3 w-3 mr-1 text-gray-400" />
+                  {new Date(order.installationDate).toLocaleDateString('pl-PL')}
+                </dd>
+              </div>
+            )}
+          </dl>
+        </div>
+
+        {/* Status montażu */}
+        <div className="flex flex-col">
+          <h4 className="text-sm font-medium text-gray-600 mb-2">Status montażu</h4>
+          <div className="p-4 bg-white rounded-md border border-gray-200 flex-grow">
+            <div className="mb-4">
+              <p className="text-sm text-gray-500 mb-2">Aktualny status:</p>
+              <Badge className="text-base py-1.5 px-3" variant={getInstallationStatusBadgeVariant(order.installationStatus || '')}>
+                {getStatusLabel(order.installationStatus || 'Nie określono')}
+              </Badge>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 mb-2">Zmień status:</p>
+              <Select
+                value={order.installationStatus || ''}
+                onValueChange={(value) => {
+                  apiRequest('PATCH', `/api/orders/${id}/installation-status`, {
+                    installationStatus: value
+                  })
+                    .then(() => {
+                      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+                      queryClient.invalidateQueries({ queryKey: [`/api/orders/${id}`] });
+                      toast({ title: "Sukces", description: "Status montażu został zaktualizowany" });
+                    })
+                    .catch(error => {
+                      toast({
+                        title: "Błąd",
+                        description: `Nie udało się zaktualizować statusu montażu: ${error.message || 'Nieznany błąd'}`,
+                        variant: "destructive"
+                      });
+                    });
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Wybierz status montażu" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="planowane">Planowane</SelectItem>
+                  <SelectItem value="w realizacji">W realizacji</SelectItem>
+                  <SelectItem value="montaż wykonany">Montaż wykonany</SelectItem>
+                  <SelectItem value="reklamacja">Reklamacja</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Komentarz do montażu */}
+      <div className="mt-6">
+        <h4 className="text-sm font-medium text-gray-600 mb-2">Dodaj notatkę do montażu</h4>
+        <div className="flex gap-2">
+          <Textarea
+            placeholder="Np. klient był obecny, zamontowano zgodnie z planem..."
+            className="flex-grow"
+            value={installationComments}
+            onChange={(e) => setInstallationComments(e.target.value)}
+          />
+          <Button
+            className="self-start"
+            onClick={() => {
+              apiRequest('PATCH', `/api/orders/${id}/installation-status`, {
+                installationStatus: order.installationStatus,
+                comments: installationComments
+              })
+                .then(() => {
+                  queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+                  queryClient.invalidateQueries({ queryKey: [`/api/orders/${id}`] });
+                  setInstallationComments('');
+                  toast({ title: "Sukces", description: "Komentarz został dodany" });
+                })
+                .catch(error => {
+                  toast({
+                    title: "Błąd",
+                    description: `Nie udało się dodać komentarza: ${error.message || 'Nieznany błąd'}`,
+                    variant: "destructive"
+                  });
+                });
+            }}
+            disabled={updateStatusMutation.isPending || !installationComments}
+          >
+            {updateStatusMutation.isPending ? (
+              <div className="flex items-center">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Zapisywanie...
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <MessageCircle className="h-4 w-4 mr-2" />
+                Dodaj
+              </div>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  </div>
+</TabsContent>

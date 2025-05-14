@@ -1,0 +1,84 @@
+🔎 Twoje komunikaty (tłumaczenie i co znaczą)
+Komunikat	Znaczenie	Czy groźne?
+Service Worker registered	Super! PWA działa, zarejestrował się Service Worker.	✅ OK
+apple-mobile-web-app-capable deprecated	Stare meta-tag już niezalecane. Trzeba zmienić na mobile-web-app-capable.	🟡 Nie groźne, poprawisz w kodzie HTML
+GET /api/auth/me 401 (Unauthorized)	Użytkownik nie jest jeszcze zalogowany → normalne na starcie sesji.	✅ OK
+WebSocket connection failed	Próba połączenia z WebSocket nie powiodła się, złe URL.	🔴 Problem do rozwiązania
+Uncaught SyntaxError WebSocket: invalid URL	Aplikacja próbuje połączyć się do WebSocket wss://localhost:undefined – złe ustawienia adresu serwera.	🔴 Problem
+validateDOMNesting(...): <a> cannot appear as a descendant of <a>.	W kodzie HTML/React masz link <a> w środku innego <a>. Przeglądarki to tolerują, ale to zły kod.	🟡 Ostrzeżenie do poprawy
+
+🚨 Najważniejsze problemy do rozwiązania
+1️⃣ WebSocket próbuje połączyć się do złego adresu
+plaintext
+Kopiuj
+Edytuj
+WebSocket connection failed: wss://localhost:undefined
+Dlaczego?
+Masz w kodzie (prawdopodobnie w main.tsx albo w pliku do WebSocketów) niepoprawnie ustawiony adres WebSocket.
+
+ts
+Kopiuj
+Edytuj
+const ws = new WebSocket(`wss://${hostname}:${port}/?token=${token}`);
+A port jest undefined (brak numeru).
+
+Jak naprawić?
+Ustaw port ręcznie lub zmień kod, by nie dołączał :${port}, jeśli port jest niezdefiniowany:
+
+ts
+Kopiuj
+Edytuj
+const portPart = port ? `:${port}` : '';
+const ws = new WebSocket(`wss://${hostname}${portPart}/?token=${token}`);
+Albo: skoro jesteś na Replit, WebSocket powinien używać własnego URL Replit zamiast localhost.
+
+2️⃣ <a> wewnątrz <a>
+plaintext
+Kopiuj
+Edytuj
+<a> cannot appear as a descendant of <a>
+Co to znaczy?
+Masz coś takiego w JSX:
+
+tsx
+Kopiuj
+Edytuj
+<a href="/coś">
+  <a href="/inne">Link w linku</a>
+</a>
+Jak poprawić?
+Usuń jeden <a>. Linki nie mogą być zagnieżdżone.
+
+Najczęściej to błąd przy używaniu np. Link z wouter albo react-router i jeszcze dodatkowego <a>.
+
+3️⃣ Meta tag przestarzały
+html
+Kopiuj
+Edytuj
+<meta name="apple-mobile-web-app-capable" content="yes">
+Co zrobić?
+Zamień na:
+
+html
+Kopiuj
+Edytuj
+<meta name="mobile-web-app-capable" content="yes">
+Nie wpływa na działanie, ale warto zaktualizować.
+
+✅ Co działa prawidłowo?
+PWA i Service Worker działają.
+
+API /api/auth/me odpowiada prawidłowo po zalogowaniu.
+
+React DevTools możesz doinstalować (ale nie musisz — to tylko sugestia przeglądarki dla developerów).
+
+Podsumowanie
+Najpoważniejszy problem:
+➡ WebSockety mają błędny URL → to psuje komunikację na żywo (real-time, np. powiadomienia lub live updates).
+
+Drobne do poprawy:
+
+<a> w <a>.
+
+Meta-tag.
+

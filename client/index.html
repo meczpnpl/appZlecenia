@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <meta name="description" content="System zarządzania zleceniami dla Bel-Pol" />
+    <meta name="theme-color" content="#2563eb" />
+    <title>Bel-Pol System Zarządzania Zleceniami v1.7</title>
+    <!-- Wymuszenie odświeżenia zasobów - przeciwko cachowaniu -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link rel="manifest" href="/manifest.json?v=1.7" crossorigin="use-credentials" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'%3E%3C/path%3E%3C/svg%3E" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- PWA support -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bel-Pol">
+    <link rel="apple-touch-icon" href="/icon-192x192.png?v=1.6">
+    <link rel="shortcut icon" href="/icon-192x192.png?v=1.6">
+    
+    <!-- Style, aby upewnić się, że podpowiedzi Google są klikalne -->
+    <style>
+      /* Style aby Google Maps Autocomplete było klikalne */
+      .pac-container {
+        z-index: 99999 !important;
+        background-color: white !important;
+        border: 1px solid #ccc !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2) !important;
+        position: absolute !important;
+        overflow: visible !important;
+        pointer-events: auto !important;
+        display: block !important;
+        opacity: 1 !important;
+        width: auto !important;
+        min-width: 300px !important;
+        transform: translateY(5px) !important;
+      }
+      
+      .pac-item {
+        cursor: pointer !important;
+        padding: 12px !important;
+        margin: 5px 0 !important;
+        border-top: 1px solid #e6e6e6 !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+        color: #333 !important;
+        display: block !important;
+        pointer-events: auto !important;
+      }
+      
+      .pac-item:hover,
+      .pac-item-selected,
+      .pac-item:focus {
+        background-color: #4285f4 !important;
+        color: white !important;
+        outline: none !important;
+      }
+      
+      /* Style dla kontenera podpowiedzi */
+      .pac-container {
+        border-radius: 6px !important;
+      }
+    </style>
+    
+    <!-- Narzędzia diagnostyczne -->
+    <script>
+      // Funkcja wymuszająca odświeżenie cache
+      (function() {
+        // Wymuszamy odświeżenie cache gdy mamy wersję w parametrze URL
+        if (window.location.href.indexOf('v=') === -1) {
+          // Dodaj wersję jako parametr do URL
+          const newUrl = window.location.href + (window.location.href.indexOf('?') === -1 ? '?' : '&') + 'v=' + Date.now();
+          
+          // Przekieruj do nowego URL
+          window.location.href = newUrl;
+          return;
+        }
+        
+        // Zapisz wersję w localStorage aby sprawdzić, czy jest aktualna
+        const currentVersion = '1.6';
+        const savedVersion = localStorage.getItem('bel_pol_version');
+        
+        if (savedVersion !== currentVersion) {
+          console.log('Wykryto nową wersję aplikacji. Wymuszam odświeżenie cache.');
+          
+          // Usuń wszystkie elementy z cache
+          if ('caches' in window) {
+            caches.keys().then(function(names) {
+              for (let name of names) {
+                caches.delete(name);
+              }
+            });
+          }
+          
+          // Wyrejestruj service worker, aby zastosować nowy
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+              for (let registration of registrations) {
+                registration.unregister();
+                console.log('Wyrejestrowano service worker');
+              }
+            });
+          }
+          
+          // Zapisz nową wersję
+          localStorage.setItem('bel_pol_version', currentVersion);
+          
+          // Hard reload
+          window.location.reload(true);
+        }
+      })();
+
+      // Funkcja do debugowania zdarzeń
+      window.debugGoogleMapsEvents = function() {
+        console.log("Podpinanie diagnostyki do zdarzeń Google Maps");
+        
+        // Monitoruj zmiany DOM, aby wykryć dodanie kontenera z podpowiedziami
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.addedNodes.length) {
+              for (let i = 0; i < mutation.addedNodes.length; i++) {
+                const node = mutation.addedNodes[i];
+                if (node.nodeType === 1) { // Element node
+                  // Sprawdź, czy to element HTML
+                  if (node instanceof HTMLElement) {
+                    // Sprawdź, czy to kontener podpowiedzi Google
+                    if (node.classList && node.classList.contains('pac-container')) {
+                      console.log('DIAGNOSTYKA: Wykryto kontener pac-container!', node);
+                      
+                      // Dodaj delikatne podświetlenie dla lepszej widoczności
+                      node.style.border = '1px solid #ccc';
+                      node.style.zIndex = '99999';
+                      
+                      // Sprawdź styl pozycjonowania
+                      const computedStyle = window.getComputedStyle(node);
+                      console.log('DIAGNOSTYKA: Style kontenera:', {
+                        position: computedStyle.position,
+                        zIndex: computedStyle.zIndex,
+                        display: computedStyle.display,
+                        visibility: computedStyle.visibility,
+                        pointerEvents: computedStyle.pointerEvents
+                      });
+                      
+                      // Dodaj handlers zdarzeń do wszystkich elementów wewnątrz
+                      const pacItems = node.querySelectorAll('.pac-item');
+                      for (let j = 0; j < pacItems.length; j++) {
+                        const item = pacItems[j];
+                        console.log(`DIAGNOSTYKA: Znaleziono element .pac-item ${j}`, item);
+                        
+                        // Dodaj klikalne style
+                        if (item instanceof HTMLElement) {
+                          item.style.cursor = 'pointer';
+                          item.style.padding = '10px';
+                          
+                          // Dodaj manual click handler
+                          item.addEventListener('click', function(e) {
+                            console.log('DIAGNOSTYKA: Kliknięto na element .pac-item', this);
+                          });
+                          
+                          item.addEventListener('mouseenter', function() {
+                            console.log('DIAGNOSTYKA: Najechano na element .pac-item', this);
+                          });
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            
+            // Dodatkowa diagnostyka - sprawdź wszystkie kontenery pac-container w dokumencie
+            const allPacContainers = document.querySelectorAll('.pac-container');
+            if (allPacContainers.length > 0) {
+              console.log('DIAGNOSTYKA: Wszystkie kontenery .pac-container w dokumencie:', allPacContainers);
+            }
+          });
+        });
+        
+        // Obserwuj zmiany w całym dokumencie
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+        
+        // Dodaj diagnostykę do globalnego inicjalizatora
+        const originalInit = window.initGoogleAddressAutocomplete;
+        window.initGoogleAddressAutocomplete = function(inputId, options) {
+          console.log('DIAGNOSTYKA: Wywołano initGoogleAddressAutocomplete dla', inputId);
+          const result = originalInit(inputId, options);
+          
+          if (result) {
+            console.log('DIAGNOSTYKA: Pomyślnie utworzono Autocomplete', result);
+            
+            // Podepnij dodatkowe nasłuchiwanie
+            google.maps.event.addDomListener(document.getElementById(inputId), 'keydown', function(e) {
+              console.log('DIAGNOSTYKA: Keydown na input', e.keyCode);
+              
+              // Sprawdź czy klawisz Enter lub strzałki są wciskane (mogą być związane z wyborem sugestii)
+              if (e.keyCode === 13 || (e.keyCode >= 37 && e.keyCode <= 40)) {
+                console.log('DIAGNOSTYKA: Wciśnięto klawisz nawigacji lub Enter');
+              }
+            });
+          }
+          
+          return result;
+        };
+        
+        console.log("Diagnostyka Google Maps zainicjalizowana");
+      };
+      
+      // Uruchom diagnostykę po załadowaniu strony
+      window.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+          if (window.google && window.google.maps) {
+            window.debugGoogleMapsEvents();
+          } else {
+            console.log('DIAGNOSTYKA: Google Maps jeszcze nie załadowane');
+          }
+        }, 2000);
+      });
+    </script>
+    
+    <!-- Dodajemy Google Maps API bezpośrednio w głównym pliku HTML -->
+    <script>
+      // Dodajemy ręczne załatwienie problemu z klikaniem w podpowiedzi Google Maps
+      document.addEventListener('click', function(event) {
+        const target = event.target;
+        
+        // Obsługa kliknięć w podpowiedzi Google Maps
+        if (target instanceof HTMLElement && 
+           (target.classList.contains('pac-item') || 
+            target.closest('.pac-item') || 
+            target.closest('.pac-container'))) {
+            
+          console.log('ROZWIĄZANIE: Złapano kliknięcie na element podpowiedzi!', target);
+          
+          // Zapobiegamy zamknięciu dialogów (w tym okna dodawania sklepu)
+          event.stopPropagation();
+          
+          // Spróbuj wyciągnąć tekst adresu z podpowiedzi
+          let addressText = '';
+          if (target.textContent) {
+            addressText = target.textContent.trim();
+          }
+          
+          // Znajdź najbliższy input z adresem (prawdopodobnie ten, który ma focus)
+          const inputs = document.querySelectorAll('input[id^="address-input-"]');
+          let activeInput = null;
+          
+          for (let i = 0; i < inputs.length; i++) {
+            if (document.activeElement === inputs[i]) {
+              activeInput = inputs[i];
+              break;
+            }
+          }
+          
+          if (activeInput && addressText) {
+            console.log('ROZWIĄZANIE: Znaleziono aktywny input:', activeInput.id);
+            console.log('ROZWIĄZANIE: Ustawianie wartości adresu:', addressText);
+            
+            // Ustaw wartość w polu
+            activeInput.value = addressText;
+            
+            // Wywołaj zdarzenie zmiany wartości
+            const inputEvent = new Event('input', { bubbles: true });
+            activeInput.dispatchEvent(inputEvent);
+            
+            // Wywołaj zdarzenie niestandardowe
+            const customEvent = new CustomEvent('autocomplete_place_selected', { 
+              detail: { 
+                place: { formatted_address: addressText }, 
+                inputId: activeInput.id 
+              }
+            });
+            document.dispatchEvent(customEvent);
+            
+            // Usuń całkowicie wszystkie kontenery podpowiedzi
+            const allPacContainers = document.querySelectorAll('.pac-container');
+            allPacContainers.forEach(container => {
+              if (container && container.parentNode) {
+                container.parentNode.removeChild(container);
+              }
+            });
+          }
+        }
+      }, true); // Używamy przechwytywania zdarzeń, aby złapać je przed innymi handlerami
+      
+      function initializeGoogleMapsAddressAutocomplete() {
+        // Ta funkcja będzie dostępna globalnie
+        window.initGoogleAddressAutocomplete = function(inputId, options = {}) {
+          console.log("Inicjalizacja Google Autocomplete dla:", inputId);
+          const input = document.getElementById(inputId);
+          if (!input) {
+            console.error("Nie znaleziono elementu input o ID:", inputId);
+            return null;
+          }
+          
+          // Domyślne opcje
+          const defaultOptions = { 
+            componentRestrictions: { country: 'pl' },
+            types: ['address'],
+            fields: ['formatted_address', 'geometry', 'name', 'address_components']
+          };
+          
+          // Łączymy z opcjami użytkownika
+          const autocompleteOptions = { ...defaultOptions, ...options };
+          
+          try {
+            // Tworzymy autocomplete
+            const autocomplete = new google.maps.places.Autocomplete(input, autocompleteOptions);
+            console.log("Autocomplete zostało utworzone pomyślnie");
+            
+            // Dodajemy event listener bezpośrednio w głównym skrypcie (używamy addEventListener zamiast event.addListener)
+            autocomplete.addListener('place_changed', function() {
+              console.log("Wykryto zmianę miejsca w autocomplete");
+              const place = autocomplete.getPlace();
+              if (place && place.formatted_address) {
+                console.log("Wybrano adres:", place.formatted_address);
+                
+                // Wyzwalamy niestandardowe zdarzenie, które zostanie obsłużone w komponencie
+                const event = new CustomEvent('autocomplete_place_selected', { 
+                  detail: { place: place, inputId: inputId }
+                });
+                document.dispatchEvent(event);
+                
+                // Usuń całkowicie wszystkie kontenery podpowiedzi
+                const allPacContainers = document.querySelectorAll('.pac-container');
+                allPacContainers.forEach(container => {
+                  if (container && container.parentNode) {
+                    container.parentNode.removeChild(container);
+                  }
+                });
+              }
+            });
+            
+            return autocomplete;
+          } catch (err) {
+            console.error("Błąd podczas tworzenia autocomplete:", err);
+            return null;
+          }
+        }
+      }
+    </script>
+    <script 
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBmVOvP_KNpynR7Y1NZsUQ9vh6zrVD6Zos&libraries=places&callback=initializeGoogleMapsAddressAutocomplete&loading=async" 
+      defer
+    ></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
+    <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
+    
+    <!-- Skrypt obsługujący bezpośrednie URL i różne domeny -->
+    <script>
+      // Funkcja do naprawy WebSocket HMR dla Vite przy różnych domenach (V2.0)
+      function fixWebSocketConnection() {
+        console.log("Instaluję poprawkę WebSocket v2.0");
+        // Zastąpmy standardowe WebSocket aby naprawić połączenia
+        const OriginalWebSocket = window.WebSocket;
+        
+        window.WebSocket = function(url, protocols) {
+          // Zabezpieczenie przed pustym lub nieprawidłowym URL
+          if (!url || typeof url !== 'string') {
+            console.warn("Nieprawidłowy URL WebSocket:", url);
+            // Zwracamy mock WebSocket zamiast wyrzucania błędu
+            return getMockWebSocket();
+          }
+          
+          // Naprawiamy wszystkie URL do WebSocket
+          console.log("Przechwycono próbę połączenia WebSocket:", url);
+          
+          try {
+            // Przypadek 1: Próba połączenia z localhost:undefined - błędny port
+            if (url.includes('localhost:undefined')) {
+              console.log("🔴 Naprawianie błędnego URL z localhost:undefined");
+              // Używamy aktualnego hosta i protokołu
+              const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+              const token = url.includes('token=') ? url.split('token=')[1].split('&')[0] : '';
+              const tokenPart = token ? `?token=${token}` : '';
+              const newUrl = `${protocol}//${window.location.host}/${tokenPart}`;
+              console.log("✅ Poprawiony URL:", newUrl);
+              return new OriginalWebSocket(newUrl, protocols);
+            }
+            
+            // Przypadek 2: Gdy pełny URL jest nieprawidłowy (np. brakuje protokołu)
+            if (!/^(wss?|https?):\/\//.test(url)) {
+              console.log("🔴 Nieprawidłowy format URL (brak protokołu)");
+              const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+              
+              // Zachowujemy ścieżkę, która może zawierać informacje o HMR
+              let path = '/';
+              // Jeśli URL zaczyna się od / to jest to ścieżka
+              if (url.startsWith('/')) {
+                path = url;
+              }
+              
+              const newUrl = `${protocol}//${window.location.host}${path}`;
+              console.log("✅ Dodano protokół:", newUrl);
+              return new OriginalWebSocket(newUrl, protocols);
+            }
+            
+            // Przypadek 3: Gdy WebSocket musi działać z innej domeny niż skrypt
+            const currentDomain = window.location.hostname;
+            if (!url.includes(currentDomain)) {
+              console.log("🔴 Wykryto próbę połączenia z inną domeną:", url);
+              const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+              
+              // Wyciągamy ścieżkę z oryginalnego URL jeśli jest
+              let path = '/';
+              try {
+                const urlObj = new URL(url);
+                path = urlObj.pathname || '/';
+                console.log("Wyciągnięta ścieżka z URL:", path);
+              } catch (e) {
+                console.log("Nie można sparsować URL, używam /");
+              }
+              
+              // Wyciągamy token jeśli istnieje
+              const token = url.includes('token=') ? url.split('token=')[1].split('&')[0] : '';
+              // Tworzymy parametr tokena z ? lub & w zależności czy ścieżka już ma parametry
+              const hasParams = path.includes('?');
+              const tokenPart = token ? `${hasParams ? '&' : '?'}token=${token}` : '';
+              
+              const newUrl = `${protocol}//${window.location.host}${path}${tokenPart}`;
+              console.log("✅ Używam lokalnego WebSocket URL:", newUrl);
+              return new OriginalWebSocket(newUrl, protocols);
+            }
+            
+            // Przypadek 4: URL zawiera nieprawidłowy port (dla Replit zawsze używamy domyślnego portu)
+            if (url.includes(currentDomain) && /:[0-9]+\//.test(url)) {
+              console.log("🔴 URL zawiera port, który może być nieprawidłowy na Replit");
+              const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+              const token = url.includes('token=') ? url.split('token=')[1].split('&')[0] : '';
+              const tokenPart = token ? `?token=${token}` : '';
+              const newUrl = `${protocol}//${window.location.host}/${tokenPart}`;
+              console.log("✅ Używam URL bez portu:", newUrl);
+              return new OriginalWebSocket(newUrl, protocols);
+            }
+            
+            // Jeśli żaden z powyższych przypadków nie pasuje, używamy oryginalnego URL
+            return new OriginalWebSocket(url, protocols);
+            
+          } catch (err) {
+            console.error("Błąd podczas naprawiania WebSocket:", err);
+            
+            // Spróbujmy użyć bezpiecznego URL jako fallback
+            try {
+              const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+              const fallbackUrl = `${protocol}//${window.location.host}/`;
+              console.log("⚠️ Używam fallback URL:", fallbackUrl);
+              return new OriginalWebSocket(fallbackUrl, protocols);
+            } catch (e) {
+              console.error("Nie udało się utworzyć WebSocket fallback:", e);
+              return getMockWebSocket();
+            }
+          }
+        };
+        
+        // Helper function to create a mock WebSocket
+        function getMockWebSocket() {
+          const mockSocket = {
+            readyState: 3, // CLOSED
+            send: function() { console.warn("Próba wysłania przez zamknięty WebSocket"); },
+            close: function() { console.warn("Próba zamknięcia zamkniętego WebSocket"); },
+            addEventListener: function(event, callback) { 
+              console.warn(`Próba dodania nasłuchiwania '${event}' do zamkniętego WebSocket`);
+            },
+            removeEventListener: function(event, callback) {
+              console.warn(`Próba usunięcia nasłuchiwania '${event}' z zamkniętego WebSocket`);
+            }
+          };
+          
+          // Dodajemy odpowiednie event handlery jako właściwości
+          mockSocket.onopen = null;
+          mockSocket.onclose = null;
+          mockSocket.onerror = null;
+          mockSocket.onmessage = null;
+          
+          return mockSocket;
+        }
+        
+        // Zachowujemy właściwości i stałe z oryginalnej klasy WebSocket
+        window.WebSocket.prototype = OriginalWebSocket.prototype;
+        window.WebSocket.CONNECTING = OriginalWebSocket.CONNECTING;
+        window.WebSocket.OPEN = OriginalWebSocket.OPEN;
+        window.WebSocket.CLOSING = OriginalWebSocket.CLOSING;
+        window.WebSocket.CLOSED = OriginalWebSocket.CLOSED;
+        
+        console.log("Naprawa WebSocket zainstalowana");
+      }
+      
+      // Wykonaj naprawę WebSocketów od razu
+      fixWebSocketConnection();
+    
+      // Funkcja do wykrywania i naprawiania problemów z routingiem
+      function initUrlFixer() {
+        console.log("BEL-POL URL Fixer - uruchomiony");
+        
+        // Diagnostyczne informacje o środowisku
+        console.log("URL Info:", {
+          current: window.location.href,
+          host: window.location.host, 
+          origin: window.location.origin,
+          pathname: window.location.pathname
+        });
+  
+        // Weryfikacja czy aplikacja jest załadowana poprawnie
+        window.addEventListener('load', function() {
+          console.log("BEL-POL URL Fixer - strona załadowana, weryfikuję zawartość");
+          
+          // Funkcja pomocnicza do przechodzenia między adresami
+          window.handleManualNavigation = function(targetPath) {
+            console.log("BEL-POL Navigation Helper - przekierowuję do:", targetPath);
+            
+            // Najpierw zapisujemy ścieżkę do lokalnego storage
+            localStorage.setItem('bel_pol_last_path', targetPath);
+            
+            // Teraz przechodzimy do nowego URL
+            window.location.href = window.location.origin + targetPath;
+            
+            // Zapobiegamy dalszemu wykonaniu funkcji
+            return false;
+          };
+          
+          // Sprawdzenie zawartości strony (po załadowaniu)
+          setTimeout(function() {
+            const appRoot = document.getElementById('root');
+            const hasContent = appRoot && (appRoot.children.length > 0);
+            
+            console.log("BEL-POL URL Fixer - sprawdzam zawartość: " + 
+                        (hasContent ? "OK" : "PUSTA STRONA"));
+            
+            if (!hasContent) {
+              console.log('Wykryto problem z ładowaniem strony - próbuję naprawić...');
+              
+              // Spróbuj najpierw określić, jaka powinna być właściwa ścieżka
+              let targetPath = '/';
+              
+              // 1. Sprawdź, czy mamy zapisaną ścieżkę w localStorage
+              const savedPath = localStorage.getItem('bel_pol_last_path');
+              if (savedPath) {
+                console.log('Znaleziono zapisaną ścieżkę:', savedPath);
+                targetPath = savedPath;
+              } 
+              // 2. Jeśli nie, użyj bieżącej ścieżki
+              else if (window.location.pathname !== '/') {
+                targetPath = window.location.pathname;
+              }
+              
+              // Jeśli jesteśmy na stronie głównej i wciąż nie ma zawartości, spróbujmy przeładować
+              if (window.location.pathname === '/' && !hasContent) {
+                console.log('Jesteśmy już na stronie głównej, przeładowuję stronę');
+                window.location.reload();
+                return;
+              }
+              
+              // Teraz przekieruj do strony głównej z parametrem redirect
+              console.log('Przekierowuję do strony głównej z parametrem redirect:', targetPath);
+              window.location.href = window.location.origin + 
+                                    '/?redirect=' + 
+                                    encodeURIComponent(targetPath + window.location.search);
+            }
+          }, 3000); // Dajemy 3 sekundy na załadowanie aplikacji
+        });
+        
+        // Po załadowaniu DOM, sprawdź czy mamy parametr redirect
+        document.addEventListener('DOMContentLoaded', function() {
+          console.log("BEL-POL URL Fixer - DOM załadowany, sprawdzam parametry URL");
+          
+          const urlParams = new URLSearchParams(window.location.search);
+          const redirectPath = urlParams.get('redirect');
+          
+          if (redirectPath) {
+            console.log('Wykryto parametr przekierowania, będę nawigować do:', redirectPath);
+            
+            // Czekamy chwilę na załadowanie aplikacji
+            setTimeout(function() {
+              try {
+                // Zapisz do lokalnego storage ścieżkę, do której nawigujemy
+                localStorage.setItem('bel_pol_last_path', redirectPath);
+                
+                // Zmieniamy URL bez przeładowania strony
+                window.history.replaceState(null, '', redirectPath);
+                
+                console.log('Przekierowanie wewnętrzne wykonane');
+                
+                // Wyzwól zdarzenie LocationChanged dla wouter
+                window.dispatchEvent(new Event('pushstate'));
+                window.dispatchEvent(new Event('popstate'));
+              } catch (e) {
+                console.error('Błąd podczas przekierowania:', e);
+              }
+            }, 300);
+          }
+        });
+      }
+      
+      // Uruchom system naprawy URL
+      initUrlFixer();
+      
+      // Podpięcie nasłuchiwania zdarzeń dla elementów menu i przycisków nawigacyjnych
+      document.addEventListener('DOMContentLoaded', function() {
+        // Nasłuchujemy kliknięć na elementach <a>
+        document.body.addEventListener('click', function(e) {
+          let targetEl = e.target;
+          
+          // Sprawdzamy, czy kliknięty element lub jego rodzic jest linkiem <a>
+          while (targetEl && targetEl !== document.body) {
+            if (targetEl.tagName === 'A' && targetEl.hasAttribute('href')) {
+              const href = targetEl.getAttribute('href');
+              
+              // Jeśli to link wewnętrzny (zaczyna się od /)
+              if (href && href.startsWith('/')) {
+                e.preventDefault();
+                
+                // Używamy naszej funkcji do nawigacji
+                window.handleManualNavigation(href);
+                return;
+              }
+            }
+            targetEl = targetEl.parentElement;
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

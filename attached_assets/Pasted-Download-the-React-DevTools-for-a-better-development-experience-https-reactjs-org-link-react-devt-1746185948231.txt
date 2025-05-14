@@ -1,0 +1,205 @@
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+chunk-WERSD76P.js?v=a51f9aa5:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+auth.tsx:22 Warning: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+printWarning @ chunk-3TFVT2CW.js?v=a51f9aa5:136
+error @ chunk-3TFVT2CW.js?v=a51f9aa5:120
+resolveDispatcher @ chunk-3TFVT2CW.js?v=a51f9aa5:1045
+useState @ chunk-3TFVT2CW.js?v=a51f9aa5:1065
+AuthProvider @ auth.tsx:22
+renderWithHooks @ chunk-WERSD76P.js?v=364fa62f:11548
+mountIndeterminateComponent @ chunk-WERSD76P.js?v=364fa62f:14926
+beginWork @ chunk-WERSD76P.js?v=364fa62f:15914
+beginWork$1 @ chunk-WERSD76P.js?v=364fa62f:19753
+performUnitOfWork @ chunk-WERSD76P.js?v=364fa62f:19198
+workLoopSync @ chunk-WERSD76P.js?v=364fa62f:19137
+renderRootSync @ chunk-WERSD76P.js?v=364fa62f:19116
+performConcurrentWorkOnRoot @ chunk-WERSD76P.js?v=364fa62f:18678
+workLoop @ chunk-WERSD76P.js?v=364fa62f:197
+flushWork @ chunk-WERSD76P.js?v=364fa62f:176
+performWorkUntilDeadline @ chunk-WERSD76P.js?v=364fa62f:384Understand this error
+auth.tsx:22 Warning: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+printWarning @ chunk-3TFVT2CW.js?v=a51f9aa5:136
+error @ chunk-3TFVT2CW.js?v=a51f9aa5:120
+resolveDispatcher @ chunk-3TFVT2CW.js?v=a51f9aa5:1045
+useState @ chunk-3TFVT2CW.js?v=a51f9aa5:1065
+AuthProvider @ auth.tsx:22
+renderWithHooks @ chunk-WERSD76P.js?v=364fa62f:11548
+mountIndeterminateComponent @ chunk-WERSD76P.js?v=364fa62f:14926
+beginWork @ chunk-WERSD76P.js?v=364fa62f:15914
+callCallback2 @ chunk-WERSD76P.js?v=364fa62f:3674
+invokeGuardedCallbackDev @ chunk-WERSD76P.js?v=364fa62f:3699
+invokeGuardedCallback @ chunk-WERSD76P.js?v=364fa62f:3733
+beginWork$1 @ chunk-WERSD76P.js?v=364fa62f:19765
+performUnitOfWork @ chunk-WERSD76P.js?v=364fa62f:19198
+workLoopSync @ chunk-WERSD76P.js?v=364fa62f:19137
+renderRootSync @ chunk-WERSD76P.js?v=364fa62f:19116
+performConcurrentWorkOnRoot @ chunk-WERSD76P.js?v=364fa62f:18678
+workLoop @ chunk-WERSD76P.js?v=364fa62f:197
+flushWork @ chunk-WERSD76P.js?v=364fa62f:176
+performWorkUntilDeadline @ chunk-WERSD76P.js?v=364fa62f:384Understand this error
+chunk-3TFVT2CW.js?v=a51f9aa5:1066 Uncaught TypeError: Cannot read properties of null (reading 'useState')
+    at useState (chunk-3TFVT2CW.js?v=a51f9aa5:1066:29)
+    at AuthProvider (auth.tsx:22:27)
+    at renderWithHooks (chunk-WERSD76P.js?v=364fa62f:11548:26)
+    at mountIndeterminateComponent (chunk-WERSD76P.js?v=364fa62f:14926:21)
+    at beginWork (chunk-WERSD76P.js?v=364fa62f:15914:22)
+    at HTMLUnknownElement.callCallback2 (chunk-WERSD76P.js?v=364fa62f:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-WERSD76P.js?v=364fa62f:3699:24)
+    at invokeGuardedCallback (chunk-WERSD76P.js?v=364fa62f:3733:39)
+    at beginWork$1 (chunk-WERSD76P.js?v=364fa62f:19765:15)
+    at performUnitOfWork (chunk-WERSD76P.js?v=364fa62f:19198:20)
+useState @ chunk-3TFVT2CW.js?v=a51f9aa5:1066
+AuthProvider @ auth.tsx:22
+renderWithHooks @ chunk-WERSD76P.js?v=364fa62f:11548
+mountIndeterminateComponent @ chunk-WERSD76P.js?v=364fa62f:14926
+beginWork @ chunk-WERSD76P.js?v=364fa62f:15914
+callCallback2 @ chunk-WERSD76P.js?v=364fa62f:3674
+invokeGuardedCallbackDev @ chunk-WERSD76P.js?v=364fa62f:3699
+invokeGuardedCallback @ chunk-WERSD76P.js?v=364fa62f:3733
+beginWork$1 @ chunk-WERSD76P.js?v=364fa62f:19765
+performUnitOfWork @ chunk-WERSD76P.js?v=364fa62f:19198
+workLoopSync @ chunk-WERSD76P.js?v=364fa62f:19137
+renderRootSync @ chunk-WERSD76P.js?v=364fa62f:19116
+performConcurrentWorkOnRoot @ chunk-WERSD76P.js?v=364fa62f:18678
+workLoop @ chunk-WERSD76P.js?v=364fa62f:197
+flushWork @ chunk-WERSD76P.js?v=364fa62f:176
+performWorkUntilDeadline @ chunk-WERSD76P.js?v=364fa62f:384Understand this error
+auth.tsx:22 Warning: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+printWarning @ chunk-3TFVT2CW.js?v=a51f9aa5:136
+error @ chunk-3TFVT2CW.js?v=a51f9aa5:120
+resolveDispatcher @ chunk-3TFVT2CW.js?v=a51f9aa5:1045
+useState @ chunk-3TFVT2CW.js?v=a51f9aa5:1065
+AuthProvider @ auth.tsx:22
+renderWithHooks @ chunk-WERSD76P.js?v=364fa62f:11548
+mountIndeterminateComponent @ chunk-WERSD76P.js?v=364fa62f:14926
+beginWork @ chunk-WERSD76P.js?v=364fa62f:15914
+beginWork$1 @ chunk-WERSD76P.js?v=364fa62f:19753
+performUnitOfWork @ chunk-WERSD76P.js?v=364fa62f:19198
+workLoopSync @ chunk-WERSD76P.js?v=364fa62f:19137
+renderRootSync @ chunk-WERSD76P.js?v=364fa62f:19116
+recoverFromConcurrentError @ chunk-WERSD76P.js?v=364fa62f:18736
+performConcurrentWorkOnRoot @ chunk-WERSD76P.js?v=364fa62f:18684
+workLoop @ chunk-WERSD76P.js?v=364fa62f:197
+flushWork @ chunk-WERSD76P.js?v=364fa62f:176
+performWorkUntilDeadline @ chunk-WERSD76P.js?v=364fa62f:384Understand this error
+auth.tsx:22 Warning: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+printWarning @ chunk-3TFVT2CW.js?v=a51f9aa5:136
+error @ chunk-3TFVT2CW.js?v=a51f9aa5:120
+resolveDispatcher @ chunk-3TFVT2CW.js?v=a51f9aa5:1045
+useState @ chunk-3TFVT2CW.js?v=a51f9aa5:1065
+AuthProvider @ auth.tsx:22
+renderWithHooks @ chunk-WERSD76P.js?v=364fa62f:11548
+mountIndeterminateComponent @ chunk-WERSD76P.js?v=364fa62f:14926
+beginWork @ chunk-WERSD76P.js?v=364fa62f:15914
+callCallback2 @ chunk-WERSD76P.js?v=364fa62f:3674
+invokeGuardedCallbackDev @ chunk-WERSD76P.js?v=364fa62f:3699
+invokeGuardedCallback @ chunk-WERSD76P.js?v=364fa62f:3733
+beginWork$1 @ chunk-WERSD76P.js?v=364fa62f:19765
+performUnitOfWork @ chunk-WERSD76P.js?v=364fa62f:19198
+workLoopSync @ chunk-WERSD76P.js?v=364fa62f:19137
+renderRootSync @ chunk-WERSD76P.js?v=364fa62f:19116
+recoverFromConcurrentError @ chunk-WERSD76P.js?v=364fa62f:18736
+performConcurrentWorkOnRoot @ chunk-WERSD76P.js?v=364fa62f:18684
+workLoop @ chunk-WERSD76P.js?v=364fa62f:197
+flushWork @ chunk-WERSD76P.js?v=364fa62f:176
+performWorkUntilDeadline @ chunk-WERSD76P.js?v=364fa62f:384Understand this error
+chunk-3TFVT2CW.js?v=a51f9aa5:1066 Uncaught TypeError: Cannot read properties of null (reading 'useState')
+    at useState (chunk-3TFVT2CW.js?v=a51f9aa5:1066:29)
+    at AuthProvider (auth.tsx:22:27)
+    at renderWithHooks (chunk-WERSD76P.js?v=364fa62f:11548:26)
+    at mountIndeterminateComponent (chunk-WERSD76P.js?v=364fa62f:14926:21)
+    at beginWork (chunk-WERSD76P.js?v=364fa62f:15914:22)
+    at HTMLUnknownElement.callCallback2 (chunk-WERSD76P.js?v=364fa62f:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-WERSD76P.js?v=364fa62f:3699:24)
+    at invokeGuardedCallback (chunk-WERSD76P.js?v=364fa62f:3733:39)
+    at beginWork$1 (chunk-WERSD76P.js?v=364fa62f:19765:15)
+    at performUnitOfWork (chunk-WERSD76P.js?v=364fa62f:19198:20)
+useState @ chunk-3TFVT2CW.js?v=a51f9aa5:1066
+AuthProvider @ auth.tsx:22
+renderWithHooks @ chunk-WERSD76P.js?v=364fa62f:11548
+mountIndeterminateComponent @ chunk-WERSD76P.js?v=364fa62f:14926
+beginWork @ chunk-WERSD76P.js?v=364fa62f:15914
+callCallback2 @ chunk-WERSD76P.js?v=364fa62f:3674
+invokeGuardedCallbackDev @ chunk-WERSD76P.js?v=364fa62f:3699
+invokeGuardedCallback @ chunk-WERSD76P.js?v=364fa62f:3733
+beginWork$1 @ chunk-WERSD76P.js?v=364fa62f:19765
+performUnitOfWork @ chunk-WERSD76P.js?v=364fa62f:19198
+workLoopSync @ chunk-WERSD76P.js?v=364fa62f:19137
+renderRootSync @ chunk-WERSD76P.js?v=364fa62f:19116
+recoverFromConcurrentError @ chunk-WERSD76P.js?v=364fa62f:18736
+performConcurrentWorkOnRoot @ chunk-WERSD76P.js?v=364fa62f:18684
+workLoop @ chunk-WERSD76P.js?v=364fa62f:197
+flushWork @ chunk-WERSD76P.js?v=364fa62f:176
+performWorkUntilDeadline @ chunk-WERSD76P.js?v=364fa62f:384Understand this error
+chunk-WERSD76P.js?v=364fa62f:14032 The above error occurred in the <AuthProvider> component:
+
+    at AuthProvider (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/src/lib/auth.tsx:23:32)
+    at QueryClientProvider (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=364fa62f:2805:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+logCapturedError @ chunk-WERSD76P.js?v=364fa62f:14032
+update.callback @ chunk-WERSD76P.js?v=364fa62f:14052
+callCallback @ chunk-WERSD76P.js?v=364fa62f:11248
+commitUpdateQueue @ chunk-WERSD76P.js?v=364fa62f:11265
+commitLayoutEffectOnFiber @ chunk-WERSD76P.js?v=364fa62f:17093
+commitLayoutMountEffects_complete @ chunk-WERSD76P.js?v=364fa62f:17980
+commitLayoutEffects_begin @ chunk-WERSD76P.js?v=364fa62f:17969
+commitLayoutEffects @ chunk-WERSD76P.js?v=364fa62f:17920
+commitRootImpl @ chunk-WERSD76P.js?v=364fa62f:19353
+commitRoot @ chunk-WERSD76P.js?v=364fa62f:19277
+finishConcurrentRender @ chunk-WERSD76P.js?v=364fa62f:18760
+performConcurrentWorkOnRoot @ chunk-WERSD76P.js?v=364fa62f:18718
+workLoop @ chunk-WERSD76P.js?v=364fa62f:197
+flushWork @ chunk-WERSD76P.js?v=364fa62f:176
+performWorkUntilDeadline @ chunk-WERSD76P.js?v=364fa62f:384Understand this error
+chunk-WERSD76P.js?v=364fa62f:19413 Uncaught TypeError: Cannot read properties of null (reading 'useState')
+    at useState (chunk-3TFVT2CW.js?v=a51f9aa5:1066:29)
+    at AuthProvider (auth.tsx:22:27)
+    at renderWithHooks (chunk-WERSD76P.js?v=364fa62f:11548:26)
+    at mountIndeterminateComponent (chunk-WERSD76P.js?v=364fa62f:14926:21)
+    at beginWork (chunk-WERSD76P.js?v=364fa62f:15914:22)
+    at beginWork$1 (chunk-WERSD76P.js?v=364fa62f:19753:22)
+    at performUnitOfWork (chunk-WERSD76P.js?v=364fa62f:19198:20)
+    at workLoopSync (chunk-WERSD76P.js?v=364fa62f:19137:13)
+    at renderRootSync (chunk-WERSD76P.js?v=364fa62f:19116:15)
+    at recoverFromConcurrentError (chunk-WERSD76P.js?v=364fa62f:18736:28)
+useState @ chunk-3TFVT2CW.js?v=a51f9aa5:1066
+AuthProvider @ auth.tsx:22
+renderWithHooks @ chunk-WERSD76P.js?v=364fa62f:11548
+mountIndeterminateComponent @ chunk-WERSD76P.js?v=364fa62f:14926
+beginWork @ chunk-WERSD76P.js?v=364fa62f:15914
+beginWork$1 @ chunk-WERSD76P.js?v=364fa62f:19753
+performUnitOfWork @ chunk-WERSD76P.js?v=364fa62f:19198
+workLoopSync @ chunk-WERSD76P.js?v=364fa62f:19137
+renderRootSync @ chunk-WERSD76P.js?v=364fa62f:19116
+recoverFromConcurrentError @ chunk-WERSD76P.js?v=364fa62f:18736
+performConcurrentWorkOnRoot @ chunk-WERSD76P.js?v=364fa62f:18684
+workLoop @ chunk-WERSD76P.js?v=364fa62f:197
+flushWork @ chunk-WERSD76P.js?v=364fa62f:176
+performWorkUntilDeadline @ chunk-WERSD76P.js?v=364fa62f:384Understand this error
+a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/:1 <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes">Understand this warning
+client:536 WebSocket connection to 'wss://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/?token=LZgWEZiJNO4g' failed: 
+setupWebSocket @ client:536
+(anonymous) @ client:531Understand this error
+client:536 Uncaught (in promise) SyntaxError: Failed to construct 'WebSocket': The URL 'wss://localhost:undefined/?token=LZgWEZiJNO4g' is invalid.
+    at setupWebSocket (client:536:19)
+    at fallback (client:509:16)
+    at WebSocket.<anonymous> (client:555:7)

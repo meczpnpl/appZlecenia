@@ -1,0 +1,2 @@
+To jest przykładowy plik testowy.
+Normalnie tutaj byłby obraz w formacie binarnym.

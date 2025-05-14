@@ -1,0 +1,172 @@
+> rest-express@1.0.0 dev
+Ścieżka katalogu uploads: /home/runner/workspace/public/uploads
+Katalog uploads istnieje: true
+8:11:14 PM [express] serving on port 5000
+Browserslist: browsers data (caniuse-lite) is 7 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+8:11:17 PM [express] GET /api/auth/me 401 in 2ms :: {"message":"Nie jesteś zalogowany"}
+8:11:22 PM [express] GET /api/auth/me 401 in 1ms :: {"message":"Nie jesteś zalogowany"}
+Zapisane dane sesji: {
+  "id": 1,
+  "email": "tomekarso@gmail.com",
+  "name": "Tomek Arso",
+  "role": "admin"
+}
+8:11:26 PM [express] POST /api/auth/login 200 in 2400ms :: {"id":1,"email":"tomekarso@gmail.com","na…
+8:11:27 PM [express] GET /api/auth/me 304 in 76ms :: {"id":1,"email":"tomekarso@gmail.com","name":"T…
+8:11:27 PM [express] GET /api/stats 304 in 1ms :: {"newOrders":12,"completedOrders":28,"inProgressOr…
+8:11:27 PM [express] GET /api/notifications 304 in 80ms :: []
+Otrzymano zapytanie na /api/orders/recent
+Limit zleceń: 5
+Dane użytkownika: {
+  role: 'admin',
+  id: 1,
+  storeId: undefined,
+  companyId: undefined,
+  companyName: undefined
+}
+Pobrano 0 ostatnich zleceń
+Po filtrowaniu znaleziono 0 zleceń
+8:11:28 PM [express] GET /api/orders/recent 304 in 77ms :: []
+8:11:30 PM [express] GET /api/stores 200 in 76ms :: [{"id":1,"name":"Santocka 39","address":"ul. San…
+8:11:30 PM [express] GET /api/companies 200 in 313ms :: [{"id":1,"name":"Firma Jednosobowa","nip":"0…
+8:11:30 PM [express] GET /api/users 200 in 368ms :: [{"id":2,"email":"firma-montaz@op.pl","name":"Ja…
+8:11:32 PM [express] GET /api/auth/me 304 in 68ms :: {"id":1,"email":"tomekarso@gmail.com","name":"T…
+8:11:32 PM [express] GET /api/users 304 in 68ms :: [{"id":2,"email":"firma-montaz@op.pl","name":"Jan…
+8:11:32 PM [express] GET /api/stores 304 in 73ms :: [{"id":1,"name":"Santocka 39","address":"ul. San…
+8:11:32 PM [express] GET /api/companies 304 in 73ms :: [{"id":1,"name":"Firma Jednosobowa","nip":"00…
+8:11:34 PM [express] GET /api/notifications 304 in 2280ms :: []
+8:11:37 PM [express] GET /api/settings 200 in 76ms :: [{"id":7,"category":"company","key":"company_n…
+8:11:39 PM [express] GET /api/auth/me 304 in 68ms :: {"id":1,"email":"tomekarso@gmail.com","name":"T…
+8:11:39 PM [express] GET /api/settings 200 in 68ms :: [{"id":7,"category":"company","key":"company_n…
+8:11:39 PM [express] GET /api/notifications 304 in 68ms :: []
+8:11:43 PM [express] GET /api/auth/me 304 in 74ms :: {"id":1,"email":"tomekarso@gmail.com","name":"T…
+8:11:43 PM [express] GET /api/stats 304 in 2ms :: {"newOrders":12,"completedOrders":28,"inProgressOr…
+Otrzymano zapytanie na /api/orders/recent
+Limit zleceń: 5
+Dane użytkownika: {
+  role: 'admin',
+  id: 1,
+  storeId: undefined,
+  companyId: undefined,
+  companyName: undefined
+}
+8:11:43 PM [express] GET /api/notifications 304 in 70ms :: []
+Pobrano 0 ostatnich zleceń
+Po filtrowaniu znaleziono 0 zleceń
+8:11:43 PM [express] GET /api/orders/recent 304 in 68ms :: []
+8:11:44 PM [express] GET /api/settings 304 in 69ms :: [{"id":7,"category":"company","key":"company_n…
+8:11:48 PM [express] GET /api/auth/me 304 in 67ms :: {"id":1,"email":"tomekarso@gmail.com","name":"T…
+8:11:48 PM [express] GET /api/stats 304 in 1ms :: {"newOrders":12,"completedOrders":28,"inProgressOr…
+Otrzymano zapytanie na /api/orders/recent
+Limit zleceń: 5
+Dane użytkownika: {
+  role: 'admin',
+  id: 1,
+  storeId: undefined,
+  companyId: undefined,
+  companyName: undefined
+}
+8:11:48 PM [express] GET /api/notifications 304 in 67ms :: []
+Pobrano 0 ostatnich zleceń
+Po filtrowaniu znaleziono 0 zleceń
+8:11:48 PM [express] GET /api/orders/recent 304 in 73ms :: []
+8:11:48 PM [express] GET /api/settings 304 in 268ms :: [{"id":7,"category":"company","key":"company_…
+8:11:52 PM [express] GET /api/auth/me 304 in 68ms :: {"id":1,"email":"tomekarso@gmail.com","name":"T…
+Otrzymano zapytanie na /api/orders/recent
+Limit zleceń: 5
+Dane użytkownika: {
+  role: 'admin',
+  id: 1,
+  storeId: undefined,
+  companyId: undefined,
+  companyName: undefined
+}
+8:11:52 PM [express] GET /api/stats 304 in 1ms :: {"newOrders":12,"completedOrders":28,"inProgressOr…
+Pobrano 0 ostatnich zleceń
+Po filtrowaniu znaleziono 0 zleceń
+8:11:53 PM [express] GET /api/orders/recent 304 in 68ms :: []
+8:11:53 PM [express] GET /api/notifications 304 in 69ms :: []
+8:11:53 PM [express] GET /api/settings 304 in 68ms :: [{"id":7,"category":"company","key":"company_n…
+8:11:57 PM [express] GET /api/auth/me 304 in 67ms :: {"id":1,"email":"tomekarso@gmail.com","name":"T…
+Otrzymano zapytanie na /api/orders/recent
+Limit zleceń: 5
+Dane użytkownika: {
+  role: 'admin',
+  id: 1,
+  storeId: undefined,
+  companyId: undefined,
+  companyName: undefined
+}
+8:11:57 PM [express] GET /api/stats 304 in 1ms :: {"newOrders":12,"completedOrders":28,"inProgressOr…
+8:11:57 PM [express] GET /api/notifications 304 in 65ms :: []
+Pobrano 0 ostatnich zleceń
+Po filtrowaniu znaleziono 0 zleceń
+8:11:57 PM [express] GET /api/orders/recent 304 in 68ms :: []
+8:11:57 PM [express] GET /api/settings 304 in 66ms :: [{"id":7,"category":"company","key":"company_n…
+8:12:02 PM [express] GET /api/auth/me 304 in 66ms :: {"id":1,"email":"tomekarso@gmail.com","name":"T…
+8:12:02 PM [express] GET /api/stats 304 in 1ms :: {"newOrders":12,"completedOrders":28,"inProgressOr…
+Otrzymano zapytanie na /api/orders/recent
+Limit zleceń: 5
+Dane użytkownika: {
+  role: 'admin',
+  id: 1,
+  storeId: undefined,
+  companyId: undefined,
+  companyName: undefined
+}
+8:12:02 PM [express] GET /api/notifications 304 in 65ms :: []
+Pobrano 0 ostatnich zleceń
+Po filtrowaniu znaleziono 0 zleceń
+8:12:02 PM [express] GET /api/orders/recent 304 in 67ms :: []
+8:12:02 PM [express] GET /api/settings 304 in 70ms :: [{"id":7,"category":"company","key":"company_n…
+8:12:07 PM [express] GET /api/auth/me 304 in 69ms :: {"id":1,"email":"tomekarso@gmail.com","name":"T…
+Otrzymano zapytanie na /api/orders/recent
+Limit zleceń: 5
+Dane użytkownika: {
+  role: 'admin',
+  id: 1,
+  storeId: undefined,
+  companyId: undefined,
+  companyName: undefined
+}
+8:12:07 PM [express] GET /api/stats 304 in 1ms :: {"newOrders":12,"completedOrders":28,"inProgressOr…
+Pobrano 0 ostatnich zleceń
+Po filtrowaniu znaleziono 0 zleceń
+8:12:07 PM [express] GET /api/orders/recent 304 in 67ms :: []
+8:12:07 PM [express] GET /api/notifications 304 in 70ms :: []
+8:12:08 PM [express] GET /api/settings 304 in 69ms :: [{"id":7,"category":"company","key":"company_n…
+8:12:12 PM [express] GET /api/auth/me 304 in 67ms :: {"id":1,"email":"tomekarso@gmail.com","name":"T…
+8:12:12 PM [express] GET /api/stats 304 in 1ms :: {"newOrders":12,"completedOrders":28,"inProgressOr…
+Otrzymano zapytanie na /api/orders/recent
+Limit zleceń: 5
+Dane użytkownika: {
+  role: 'admin',
+  id: 1,
+  storeId: undefined,
+  companyId: undefined,
+  companyName: undefined
+}
+Pobrano 0 ostatnich zleceń
+Po filtrowaniu znaleziono 0 zleceń
+8:12:12 PM [express] GET /api/orders/recent 304 in 67ms :: []
+8:12:12 PM [express] GET /api/notifications 304 in 70ms :: []
+8:12:12 PM [express] GET /api/settings 304 in 71ms :: [{"id":7,"category":"company","key":"company_n…
+8:12:17 PM [express] GET /api/auth/me 304 in 72ms :: {"id":1,"email":"tomekarso@gmail.com","name":"T…
+Otrzymano zapytanie na /api/orders/recent
+Limit zleceń: 5
+Dane użytkownika: {
+  role: 'admin',
+  id: 1,
+  storeId: undefined,
+  companyId: undefined,
+  companyName: undefined
+}
+8:12:17 PM [express] GET /api/stats 304 in 0ms :: {"newOrders":12,"completedOrders":28,"inProgressOr…
+Pobrano 0 ostatnich zleceń
+Po filtrowaniu znaleziono 0 zleceń
+8:12:17 PM [express] GET /api/orders/recent 304 in 67ms :: []
+8:12:17 PM [express] GET /api/notifications 304 in 72ms :: []
+8:12:18 PM [express] GET /api/settings 304 in 69ms :: [{"id":7,"category":"company","key":"company_n…
+8:12:22 PM [express] GET /api/auth/me 304 in 77ms :: {"id":1,"email":"tomekarso@gmail.com","name":"T…

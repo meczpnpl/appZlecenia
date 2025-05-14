@@ -1,0 +1,209 @@
+Muszę stworzyć aplikację z bazą danych, którą można obsługiwać w przeglądarce oraz jako PWA na smartfonach. Musi mieć opcję instalacji jako PWA zarówno na smartfonach jak i na PC oraz zaawansowany system powiadomień push oraz email. 
+
+Aplikacja do planowania i zarządzania zleceniami montażu drzwi, montażu podłogi i usługą transportu dla dwóch sklepów firmy Bel-Pol w Szczecinie. Jeden na ulicy Santocka 39 gdzie pracują cztery osoby (kierownik, zastępca i dwóch doradców klienta) oraz na ulicy Struga 31A gdzie pracuje sześć osób (kierownik i pięciu doradców klienta). 
+
+Jak wspomniałem podstawowa funkcja aplikacji to planowanie i zarządzanie realizacją usług, a druga funkcja to analiza wykonania planu sprzedaży w poszczególnych miesiącach. Każdy ze sklepów ma określony plan do wykonania w danym miesiącu i kierownik sklepu musi mieś na bieżąco informację jak w danym momencie wygląda realizacja i czy np. Na podstawie wprowadzonych wykazu usług, terminów i stanu realizacji uda się w danym miesiącu wykonać plan. 
+
+W aplikacji będą cztery grupy użytkowników: 
+
+Admin - Administrator do zarządzania całą aplikacją, pełen dostęp do wszystkiego. Tylko admin może rejestrować użytkowników. 
+
+Pracownicy - Wszyscy pracownicy ze sklepów Santocka i Struga. Każdy pracownik ma dostęp i prawo edycji tylko zleceń do którego sklepu jest przydzielony, może po przełączeniu widzieć zlecenia nie swojego sklepu bez prawa edycji. 
+
+Firma - Właściciele firm montażowych. Widzi zlecenia tylko swojej firmy montażowej nie może widzieć zleceń przydzielonych do inne firmy. Ma prawo odczytu danych zlecenia, lecz edytować może tylko niektóre elementy. Nie może mieć wglądu w część dotyczącą finansów. Właściciel firmy prócz swoich uprawnień dostępu ma również wszystkie prawa dostępu i edycji, które posiada grupa montażysta 
+
+Montażysta - Pracownicy firm montażowych (montażyści). Ich poziom dostępu jest ograniczony i widzi tylko zlecenia, które mu przydzielił szef firmy montażowej. Widzi Imię i Nazwisko klienta, adres montażu, który po kliknięciu uruchomi nawigację Google pod wskazany adres montażu. Nr. Telefonu klienta i po kliknięciu nastąpi połączenie telefoniczne z klientem. Może edytować jedynie przydzielone mu funkcje stan realizacji. Czasami właściciel firmy jest również montażystą 
+
+Każda z tych grup będzie miała inny poziom dostępu i inne zadania. 
+
+Jak ma wyglądać schemat działania aplikacji?  
+
+Profil użytkownika: 
+
+Pracownik: Imię i nazwisko, adres e-mail (to będzie również login), nr. Telefonu kontaktowego, sklep w którym pracuje (każdy pracownik może pracować tylko w jednym z dwóch sklepów), stanowisko (kierownik, zastępca, doradca) 
+
+Firma: Nazwa firmy, NIP, adres firmy, Imię i Nazwisko, adres e-mail (to będzie również login), nr. Telefonu, co montuje firma i jakie usługi (transport lub i montaż drzwi lub i montaż podłogi) 
+
+Montażysta: Imię i Nazwisko, w jakiej firmie pracuje, adres e-mail (to będzie również login), nr. Telefonu, co montuje i jakie usługi (transport lub i montaż drzwi lub i montaż podłogi) 
+
+Zlecenia: 
+
+Pracownicy i oczywiście administrator wprowadzają do sytemu zlecenie montażu które będzie zapisywane w bazie danych:  
+
+Automatycznie - obowiązkowe: Nr. Zlecenia - będzie nadawany automatycznie i nie trzeba go podawać to swego rodzaju ID zlecenia 
+
+Automatycznie - obowiązkowe: Data wpisu z godziną - będzie nadawany automatycznie i nie trzeba podawać przez użytkownika 
+
+Pracownicy, admin - obowiązkowe: Imię i Nazwisko klienta 
+
+Pracownicy, admin - obowiązkowe: Adres montażu (tutaj chcę wprowadzić system wyszukiwania adresu przez usługi Google Maps oraz funkcjami nawigacji) 
+
+Pracownicy, admin - obowiązkowe: Nr. Telefonu do klienta (tutaj funkcja dzwonienia po kliknięciu w ikonę numeru) 
+
+Pracownicy, admin - obowiązkowe: Zakres usługi (lista rozwijana zlecenie montażu drzwi lub zlecenie montażu podłogi) 
+
+Pracownicy, admin - obowiązkowe: Czy z transportem (odhaczamy z transportem lub bez) 
+
+Pracownicy, admin - obowiązkowe: Proponowany termin montażu (w formie tekstu nie kalendarza np. “klient prosi o montaż na początku maja) 
+
+Pracownicy, admin - nieobowiązkowe: Uwagi do zlecenia 
+
+Pracownicy, admin - obowiązkowe: Czy dokumenty montażowe zostały przekazane montażystom (zaznaczenie Tak, Nie) 
+
+Pracownicy, admin - obowiązkowe: Firma montażowa (lista rozwijana wyboru firmy, która dostanie zlecenie) 
+
+Pracownicy, admin - nieobowiązkowe: Wartość zlecenia netto (to będzie potrzebne do analizy wykonania planu) 
+
+Pracownicy, admin - nieobowiązkowe: Wartość wydania magazynowego netto (to będzie potrzebne do analizy wykonania planu) 
+
+Pracownicy, admin - nieobowiązkowe: Wartość kosztów usługi netto to będzie potrzebne do analizy wykonania planu. Zysk zlecenia to Wartość zlecenia netto - Wartość wydania magazynowego netto - Wartość kosztów usługi netto) 
+
+Wszyscy użytkownicy: Stan realizacji (złożone, transport wykonany, w realizacji, zakończone, zafakturowane, reklamacja. Jeżeli jest reklamacja to uwagi do reklamacji i możliwość dodania zdjęć z oględzin wykonanych aparatem w telefonie i załączonych do zlecenia) 
+
+Firma: Montażysta (szef firmy wskazuje montażystę, któremu przydziela zlecenie) 
+
+Firma: Data realizacji (szef firmy wskazuje datę wykonania zlecenia dla montażysty w formie kalendarza) 
+
+Firma: Uwagi do zlecenia dla montażysty 
+
+Firma: Wystawiona faktura za montaż (Tak, Nie) 
+
+Firma: Będzie rozliczone (firma zaznacza Tak wskazuje z wyprzedzeniem, że zlecenie zostanie zafakturowane w danym miesiącu) 
+
+Montażysta: Zlecenie przyjęte (montażysta potwierdza przejęcie zlecenia) 
+
+Montażysta: Informacja o realizacji (montażysta zaznacza planowane, w realizacji, zakończone, reklamacja Jeżeli jest reklamacja to uwagi do reklamacji i możliwość dodania zdjęć z oględzin wykonanych aparatem w telefonie i załączonych do zlecenia) 
+
+ 
+
+Wykonanie planu: 
+
+Tak jak wspomniałem każdy sklep ma określony plan do wykonania w danym miesiącu. Na wykonanie planu składa się zysk wypracowany w danym miesiącu liczony netto. Zysk ze sprzedaży produktów i zysk ze zleceń montażu razem. Zysk ze sprzedaży będzie uzupełniany ręcznie, natomiast zysk ze zleceń montażu automatycznie ze zleceń.  
+
+Będą dwa systemy liczenia: 
+
+Przewidywana realizacja - Admin lub Kierownik/zastępca wprowadza plan do realizacji na każdy miesiąc do wykonania. Może ręcznie wprowadzić realizację bieżącą/planowaną ze sprzedaży 23% netto. Aktualnie wykonany pan przepisany z systemu księgowego Bel-Pol. System doda przewidywany zysk ze zleceń, które w statusie poz. 15 mają: złożone, transport wykonany, w realizacji, zakończone. Gdy ten status zmieni się na zafakturowane lub reklamacja, system nie będzie tego zlecenia liczył do planu. 
+
+Liczenie: Aktualnie wykonany pan przepisany z systemu księgowego Bel-Pol + ręcznie wprowadzona realizację bieżąca/planowana ze sprzedaży 23% + przewidywany zysk ze zleceń i porównanie z plan do realizacji na każdy miesiąc do wykonania. 
+
+Realizacja – liczenie: Aktualnie wykonany pan przepisany z systemu księgowego Bel-Pol + ręcznie wprowadzona realizację bieżąca/planowana ze sprzedaży 23% + wszystkie zlecenia których Firma w poz. 20 zaznaczy, że dane zlecenie zostanie zafakturowane w danym miesiącu i porównanie z plan do realizacji na każdy miesiąc do wykonania.
+
+🛠️ PLAN DZIAŁANIA: Aplikacja zarządzania zleceniami dla Bel-Pol
+I. Analiza funkcjonalna (to już mamy, podsumowanie)
+✅ Główne moduły:
+Autoryzacja / Rejestracja użytkowników (z rolami i poziomami dostępu)
+
+Zarządzanie zleceniami montażu i transportu
+
+System notyfikacji (push + e-mail)
+
+System realizacji planów sprzedaży / montażu
+
+Obsługa lokalizacji (Google Maps, nawigacja)
+
+PWA – instalowalna aplikacja na smartfony i komputery
+
+✅ Użytkownicy:
+Admin
+
+Pracownik sklepu
+
+Firma montażowa
+
+Montażysta
+
+II. Technologie i narzędzia
+Frontend: HTML, CSS (TailwindCSS?), JS (React lub Vanilla)
+
+Backend: Node.js (Express) lub Python (Flask / FastAPI)
+
+Baza danych: SQLite (na start), potem PostgreSQL / MongoDB (jeśli potrzeba)
+
+Autoryzacja: JWT lub Firebase Auth
+
+Push Notification: Web Push API + Service Workers (np. z OneSignal)
+
+Email: EmailJS, SMTP lub SendGrid
+
+Hosting / PWA: Replit (host), manifest.json + service worker do PWA
+
+III. Etapy realizacji projektu
+🔹 ETAP 1: Przygotowanie środowiska
+ Wybór stacku na Replit (np. Replit Node.js z Express)
+
+ Struktura projektu (frontend/backend/public)
+
+ Ustawienie pliku manifest.json i service-worker.js do PWA
+
+🔹 ETAP 2: System użytkowników
+ Model użytkownika (role, dane kontaktowe)
+
+ Panel logowania i rejestracji (tylko przez admina)
+
+ Middleware autoryzacji (JWT + Role Access)
+
+🔹 ETAP 3: Baza danych i modele
+ Modele:
+
+User
+
+Zlecenie
+
+Firma
+
+Montażysta
+
+PlanSprzedaży
+
+ Relacje między tabelami (np. zlecenie → montażysta → firma)
+
+🔹 ETAP 4: System zleceń
+ Dodawanie zleceń (formularz + walidacja)
+
+ Wyszukiwanie / filtrowanie (po dacie, sklepie, firmie)
+
+ Przypisywanie do firm / montażystów
+
+ Edycja zleceń wg uprawnień
+
+ Obsługa statusów zlecenia i komentarzy / zdjęć
+
+🔹 ETAP 5: Analiza planów sprzedaży
+ Interfejs do wprowadzania planów i danych sprzedażowych
+
+ Obliczanie zysków ze zleceń automatycznie
+
+ Raporty miesięczne / wykresy / porównania plan vs realizacja
+
+🔹 ETAP 6: Powiadomienia
+ Push notyfikacje (rejestracja tokena, wysyłka przy zmianie statusu)
+
+ Email notyfikacje (np. info o nowym zleceniu lub reklamacji)
+
+🔹 ETAP 7: Integracja z Google Maps
+ Wyszukiwanie adresu (Google Maps API)
+
+ Uruchomienie nawigacji z poziomu zlecenia
+
+ Klikalne numery telefonu
+
+🔹 ETAP 8: Finalne szlify + PWA
+ Optymalizacja działania offline
+
+ Dodanie ikonki, splash screen
+
+ Testy na urządzeniach mobilnych
+
+ Instalacja jako aplikacja
+
+IV. Prototyp interfejsu użytkownika (do zaplanowania później)
+Jeśli chcesz, mogę zaprojektować interfejsy dla każdej roli — mogę narysować layouty lub przygotować HTML/CSS/JS od razu pod Replit.
+
+V. Zalecenia
+Zacznij od małej wersji MVP (minimum działająca appka: logowanie, dodanie zlecenia, przypisanie do montażysty, wyświetlanie statusów)
+
+Użyj AI Replit do automatyzacji kodu, ale warto samemu zadbać o kontrolę logiki uprawnień — to kluczowy element
+
+Możesz też użyć Replit DB, ale tylko do testów. Docelowo lepsza będzie relacyjna baza (PostgreSQL)
+
+ 

@@ -1,0 +1,23 @@
+{
+  "name": "Bel-Pol Montaże",
+  "short_name": "Bel-Pol",
+  "description": "Aplikacja do zarządzania montażami dla firmy Bel-Pol",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "belpol-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "belpol-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

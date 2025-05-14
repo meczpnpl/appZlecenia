@@ -1,0 +1,165 @@
+Instaluję poprawkę WebSocket v2.0
+orders?v=1747122544305:544 Naprawa WebSocket zainstalowana
+orders?v=1747122544305:552 BEL-POL URL Fixer - uruchomiony
+orders?v=1747122544305:555 URL Info: {current: 'https://e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev/orders?v=1747122544305', host: 'e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev', origin: 'https://e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev', pathname: '/orders'}
+orders?v=1747122544305:425 Przechwycono próbę połączenia WebSocket: wss://e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev:/?token=a1i6mbnLsNuj
+js?key=AIzaSyBmVOvP_KNpynR7Y1NZsUQ9vh6zrVD6Zos&libraries=places&callback=initializeGoogleMapsAddressAutocomplete:1765 Google Maps JavaScript API has been loaded directly without loading=async. This can result in suboptimal performance. For best-practice loading patterns please see https://goo.gle/js-api-loading
+rga @ js?key=AIzaSyBmVOvP_KNpynR7Y1NZsUQ9vh6zrVD6Zos&libraries=places&callback=initializeGoogleMapsAddressAutocomplete:1765
+google.maps.Load @ js?key=AIzaSyBmVOvP_KNpynR7Y1NZsUQ9vh6zrVD6Zos&libraries=places&callback=initializeGoogleMapsAddressAutocomplete:14
+(anonymous) @ js?key=AIzaSyBmVOvP_KNpynR7Y1NZsUQ9vh6zrVD6Zos&libraries=places&callback=initializeGoogleMapsAddressAutocomplete:1999
+(anonymous) @ js?key=AIzaSyBmVOvP_KNpynR7Y1NZsUQ9vh6zrVD6Zos&libraries=places&callback=initializeGoogleMapsAddressAutocomplete:1999Understand this warning
+
+                
+          
+          
+          
+         Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies.Understand this warning
+orders?v=1747122544305:496 WebSocket connection to 'wss://e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev/?token=a1i6mbnLsNuj' failed: 
+window.WebSocket @ orders?v=1747122544305:496
+setupWebSocket @ client:536
+(anonymous) @ client:531Understand this error
+orders?v=1747122544305:425 Przechwycono próbę połączenia WebSocket: wss://localhost:undefined/?token=a1i6mbnLsNuj
+orders?v=1747122544305:430 🔴 Naprawianie błędnego URL z localhost:undefined
+orders?v=1747122544305:436 ✅ Poprawiony URL: wss://e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev/?token=a1i6mbnLsNuj
+chunk-RPCDYKBN.js?v=52013e39:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+main.tsx:80 React root został utworzony
+main.tsx:82 App został renderowany
+orders?v=1747122544305:623 BEL-POL URL Fixer - DOM załadowany, sprawdzam parametry URL
+orders?v=1747122544305:564 BEL-POL URL Fixer - strona załadowana, weryfikuję zawartość
+main.tsx:43 Aplikacja może być zainstalowana jako PWA
+App.tsx:29 App.tsx został załadowany - v1.3
+auth.tsx:37 AuthProvider v1.8 renderowany
+auth.tsx:48 Sprawdzanie autentykacji użytkownika...
+main.tsx:70 Service Worker zarejestrowany pomyślnie: ServiceWorkerRegistration {installing: null, waiting: null, active: ServiceWorker, navigationPreload: NavigationPreloadManager, scope: 'https://e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev/', …}
+orders?v=1747122544305:437 WebSocket connection to 'wss://e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev/?token=a1i6mbnLsNuj' failed: 
+window.WebSocket @ orders?v=1747122544305:437
+setupWebSocket @ client:536
+fallback @ client:509
+(anonymous) @ client:555Understand this error
+client:512 [vite] failed to connect to websocket.
+your current setup:
+  (browser) e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev/ <--[HTTP]--> localhost:undefined/ (server)
+  (browser) e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev:/ <--[WebSocket (failing)]--> localhost:undefined/ (server)
+Check out your Vite / network configuration and https://vite.dev/config/server-options.html#server-hmr .
+(anonymous) @ client:512
+(anonymous) @ client:555Understand this error
+orders:1 Error while trying to use the following icon from the Manifest: https://e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev/belpol-icon-192.png (Download error or resource isn't a valid image)Understand this error
+auth.tsx:49 
+            
+            
+           GET https://e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev/api/auth/me 401 (Unauthorized)
+checkAuth @ auth.tsx:49
+(anonymous) @ auth.tsx:72
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=52013e39:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=52013e39:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=52013e39:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=52013e39:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=52013e39:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=52013e39:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=52013e39:19447
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=52013e39:18868
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=52013e39:9119
+commitRootImpl @ chunk-RPCDYKBN.js?v=52013e39:19432
+commitRoot @ chunk-RPCDYKBN.js?v=52013e39:19277
+finishConcurrentRender @ chunk-RPCDYKBN.js?v=52013e39:18805
+performConcurrentWorkOnRoot @ chunk-RPCDYKBN.js?v=52013e39:18718
+workLoop @ chunk-RPCDYKBN.js?v=52013e39:197
+flushWork @ chunk-RPCDYKBN.js?v=52013e39:176
+performWorkUntilDeadline @ chunk-RPCDYKBN.js?v=52013e39:384Understand this error
+auth.tsx:61 Nie zalogowany, status: 401
+auth.tsx:37 AuthProvider v1.8 renderowany
+Sidebar.tsx:52 Sidebar - user: null
+Sidebar.tsx:53 Sidebar - isAdmin: false
+Sidebar.tsx:54 Sidebar - user?.role: undefined
+Sidebar.tsx:55 Sidebar - isTransporter: false
+queryClient.ts:46 Wykonuję zapytanie API do: /api/orders
+AppShell.tsx:19 AppShell - Auth State: {isAuthenticated: false, isAdmin: false, userPresent: false, userRole: undefined}
+App.tsx:53 Przekierowuję niezalogowanego użytkownika do /login
+queryClient.ts:47 
+            
+            
+           GET https://e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev/api/orders 401 (Unauthorized)
+(anonymous) @ queryClient.ts:47
+fetchFn @ @tanstack_react-query.js?v=52013e39:840
+run @ @tanstack_react-query.js?v=52013e39:494
+start @ @tanstack_react-query.js?v=52013e39:536
+fetch @ @tanstack_react-query.js?v=52013e39:926
+executeFetch_fn @ @tanstack_react-query.js?v=52013e39:2211
+onSubscribe @ @tanstack_react-query.js?v=52013e39:1898
+subscribe @ @tanstack_react-query.js?v=52013e39:24
+(anonymous) @ @tanstack_react-query.js?v=52013e39:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=52013e39:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=52013e39:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=52013e39:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=52013e39:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=52013e39:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=52013e39:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=52013e39:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=52013e39:19447
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=52013e39:18868
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=52013e39:9119
+commitRootImpl @ chunk-RPCDYKBN.js?v=52013e39:19432
+commitRoot @ chunk-RPCDYKBN.js?v=52013e39:19277
+finishConcurrentRender @ chunk-RPCDYKBN.js?v=52013e39:18805
+performConcurrentWorkOnRoot @ chunk-RPCDYKBN.js?v=52013e39:18718
+workLoop @ chunk-RPCDYKBN.js?v=52013e39:197
+flushWork @ chunk-RPCDYKBN.js?v=52013e39:176
+performWorkUntilDeadline @ chunk-RPCDYKBN.js?v=52013e39:384Understand this error
+orders?v=1747122544305:152 Podpinanie diagnostyki do zdarzeń Google Maps
+orders?v=1747122544305:245 Diagnostyka Google Maps zainicjalizowana
+Login.tsx:39 Próba logowania dla: firma-montaz@op.pl
+auth.tsx:79 Próba logowania dla: firma-montaz@op.pl
+auth.tsx:37 AuthProvider v1.8 renderowany
+auth.tsx:37 AuthProvider v1.8 renderowany
+orders?v=1747122544305:585 BEL-POL URL Fixer - sprawdzam zawartość: OK
+Sidebar.tsx:52 Sidebar - user: {id: 2, email: 'firma-montaz@op.pl', name: 'Firma Jednosobowa', phone: '500500500', role: 'installer', …}
+Sidebar.tsx:53 Sidebar - isAdmin: false
+Sidebar.tsx:54 Sidebar - user?.role: installer
+Sidebar.tsx:55 Sidebar - isTransporter: true
+queryClient.ts:17 ApiRequest: GET /api/notifications undefined
+queryClient.ts:46 Wykonuję zapytanie API do: /api/stats
+queryClient.ts:46 Wykonuję zapytanie API do: /api/orders/recent
+AppShell.tsx:19 AppShell - Auth State: {isAuthenticated: true, isAdmin: false, userPresent: true, userRole: 'installer'}
+App.tsx:61 Przekierowuję użytkownika (installer) bezpośrednio na stronę zleceń
+Sidebar.tsx:52 Sidebar - user: {id: 2, email: 'firma-montaz@op.pl', name: 'Firma Jednosobowa', phone: '500500500', role: 'installer', …}
+Sidebar.tsx:53 Sidebar - isAdmin: false
+Sidebar.tsx:54 Sidebar - user?.role: installer
+Sidebar.tsx:55 Sidebar - isTransporter: true
+queryClient.ts:46 Wykonuję zapytanie API do: /api/orders
+Orders.tsx:246 
+            
+            
+           GET https://e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev/api/user/filters/default 404 (Not Found)
+loadFilters @ Orders.tsx:246
+(anonymous) @ Orders.tsx:316
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=52013e39:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=52013e39:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=52013e39:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=52013e39:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=52013e39:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=52013e39:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=52013e39:19447
+commitRootImpl @ chunk-RPCDYKBN.js?v=52013e39:19416
+commitRoot @ chunk-RPCDYKBN.js?v=52013e39:19277
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=52013e39:18895
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=52013e39:9119
+(anonymous) @ chunk-RPCDYKBN.js?v=52013e39:18627
+setTimeout
+handleSubmit @ Login.tsx:51
+await in handleSubmit
+callCallback2 @ chunk-RPCDYKBN.js?v=52013e39:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=52013e39:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=52013e39:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=52013e39:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=52013e39:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=52013e39:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=52013e39:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=52013e39:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=52013e39:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=52013e39:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=52013e39:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=52013e39:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=52013e39:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=52013e39:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=52013e39:5449Understand this error
+Orders.tsx:250 Nie znaleziono domyślnego filtra, sprawdzam localStorage

@@ -1,0 +1,500 @@
+import { useState, useRef } from 'react';
+import { useParams, Link } from 'wouter';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { format, addDays, isBefore, parseISO } from 'date-fns';
+import { pl } from 'date-fns/locale';
+import { 
+  AlertTriangle, FileText, Phone, Calendar, Package, 
+  Truck, Map, User, BarChart3, Download, 
+  Camera, Upload, X, Loader2, Trash2, ClipboardList, MessageCircle, Pencil, RotateCw,
+  Building, Check, Hammer, CalendarClock
+} from 'lucide-react';
+import { queryClient, apiRequest } from '@/lib/queryClient';
+import { useAuth } from '@/lib/auth';
+import { useToast } from '@/hooks/use-toast';
+import { ClickableAddress } from '@/components/address';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { BackButton } from '@/components/ui/back-button';
+import { UpdateOrderStatus } from '@shared/schema';
+
+interface OrderDetailsProps {
+  orderId?: string;
+}
+
+export default function OrderDetails({ orderId }: OrderDetailsProps) {
+  const params = useParams();
+  const id = orderId || params.id;
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Stan lokalny dla edycji zlecenia
+  const [status, setStatus] = useState<string | null>(null);
+  const [comments, setComments] = useState<string>('');
+  const [complaintNotes, setComplaintNotes] = useState<string>('');
+  const [invoiceIssued, setInvoiceIssued] = useState<boolean>(false);
+  const [willBeSettled, setWillBeSettled] = useState<boolean>(false);
+  const [documentsProvided, setDocumentsProvided] = useState<boolean>(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadingPhotos, setUploadingPhotos] = useState<boolean>(false);
+  
+  // Stan dla przypisywania montażysty
+  const [selectedInstallerId, setSelectedInstallerId] = useState<number | null>(null);
+  const [calendarOpen, setCalendarOpen] = useState<boolean>(false);
+  const [installationDate, setInstallationDate] = useState<Date | undefined>(undefined);
+  
+  // Stan dla przypisywania transportera
+  const [selectedTransporterId, setSelectedTransporterId] = useState<number | null>(null);
+  const [transportCalendarOpen, setTransportCalendarOpen] = useState<boolean>(false);
+  const [transportDate, setTransportDate] = useState<Date | undefined>(undefined);
+
+  // Stan dla przypisywania firmy montażowej
+  const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
+  
+  // Stan dla aktywnej zakładki - ustawiamy domyślnie na podstawie roli
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    // Dla montażystów, którzy mają przypisaną firmę (właściciele jednoosobowych firm)
+    // pokazujemy sekcję szczegóły tak jak dla zwykłych firm
+    if (user?.role === 'installer' && user?.companyId !== null && user?.companyId !== undefined) {
+      return 'details';
+    }
+    // Dla transporterów domyślnie otwórz zakładkę Transport
+    if (user?.role === 'installer' && user?.services?.some(s => s.toLowerCase().includes('transport'))) {
+      return 'transport';
+    }
+    // Dla montażystów, gdy nie są transporterami, pokaż zakładkę Montaż
+    if (user?.role === 'installer') {
+      return 'installation';
+    }
+    // Dla pozostałych użytkowników domyślnie otwórz zakładkę Szczegóły
+    return 'details';
+  });
+  
+  // Funkcja helper do określania domyślnej zakładki w zależności od roli użytkownika
+  // używana po załadowaniu danych zamówienia
+  const getDefaultTab = () => {
+    // Może być wywołana tylko wtedy, gdy order jest już załadowane
+    if (!order) return activeTab;
+    
+    // Sprawdzenie, czy zalogowany użytkownik jest przypisanym montażystą
+    const localIsAssignedInstaller = 
+      user?.role === 'installer' && 
+      order.installerId === user?.id;
+    
+    // Dla firm jednosobowych (montażystów z przypisaną firmą) pokaż Szczegóły
+    if (isOnePersonCompany) {
+      return 'details';
+    }
+    
+    // Dla czystych transporterów (tylko transport) - zakładka Transport
+    if (isTransporter && !isCombinedInstallerAndTransporter) {
+      return 'transport';
+    }
+    
+    // Dla montażystów (tylko montaż) - zakładka Montaż
+    if (isInstaller || localIsAssignedInstaller) {
+      return 'installation';
+    }
+    
+    // Dla kombinowanych montażystów/transporterów
+    if (isCombinedInstallerAndTransporter) {
+      // Jeśli jest przypisanym montażystą, pokaż zakładkę Montaż
+      if (localIsAssignedInstaller) {
+        return 'installation';
+      }
+      // Jeśli jest przypisanym transporterem, pokaż zakładkę Transport
+      if (isAssignedTransporter) {
+        return 'transport';
+      }
+      // Domyślnie dla kombinowanych, pokaż Montaż
+      return 'installation';
+    }
+    
+    // Dla pozostałych użytkowników pokaż Szczegóły
+    return 'details';
+  };
+  const [companyDialogOpen, setCompanyDialogOpen] = useState<boolean>(false);
+  
+  // Pobieranie danych zlecenia
+  // Poprawne typowanie dla obiektu zamówienia
+  const { data: order = {}, isLoading, isError } = useQuery<any>({
+    queryKey: [`/api/orders/${id}`],
+    refetchOnWindowFocus: false,
+  });
+
+  // Sprawdzenie, czy zalogowany użytkownik jest transporterem przypisanym do zlecenia
+  const isAssignedTransporter = 
+    user?.role === 'installer' && 
+    user?.services?.includes('Transport') && 
+    order?.transporterId === user?.id;
+    
+  // Sprawdzenie, czy zalogowany użytkownik jest montażystą przypisanym do zlecenia
+  const isAssignedInstaller = 
+    user?.role === 'installer' && 
+    order?.installerId === user?.id;
+    
+  // Sprawdzenie, czy zalogowany użytkownik jest transporterem (ogólnie)
+  const isTransporter = 
+    user?.role === 'installer' && 
+    user?.services?.some(s => s.toLowerCase().includes('transport'));
+    
+  // Sprawdzenie, czy zalogowany użytkownik jest montażystą (ale nie transporterem)
+  const isInstaller = 
+    user?.role === 'installer' && 
+    !isTransporter;
+    
+  // Sprawdzenie, czy użytkownik jest montażystą z uprawnieniami transportowymi (może robić obie rzeczy)
+  const isCombinedInstallerAndTransporter =
+    user?.role === 'installer' &&
+    user?.services?.some(s => s.toLowerCase().includes('transport')) &&
+    user?.services?.some(s => !s.toLowerCase().includes('transport'));
+    
+  // Sprawdza czy firma jednosobowa (montażysta lub transporter, który ma przypisaną firmę - czyli jest jej właścicielem)
+  const isOnePersonCompany = 
+    user?.role === 'installer' && 
+    user?.companyId !== null && 
+    user?.companyId !== undefined;
+
+  // Pobieranie montażystów (dla administratorów, firm, i właścicieli firm jednosobowych)
+  const canAssignInstaller = 
+    user?.role === 'admin' || 
+    user?.role === 'company' || 
+    isOnePersonCompany ||
+    ((user?.role === 'worker') && user.position === 'manager');
+
+  const { data: installers = [], isLoading: isLoadingInstallers } = useQuery<any[]>({
+    queryKey: ['/api/installers', { orderId: id }],
+    queryFn: async () => {
+      const response = await fetch(`/api/installers?orderId=${id}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    },
+    enabled: canAssignInstaller && !!id,
+    refetchOnWindowFocus: false,
+  });
+  
+  // Pobieranie transporterów (installerów z uprawnieniami do transportu)
+  const canAssignTransporter = 
+    user?.role === 'admin' || 
+    user?.role === 'company' || 
+    isOnePersonCompany ||
+    ((user?.role === 'worker') && user.position === 'manager');
+
+  const { data: transporters = [], isLoading: isLoadingTransporters } = useQuery<any[]>({
+    queryKey: ['/api/transporters', { orderId: id }],
+    queryFn: async () => {
+      const response = await fetch(`/api/transporters?orderId=${id}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    },
+    enabled: canAssignTransporter && !!id && !!order?.companyId,
+    refetchOnWindowFocus: false,
+  });
+  
+  // Pobieranie firm montażowych (dla administratorów i pracowników sklepu)
+  const canAssignCompany = 
+    user?.role === 'admin' || 
+    user?.role === 'worker';
+    
+  const { data: companies = [], isLoading: isLoadingCompanies } = useQuery<any[]>({
+    queryKey: ['/api/companies'],
+    enabled: canAssignCompany,
+    refetchOnWindowFocus: false,
+  });
+
+  // Mutacja do aktualizacji statusu
+  const updateStatusMutation = useMutation({
+    mutationFn: async (data: UpdateOrderStatus) => {
+      const response = await apiRequest('PATCH', `/api/orders/${id}/status`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      setComments('');
+      setStatus(null);
+      queryClient.invalidateQueries({ queryKey: [`/api/orders/${id}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      toast({
+        title: 'Status zaktualizowany',
+        description: 'Status zlecenia został pomyślnie zaktualizowany.',
+      });
+    },
+  });
+
+  // Mutacja do przypisania montażysty
+  const assignInstallerMutation = useMutation({
+    mutationFn: async (data: { 
+      installerId: number, 
+      installationDate: string | undefined 
+    }) => {
+      const response = await apiRequest('PATCH', `/api/orders/${id}/assign-installer`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      setCalendarOpen(false);
+      queryClient.invalidateQueries({ queryKey: [`/api/orders/${id}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      toast({
+        title: 'Montażysta przypisany',
+        description: 'Montażysta został pomyślnie przypisany do zlecenia.',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Błąd',
+        description: 'Nie udało się przypisać montażysty do zlecenia.',
+        variant: 'destructive',
+      });
+    }
+  });
+  
+  // Mutacja do przypisania transportera
+  const assignTransporterMutation = useMutation({
+    mutationFn: async (data: { 
+      transporterId: number, 
+      transportDate: string 
+    }) => {
+      const response = await apiRequest('PATCH', `/api/orders/${id}/assign-transporter`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      setTransportCalendarOpen(false);
+      queryClient.invalidateQueries({ queryKey: [`/api/orders/${id}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      toast({
+        title: 'Transporter przypisany',
+        description: 'Transporter został pomyślnie przypisany do zlecenia.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Błąd',
+        description: error?.message || 'Nie udało się przypisać transportera do zlecenia.',
+        variant: 'destructive',
+      });
+    }
+  });
+  
+  // Mutacja do aktualizacji daty transportu (dla firm jednoosobowych)
+  const updateTransportDateMutation = useMutation({
+    mutationFn: async (data: { 
+      transportDate: string 
+    }) => {
+      const response = await apiRequest('PATCH', `/api/orders/${id}/transport-status`, {
+        transportStatus: order.transportStatus,
+        transportDate: data.transportDate
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      setTransportCalendarOpen(false);
+      queryClient.invalidateQueries({ queryKey: [`/api/orders/${id}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      toast({
+        title: 'Data transportu zaktualizowana',
+        description: 'Data transportu została pomyślnie zmieniona.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Błąd',
+        description: error?.message || 'Nie udało się zaktualizować daty transportu.',
+        variant: 'destructive',
+      });
+    }
+  });
+  
+  // Mutacja do aktualizacji daty montażu
+  const updateInstallationDateMutation = useMutation({
+    mutationFn: async (data: { 
+      installationDate: string 
+    }) => {
+      // Przygotuj dane do aktualizacji
+      const updateData: any = {
+        installationStatus: order.installationStatus || 'Nowe',
+        installationDate: data.installationDate
+      };
+      
+      // Dodaj transportStatus tylko jeśli zlecenie ma transport
+      if (order.withTransport) {
+        updateData.transportStatus = order.transportStatus;
+      }
+      
+      console.log("Wysyłam dane do aktualizacji montażu:", updateData);
+      
+      const response = await apiRequest('PATCH', `/api/orders/${id}/status`, updateData);
+      return response.json();
+    },
+    onSuccess: () => {
+      setCalendarOpen(false);
+      queryClient.invalidateQueries({ queryKey: [`/api/orders/${id}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      toast({
+        title: 'Data montażu zaktualizowana',
+        description: 'Data montażu została pomyślnie zaktualizowana.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Błąd',
+        description: error?.message || 'Nie udało się zaktualizować daty montażu.',
+        variant: 'destructive',
+      });
+    }
+  });
+  
+  // Mutacja do przypisania firmy montażowej do zlecenia
+  const assignCompanyMutation = useMutation({
+    mutationFn: async (data: { companyId: number }) => {
+      const response = await apiRequest('PATCH', `/api/orders/${id}/assign-company`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      setCompanyDialogOpen(false);
+      setSelectedCompanyId(null);
+      queryClient.invalidateQueries({ queryKey: [`/api/orders/${id}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      toast({
+        title: 'Firma przypisana',
+        description: 'Firma montażowa została pomyślnie przypisana do zlecenia.',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Błąd',
+        description: 'Nie udało się przypisać firmy montażowej do zlecenia.',
+        variant: 'destructive',
+      });
+    }
+  });
+
+  // Mutacja do usuwania zdjęć
+  const deletePhotoMutation = useMutation({
+    mutationFn: async (photoUrl: string) => {
+      const photoId = photoUrl.split('/').pop();
+      const response = await apiRequest('DELETE', `/api/orders/${id}/photos?photoId=${photoId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/orders/${id}`] });
+      toast({
+        title: 'Zdjęcie usunięte',
+        description: 'Zdjęcie zostało pomyślnie usunięte.',
+      });
+    },
+  });
+
+  // Funkcje obsługujące załączanie zdjęć
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.dataTransfer.files) {
+      const files = Array.from(e.dataTransfer.files);
+      const imageFiles = files.filter(file => file.type.startsWith('image/'));
+      setSelectedFiles(prev => [...prev, ...imageFiles]);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      setSelectedFiles(prev => [...prev, ...files]);
+    }
+  };
+
+  const handleRemoveSelectedFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleCallClient = () => {
+    if (order?.clientPhone) {
+      window.location.href = `tel:${order.clientPhone}`;
+    }
+  };
+
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileUpload = async () => {
+    if (selectedFiles.length === 0) return;
+
+    setUploadingPhotos(true);
+    const formData = new FormData();
+    selectedFiles.forEach(file => {
+      formData.append('photos', file);
+    });
+
+    try {
+      const response = await fetch(`/api/orders/${id}/photos`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload photos');
+      }
+
+      setSelectedFiles([]);
+      queryClient.invalidateQueries({ queryKey: [`/api/orders/${id}`] });
+
+      toast({
+        title: 'Zdjęcia przesłane',
+        description: 'Zdjęcia zostały pomyślnie przesłane.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Błąd przesyłania',
+        description: 'Nie udało się przesłać zdjęć.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingPhotos(false);
+    }
+  };
+  
+  // Funkcja obsługująca przypisanie montażysty
+  const handleAssignInstaller = () => {
+    if (!selectedInstallerId) {
+      toast({
+        title: 'Wybierz montażystę',
+        description: 'Musisz wybrać montażystę, aby go przypisać do zlecenia.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const formattedDate = installationDate 
+      ? format(installationDate, 'yyyy-MM-dd')
+      : undefined;
+
+    assignInstallerMutation.mutate({
+      installerId: selectedInstallerId,
+      installationDate: formattedDate,
+    });
+  };
+  
+  // Funkcja obsługująca aktualizację daty montażu
+  const handleUpdateInstallationDate = () => {
+    if (!installationDate) {
+      toast({
+        title: 'Wybierz datę montażu',
+        description: 'Musisz wybrać datę montażu.',

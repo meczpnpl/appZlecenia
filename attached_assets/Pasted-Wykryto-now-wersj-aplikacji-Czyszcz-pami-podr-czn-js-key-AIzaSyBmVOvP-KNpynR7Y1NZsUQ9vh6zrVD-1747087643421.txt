@@ -1,0 +1,63 @@
+Wykryto nową wersję aplikacji. Czyszczę pamięć podręczną.
+js?key=AIzaSyBmVOvP_KNpynR7Y1NZsUQ9vh6zrVD6Zos&libraries=places&callback=initializeGoogleMapsAddressAutocomplete:1765 Google Maps JavaScript API has been loaded directly without loading=async. This can result in suboptimal performance. For best-practice loading patterns please see https://goo.gle/js-api-loading
+rga @ js?key=AIzaSyBmVOvP_KNpynR7Y1NZsUQ9vh6zrVD6Zos&libraries=places&callback=initializeGoogleMapsAddressAutocomplete:1765
+(anonymous) @ js?key=AIzaSyBmVOvP_KNpynR7Y1NZsUQ9vh6zrVD6Zos&libraries=places&callback=initializeGoogleMapsAddressAutocomplete:14
+(anonymous) @ js?key=AIzaSyBmVOvP_KNpynR7Y1NZsUQ9vh6zrVD6Zos&libraries=places&callback=initializeGoogleMapsAddressAutocomplete:1999
+(anonymous) @ js?key=AIzaSyBmVOvP_KNpynR7Y1NZsUQ9vh6zrVD6Zos&libraries=places&callback=initializeGoogleMapsAddressAutocomplete:1999Understand this warning
+login:417 Instaluję poprawkę WebSocket v2.0
+login:549 Naprawa WebSocket zainstalowana
+login:557 BEL-POL URL Fixer - uruchomiony
+login:560 URL Info: {current: 'https://e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev/login', host: 'e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev', origin: 'https://e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev', pathname: '/login'}
+login:430 Przechwycono próbę połączenia WebSocket: wss://e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev:/?token=pkP8-YUF5Wb5
+chunk-RPCDYKBN.js?v=52013e39:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+main.tsx:11 Bel-Pol System - wersja 1.2.0
+main.tsx:64 React root został utworzony
+main.tsx:66 App został renderowany
+login:628 BEL-POL URL Fixer - DOM załadowany, sprawdzam parametry URL
+App.tsx:37 App.tsx został załadowany - wersja 1.2.0
+auth.tsx:37 AuthProvider v1.8 renderowany
+auth.tsx:48 Sprawdzanie autentykacji użytkownika...
+browser-polyfill.js:1 Returning a Promise is the preferred way to send a reply from an onMessage/onMessageExternal listener, as the sendResponse will be removed from the specs (See https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/API/runtime/onMessage) Error
+    at n (chrome-extension://dacdinoicboceafielngnmjjplncljhj/lib/js/browser-polyfill.js:1:8113)
+n @ browser-polyfill.js:1
+Promise.then
+(anonymous) @ content.js:334
+(anonymous) @ content.js:334
+x.reject @ browser-polyfill.js:1Understand this warning
+login:569 BEL-POL URL Fixer - strona załadowana, weryfikuję zawartość
+main.tsx:42 
+            
+            
+           GET https://e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev/api/auth/me?_=1747087622664 401 (Unauthorized)
+window.fetch @ main.tsx:42
+checkAuth @ auth.tsx:49
+(anonymous) @ auth.tsx:72
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=52013e39:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=52013e39:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=52013e39:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=52013e39:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=52013e39:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=52013e39:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=52013e39:19447
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=52013e39:18868
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=52013e39:9119
+commitRootImpl @ chunk-RPCDYKBN.js?v=52013e39:19432
+commitRoot @ chunk-RPCDYKBN.js?v=52013e39:19277
+finishConcurrentRender @ chunk-RPCDYKBN.js?v=52013e39:18805
+performConcurrentWorkOnRoot @ chunk-RPCDYKBN.js?v=52013e39:18718
+workLoop @ chunk-RPCDYKBN.js?v=52013e39:197
+flushWork @ chunk-RPCDYKBN.js?v=52013e39:176
+performWorkUntilDeadline @ chunk-RPCDYKBN.js?v=52013e39:384Understand this error
+auth.tsx:61 Nie zalogowany, status: 401
+auth.tsx:37 AuthProvider v1.8 renderowany
+Sidebar.tsx:52 Sidebar - user: null
+Sidebar.tsx:53 Sidebar - isAdmin: false
+Sidebar.tsx:54 Sidebar - user?.role: undefined
+Sidebar.tsx:55 Sidebar - isTransporter: false
+AppShell.tsx:19 AppShell - Auth State: {isAuthenticated: false, isAdmin: false, userPresent: false, userRole: undefined}
+App.tsx:82 Przejście z: [object Object] do: /login
+App.tsx:87 Bezpośrednie przejście do strony logowania lub API
+login:157 Podpinanie diagnostyki do zdarzeń Google Maps
+login:250 Diagnostyka Google Maps zainicjalizowana
+login:1 Error while trying to use the following icon from the Manifest: https://e519d68a-de09-4292-bd07-a3bf2bac251f-00-1nr9v2b3h61dn.kirk.replit.dev/belpol-icon-192.png (Download error or resource isn't a valid image)Understand this error
+login:590 BEL-POL URL Fixer - sprawdzam zawartość: OK

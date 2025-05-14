@@ -1,0 +1,500 @@
+                
+                <Button 
+                  onClick={handleAssignInstaller}
+                  className="mt-4"
+                  disabled={assignInstallerMutation.isPending || !selectedInstallerId}
+                >
+                  {assignInstallerMutation.isPending ? (
+                    <div className="flex items-center">
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Przypisywanie...
+                    </div>
+                  ) : (
+                    <div className="flex items-center">
+                      <User className="h-4 w-4 mr-2" />
+                      {order.installerId ? "Zmień montażystę" : "Przypisz montażystę"}
+                    </div>
+                  )}
+                </Button>
+              </div>
+            )}
+            
+            {/* Transporter Assignment - For admin and companies */}
+            {canAssignTransporter && order.companyId && order.withTransport && 
+              // Dodanie warunku dla firm jednoosobowych - nie pokazuj sekcji przypisywania transportera,
+              // jeżeli firma jest jednoosobowa i montażysta jest już przypisany
+              !(isOnePersonCompany && order.installerId === user?.id) && (
+              <div className="mt-8 border-t pt-6">
+                <h3 className="font-medium text-lg mb-4">
+                  {order.transporterId ? "Zmień transportera" : "Przypisz transportera"}
+                </h3>
+                
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Wybierz transportera
+                    </label>
+                    <Select 
+                      value={selectedTransporterId?.toString() || ""} 
+                      onValueChange={(value) => {
+                        if (value) setSelectedTransporterId(parseInt(value));
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue 
+                          placeholder={
+                            isLoadingTransporters 
+                              ? "Ładowanie transporterów..." 
+                              : order.transporterId 
+                                ? `${order.transporterName}` 
+                                : "Wybierz transportera"
+                          } 
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {isLoadingTransporters ? (
+                          <SelectItem value="-1" disabled>Ładowanie transporterów...</SelectItem>
+                        ) : !transporters || !Array.isArray(transporters) || transporters.length === 0 ? (
+                          <>
+                            <SelectItem value="-1" disabled>Brak dostępnych transporterów</SelectItem>
+                            <SelectItem value="-2" disabled>Przypisz montażystom uprawnienia 'transport' w ustawieniach</SelectItem>
+                          </>
+                        ) : (
+                          transporters.map((transporter: any) => (
+                            <SelectItem key={transporter.id} value={transporter.id.toString()}>
+                              {transporter.name} {transporter.services && Array.isArray(transporter.services) 
+                                ? `(${transporter.services.join(', ')})` 
+                                : ''}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {order.transportDate ? "Data transportu: " + format(new Date(order.transportDate), "dd.MM.yyyy", { locale: pl }) : "Wybierz datę transportu"}
+                    </label>
+                    <Popover open={transportCalendarOpen} onOpenChange={setTransportCalendarOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal"
+                        >
+                          <Truck className="mr-2 h-4 w-4" />
+                          {transportDate ? (
+                            format(transportDate, "dd.MM.yyyy", { locale: pl })
+                          ) : order.transportDate ? (
+                            format(new Date(order.transportDate), "dd.MM.yyyy", { locale: pl })
+                          ) : (
+                            <span>Wybierz datę transportu</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <CalendarComponent
+                          mode="single"
+                          selected={transportDate}
+                          onSelect={(date) => {
+                            if (date) setTransportDate(date);
+                          }}
+                          initialFocus
+                          locale={pl}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    
+                    {order.installationDate && order.serviceType === 'podłogi' && (
+                      <p className="text-xs text-amber-600 mt-1">
+                        <AlertTriangle className="inline-block h-3 w-3 mr-1" />
+                        Uwaga: Transport musi być min. 2 dni przed montażem ({format(new Date(order.installationDate), "dd.MM.yyyy", { locale: pl })})
+                      </p>
+                    )}
+                    
+                    {order.installationDate && order.serviceType !== 'podłogi' && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        <Calendar className="inline-block h-3 w-3 mr-1" />
+                        Data montażu: {format(new Date(order.installationDate), "dd.MM.yyyy", { locale: pl })}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                
+                <Button 
+                  onClick={handleAssignTransporter}
+                  className="mt-4"
+                  disabled={assignTransporterMutation.isPending || !selectedTransporterId || !transportDate}
+                >
+                  {assignTransporterMutation.isPending ? (
+                    <div className="flex items-center">
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Przypisywanie...
+                    </div>
+                  ) : (
+                    <div className="flex items-center">
+                      <Truck className="h-4 w-4 mr-2" />
+                      {order.transporterId ? "Zmień transportera" : "Przypisz transportera"}
+                    </div>
+                  )}
+                </Button>
+              </div>
+            )}
+            
+            {/* Order Status - For admin, company and installer */}
+            {canEditStatus && (
+              <div className="mt-8 border-t pt-6">
+                <h3 className="font-medium text-lg mb-4">Aktualizuj status</h3>
+                <div className="grid md:grid-cols-2 gap-x-6 gap-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Status zlecenia
+                    </label>
+                    <Select 
+                      value={status || ''} 
+                      onValueChange={(value) => setStatus(value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Wybierz nowy status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {/* Status administracyjny - tylko admin i pracownicy */}
+                        {(user?.role === 'admin' || user?.role === 'worker') && (
+                          <>
+                            <SelectItem value="złożone">Złożone</SelectItem>
+                            <SelectItem value="transport wykonany">Transport wykonany</SelectItem>
+                            <SelectItem value="zafakturowane">Zafakturowane</SelectItem>
+                          </>
+                        )}
+                        
+                        {/* Status instalacyjny - dostępny dla wszystkich uprawnionych */}
+                        <SelectItem value="zlecenie złożone">Zlecenie złożone</SelectItem>
+                        <SelectItem value="w realizacji">W realizacji</SelectItem>
+                        <SelectItem value="wykonane">Wykonane</SelectItem>
+                        <SelectItem value="reklamacja">Reklamacja</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Status transportu - dla transporterów i administratorów */}
+                  {(user?.role === 'admin' || isAssignedTransporter) && order.withTransport && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Status transportu
+                      </label>
+                      <Select 
+                        value={order.transportStatus || ''} 
+                        onValueChange={(value) => {
+                          // Aktualizacja statusu transportu
+                          updateStatusMutation.mutate({
+                            installationStatus: order.installationStatus || 'Nowe',  // Zachowaj aktualny status instalacji
+                            transportStatus: value as "gotowe do transportu" | "transport zaplanowany" | "transport dostarczony" | undefined,      // Zaktualizuj status transportu
+                            comments: '',               // Nie dodawaj komentarza
+                          });
+                        }}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Wybierz status transportu" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="gotowe do transportu">Gotowe do transportu</SelectItem>
+                          <SelectItem value="transport zaplanowany">Transport zaplanowany</SelectItem>
+                          <SelectItem value="transport dostarczony">Transport dostarczony</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Przycisk zapisz zmiany */}
+                <div className="mt-4 flex justify-end">
+                  <Button 
+                    className="bg-primary hover:bg-primary-dark"
+                    onClick={() => {
+                      if (!status && !order.installationStatus) {
+                        toast({
+                          title: "Błąd",
+                          description: "Wybierz status zlecenia",
+                          variant: "destructive"
+                        });
+                        return;
+                      }
+                      
+                      // Przygotuj dane aktualizacji zgodnie z nowym schematem
+                      const updateData: Partial<UpdateOrderStatus> = {
+                        installationStatus: (status || order.installationStatus || 'Nowe'),
+                        documentsProvided: order.documentsProvided
+                      };
+                      
+                      // Dodaj pole transportStatus tylko jeśli zlecenie ma transport
+                      if (order.withTransport && order.transportStatus) {
+                        updateData.transportStatus = order.transportStatus as any;
+                      }
+                      
+                      // Dodaj notatki reklamacji jeśli potrzeba
+                      if (updateData.installationStatus === 'Reklamacja' && complaintNotes) {
+                        updateData.complaintNotes = complaintNotes;
+                      }
+                      
+                      updateStatusMutation.mutate(updateData as UpdateOrderStatus);
+                    }}
+                    disabled={updateStatusMutation.isPending}
+                  >
+                    {updateStatusMutation.isPending ? (
+                      <div className="flex items-center">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Zapisywanie...
+                      </div>
+                    ) : (
+                      <div className="flex items-center">
+                        <RotateCw className="h-4 w-4 mr-2" />
+                        Zaktualizuj status
+                      </div>
+                    )}
+                  </Button>
+                </div>
+                
+                {/* Dodatkowe komentarze */}
+                <div className="mt-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Komentarz (opcjonalnie)
+                  </label>
+                  <div className="flex items-start gap-4">
+                    <Textarea 
+                      placeholder="Dodaj komentarz lub uwagę do zlecenia..." 
+                      className="flex-1"
+                      value={comments}
+                      onChange={(e) => setComments(e.target.value)}
+                    />
+                    
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        const updateData: Partial<UpdateOrderStatus> = {
+                          installationStatus: (status || order.installationStatus || 'Nowe'),
+                          comments,
+                          transportStatus: order.transportStatus,
+                        };
+                        
+                        updateStatusMutation.mutate(updateData as UpdateOrderStatus);
+                      }}
+                      disabled={updateStatusMutation.isPending || !comments}
+                    >
+                      {updateStatusMutation.isPending ? (
+                        <div className="flex items-center">
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Zapisywanie...
+                        </div>
+                      ) : (
+                        <div className="flex items-center">
+                          <FileText className="h-4 w-4 mr-2" />
+                          Dodaj komentarz
+                        </div>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+          
+          {/* Transport Tab - For transporters and one-person companies */}
+          <TabsContent value="transport" className="mt-0">
+              <div className="space-y-6">
+                <div className="bg-blue-50 p-6 rounded-lg border border-blue-100">
+                  <h3 className="text-lg font-semibold mb-4 text-blue-800">Panel Transportu</h3>
+                  
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-600 mb-2">Szczegóły dostawy</h4>
+                      <dl className="space-y-3">
+                        <div>
+                          <dt className="text-xs text-gray-500">Adres dostawy</dt>
+                          <dd className="font-medium">
+                            <ClickableAddress 
+                              address={order.installationAddress || ''} 
+                              iconSize={16}
+                            />
+                          </dd>
+                        </div>
+                        
+                        <div>
+                          <dt className="text-xs text-gray-500">Telefon klienta</dt>
+                          <dd className="font-medium">
+                            <a href={`tel:${order.clientPhone}`} className="text-blue-600 hover:underline flex items-center">
+                              <Phone className="h-3 w-3 mr-1" />
+                              {order.clientPhone}
+                            </a>
+                          </dd>
+                        </div>
+                        
+                        <div>
+                          <dt className="text-xs text-gray-500">Data transportu</dt>
+                          <dd className="font-medium flex items-center">
+                            <Calendar className="h-3 w-3 mr-1 text-gray-400" />
+                            {order.transportDate ? (
+                              <span>{new Date(order.transportDate).toLocaleDateString('pl-PL')}</span>
+                            ) : (
+                              <span className="text-gray-500">nieustalona</span>
+                            )}
+                            
+                            {/* Przycisk do aktualizacji daty transportu dla firm jednoosobowych */}
+                            {isOnePersonCompany && (
+                              <Popover open={transportCalendarOpen} onOpenChange={setTransportCalendarOpen}>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="ml-2 h-7 text-xs"
+                                  >
+                                    <Pencil className="h-3 w-3 mr-1" />
+                                    Zmień datę
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                  <div className="p-3">
+                                    <h4 className="text-sm font-medium mb-2">Wybierz datę transportu</h4>
+                                    <CalendarComponent
+                                      mode="single"
+                                      selected={transportDate}
+                                      onSelect={(date) => {
+                                        if (date) setTransportDate(date);
+                                      }}
+                                      initialFocus
+                                      disabled={(date) => date < new Date()}
+                                    />
+                                    <div className="flex justify-end mt-4">
+                                      <Button 
+                                        onClick={handleUpdateTransportDate}
+                                        disabled={!transportDate || updateTransportDateMutation.isPending}
+                                      >
+                                        {updateTransportDateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        Zapisz datę
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
+                            )}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                    
+                    <div className="flex flex-col">
+                      <h4 className="text-sm font-medium text-gray-600 mb-2">Status transportu</h4>
+                      <div className="p-4 bg-white rounded-md border border-gray-200 flex-grow">
+                        <div className="mb-4">
+                          <p className="text-sm text-gray-500 mb-2">Aktualny status:</p>
+                          <Badge 
+                            className="text-base py-1.5 px-3" 
+                            variant={getTransportStatusBadgeVariant(order.transportStatus || '')}
+                          >
+                            {getStatusLabel(order.transportStatus || 'Brak')}
+                          </Badge>
+                        </div>
+                        
+                        <div>
+                          <p className="text-sm text-gray-500 mb-2">Zmień status:</p>
+                          <Select 
+                            value={order.transportStatus || ''} 
+                            onValueChange={(value) => {
+                              // Wyświetl informacje o danych do aktualizacji
+                              console.log("Wysyłam dane do aktualizacji transportu:", {
+                                transportStatus: value,
+                              });
+                              
+                              // Używamy dedykowanego endpointu do aktualizacji statusu transportu
+                              apiRequest('PATCH', `/api/orders/${id}/transport-status`, {
+                                transportStatus: value
+                              })
+                              .then(() => {
+                                // Po sukcesie odświeżamy dane zlecenia
+                                queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+                                queryClient.invalidateQueries({ queryKey: [`/api/orders/${id}`] });
+                                
+                                toast({
+                                  title: "Sukces",
+                                  description: "Status transportu został zaktualizowany",
+                                  variant: "default"
+                                });
+                              })
+                              .catch(error => {
+                                toast({
+                                  title: "Błąd",
+                                  description: `Nie udało się zaktualizować statusu transportu: ${error.message || 'Nieznany błąd'}`,
+                                  variant: "destructive"
+                                });
+                              });
+                            }}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Wybierz status transportu" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {/* Jeśli status jest już "transport zaplanowany", pokaż tylko opcję dostarczenia */}
+                              {order.transportStatus === 'transport zaplanowany' ? (
+                                <SelectItem value="transport dostarczony">Transport dostarczony</SelectItem>
+                              ) : order.transportStatus === 'gotowe do transportu' ? (
+                                <>
+                                  <SelectItem value="gotowe do transportu">Gotowe do transportu</SelectItem>
+                                  <SelectItem value="transport zaplanowany">Transport zaplanowany</SelectItem>
+                                </>
+                              ) : (
+                                <>
+                                  {/* Dla innych stanów (np. brak statusu) pokaż pełną ścieżkę */}
+                                  <SelectItem value="gotowe do transportu">Gotowe do transportu</SelectItem>
+                                  <SelectItem value="transport zaplanowany">Transport zaplanowany</SelectItem>
+                                  <SelectItem value="transport dostarczony">Transport dostarczony</SelectItem>
+                                </>
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6">
+                    <h4 className="text-sm font-medium text-gray-600 mb-2">Dodaj notatkę do transportu</h4>
+                    <div className="flex gap-2">
+                      <Textarea 
+                        placeholder="Np. Towar dostarczony, odbiór potwierdzony przez klienta..." 
+                        className="flex-grow"
+                        value={comments}
+                        onChange={(e) => setComments(e.target.value)}
+                      />
+                      <Button 
+                        className="self-start"
+                        onClick={() => {
+                          // Używamy dedykowanego endpointu do aktualizacji komentarza transportu
+                          apiRequest('PATCH', `/api/orders/${id}/transport-status`, {
+                            transportStatus: order.transportStatus,
+                            comments: comments
+                          })
+                          .then(() => {
+                            // Po sukcesie odświeżamy dane zlecenia
+                            queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+                            queryClient.invalidateQueries({ queryKey: [`/api/orders/${id}`] });
+                            
+                            // Czyszczenie pola komentarza po dodaniu
+                            setComments('');
+                            
+                            toast({
+                              title: "Sukces",
+                              description: "Komentarz został dodany",
+                              variant: "default"
+                            });
+                          })
+                          .catch(error => {
+                            toast({
+                              title: "Błąd",
+                              description: `Nie udało się dodać komentarza: ${error.message || 'Nieznany błąd'}`,
+                              variant: "destructive"
+                            });
+                          });
+                        }}
+                        disabled={updateStatusMutation.isPending || !comments}
+                      >
+                        {updateStatusMutation.isPending ? (
+                          <div className="flex items-center">

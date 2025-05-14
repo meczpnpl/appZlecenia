@@ -1,0 +1,131 @@
+          <TabsContent value="installation" className="mt-0">
+            <div className="space-y-6">
+              <div className="bg-blue-50 p-6 rounded-lg border border-blue-100">
+                <h3 className="text-lg font-semibold mb-4 text-blue-800">Panel Montażu</h3>
+                
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-600 mb-2">Informacje o kliencie</h4>
+                    <dl className="space-y-3">
+                      <div>
+                        <dt className="text-xs text-gray-500">Klient</dt>
+                        <dd className="font-medium flex items-center">
+                          <User className="h-4 w-4 mr-2 text-gray-400" />
+                          <span>{order.clientName}</span>
+                        </dd>
+                      </div>
+                      
+                      <div>
+                        <dt className="text-xs text-gray-500">Telefon</dt>
+                        <dd className="font-medium">
+                          <a 
+                            href={`tel:${order.clientPhone}`} 
+                            className="flex items-center text-primary-600 hover:underline"
+                          >
+                            <Phone className="h-4 w-4 mr-2 text-gray-400" />
+                            {order.clientPhone}
+                          </a>
+                        </dd>
+                      </div>
+                      
+                      <div>
+                        <dt className="text-xs text-gray-500">Adres montażu</dt>
+                        <dd className="font-medium">
+                          <ClickableAddress 
+                            address={order.installationAddress || ''} 
+                            iconSize={16}
+                          />
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-600 mb-2">Szczegóły zlecenia</h4>
+                    <dl className="space-y-3">
+                      <div>
+                        <dt className="text-xs text-gray-500">Typ usługi</dt>
+                        <dd className="font-medium flex items-center">
+                          <Wrench className="h-4 w-4 mr-2 text-gray-400" />
+                          {order.serviceType}
+                        </dd>
+                      </div>
+                      
+                      <div>
+                        <dt className="text-xs text-gray-500">Status montażu</dt>
+                        <dd className="font-medium">
+                          <StatusBadge status={order.installationStatus || 'Nowe'} type="installation" />
+                        </dd>
+                      </div>
+                      
+                      <div>
+                        <dt className="text-xs text-gray-500">Data montażu</dt>
+                        <dd className="font-medium flex items-center">
+                          <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+                          {order.installationDate ? formatDate(new Date(order.installationDate)) : 'Nie ustalono'}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Reszta zawartości zakładki Montaż */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="font-medium text-lg mb-4">Dokumenty i uwagi</h3>
+                  <dl className="space-y-4">
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">Proponowany termin</dt>
+                      <dd className="mt-1 flex items-center">
+                        <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+                        <span>{order.proposedDate || 'Nie określono'}</span>
+                      </dd>
+                    </div>
+                    
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">Dokumenty</dt>
+                      <dd className="mt-1 flex items-center">
+                        <File className="h-4 w-4 mr-2 text-gray-400" />
+                        <span>{order.documentsProvided ? 'Dostarczone' : 'Brak'}</span>
+                      </dd>
+                    </div>
+                    
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">Notatki</dt>
+                      <dd className="mt-1 text-gray-700 whitespace-pre-line">
+                        {order.notes || 'Brak notatek'}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+                
+                <div>
+                  <h3 className="font-medium text-lg mb-4">Przypisani wykonawcy</h3>
+                  <dl className="space-y-4">
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">Firma montażowa</dt>
+                      <dd className="mt-1 flex items-center">
+                        <Building2 className="h-4 w-4 mr-2 text-gray-400" />
+                        <span>{order.companyName || 'Nie przypisano'}</span>
+                      </dd>
+                    </div>
+                    
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">Montażysta</dt>
+                      <dd className="mt-1 flex items-center">
+                        <UserCog className="h-4 w-4 mr-2 text-gray-400" />
+                        <span>{order.installerName || 'Nie przypisano'}</span>
+                      </dd>
+                    </div>
+                    
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">Sklep</dt>
+                      <dd className="mt-1 flex items-center">
+                        <Store className="h-4 w-4 mr-2 text-gray-400" />
+                        <span>{order.storeName || 'Brak'}</span>
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>

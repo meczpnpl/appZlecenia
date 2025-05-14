@@ -1,0 +1,76 @@
+              {/* Panel akcji dla montażysty */}
+              {order.installerId === user?.id && (
+                <div className="bg-blue-50 p-6 rounded-lg border border-blue-100">
+                  <h3 className="text-lg font-semibold mb-4 text-blue-800">Zmień status montażu</h3>
+                  
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className={`${(order.installationStatus || '') === 'montaż zaplanowany' ? 'bg-primary-50 border-primary-200' : ''}`}
+                        onClick={() => updateOrderStatus('montaż zaplanowany')}
+                        disabled={orderUpdateMutation.isPending}
+                      >
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Montaż zaplanowany
+                      </Button>
+                      
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className={`${(order.installationStatus || '') === 'montaż w trakcie' ? 'bg-primary-50 border-primary-200' : ''}`}
+                        onClick={() => updateOrderStatus('montaż w trakcie')}
+                        disabled={orderUpdateMutation.isPending}
+                      >
+                        <Hourglass className="h-4 w-4 mr-2" />
+                        Montaż w trakcie
+                      </Button>
+                      
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className={`${(order.installationStatus || '') === 'montaż wykonany' ? 'bg-primary-50 border-primary-200' : ''}`}
+                        onClick={() => updateOrderStatus('montaż wykonany')}
+                        disabled={orderUpdateMutation.isPending}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Montaż wykonany
+                      </Button>
+                    </div>
+                    
+                    <div className="mt-4">
+                      <Label htmlFor="installationDate" className="block text-sm font-medium text-gray-700">
+                        Data montażu
+                      </Label>
+                      <div className="mt-2">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={`w-full pl-3 text-left font-normal ${!order.installationDate ? 'text-gray-400' : ''}`}
+                            >
+                              <Calendar className="mr-2 h-4 w-4" />
+                              {order.installationDate ? formatDate(new Date(order.installationDate)) : 'Wybierz datę'}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              selected={order.installationDate ? new Date(order.installationDate) : undefined}
+                              onSelect={(date) => handleInstallationDateChange(date)}
+                              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </TabsContent>

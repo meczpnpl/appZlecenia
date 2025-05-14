@@ -1,0 +1,7 @@
+# Konfiguracja bazy danych nazwa.pl
+DATABASE_URL_EXTERNAL=postgres://server639308_zlecenia:ToM881465201@pgsql17.server639308.nazwa.pl:5432/server639308_zlecenia
+PGDATABASE_EXTERNAL=server639308_zlecenia
+PGUSER_EXTERNAL=server639308_zlecenia
+PGPASSWORD_EXTERNAL=ToM881465201
+PGHOST_EXTERNAL=pgsql17.server639308.nazwa.pl
+PGPORT_EXTERNAL=5432

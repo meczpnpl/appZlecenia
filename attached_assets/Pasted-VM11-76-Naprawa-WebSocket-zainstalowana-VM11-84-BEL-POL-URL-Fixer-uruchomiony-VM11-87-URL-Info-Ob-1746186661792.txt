@@ -1,0 +1,67 @@
+VM11:76 Naprawa WebSocket zainstalowana
+VM11:84 BEL-POL URL Fixer - uruchomiony
+VM11:87 URL Info: Object
+js?key=AIzaSyBmVOvP_KNpynR7Y1NZsUQ9vh6zrVD6Zos&libraries=places&callback=initializeGoogleMapsAddressAutocomplete:1622 Google Maps JavaScript API has been loaded directly without loading=async. This can result in suboptimal performance. For best-practice loading patterns please see https://goo.gle/js-api-loading
+oga @ js?key=AIzaSyBmVOvP_KNpynR7Y1NZsUQ9vh6zrVD6Zos&libraries=places&callback=initializeGoogleMapsAddressAutocomplete:1622Understand this warning
+VM11:17 Przechwycono próbę połączenia WebSocket: wss://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev:/?token=NopzmskCE1ks
+chunk-RPCDYKBN.js?v=76b8f4f3:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+main.tsx:20 React version: 18.3.1
+VM11:155 BEL-POL URL Fixer - DOM załadowany, sprawdzam parametry URL
+VM11:96 BEL-POL URL Fixer - strona załadowana, weryfikuję zawartość
+App.tsx:27 App.tsx został załadowany
+App.tsx:30 Current URL information: Object
+auth.tsx:24 AuthProvider rendering
+auth.tsx:35 Sprawdzanie autentykacji użytkownika...
+main.tsx:11 Service Worker zarejestrowany pomyślnie: ServiceWorkerRegistration
+api/auth/me:1 
+            
+            
+           Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+auth.tsx:46 Status odpowiedzi auth/me: 401
+auth.tsx:53 Nie zalogowany, status: 401
+auth.tsx:24 AuthProvider rendering
+Sidebar.tsx:47 Sidebar - user: null
+Sidebar.tsx:48 Sidebar - isAdmin: false
+Sidebar.tsx:49 Sidebar - user?.role: undefined
+service-worker.js:14 Opened cache
+chunk-RPCDYKBN.js?v=76b8f4f3:521 Warning: validateDOMNesting(...): <a> cannot appear as a descendant of <a>.
+    at a
+    at a
+    at https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=76b8f4f3:337:18
+    at div
+    at div
+    at Sidebar (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/src/components/layout/Sidebar.tsx?t=1746186008411:63:35)
+    at div
+    at AppShell (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/src/components/layout/AppShell.tsx?t=1746186008411:24:36)
+    at AppRoutes (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/src/App.tsx?t=1746186008411&v=kH0IL8yl87iPM5Flju9gw:84:40)
+    at Suspense
+    at Provider (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5SZQWSWC.js?v=76b8f4f3:48:15)
+    at TooltipProvider (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=76b8f4f3:59:5)
+    at AuthProvider (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/src/lib/auth.tsx?t=1746186008411:22:25)
+    at QueryClientProvider (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=76b8f4f3:2805:3)
+    at App
+printWarning @ chunk-RPCDYKBN.js?v=76b8f4f3:521Understand this error
+AppShell.tsx:19 AppShell - Auth State: Object
+login:1 Error while trying to use the following icon from the Manifest: https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/belpol-icon-192.png (Download error or resource isn't a valid image)Understand this error
+VM8:4 Podpinanie diagnostyki do zdarzeń Google Maps
+VM8:97 Diagnostyka Google Maps zainicjalizowana
+VM11:117 BEL-POL URL Fixer - sprawdzam zawartość: OK
+
+                
+          
+          
+          
+         Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies.Understand this warning
+Login.tsx:39 Próba logowania dla: tomekarso@gmail.com
+auth.tsx:77 Próba logowania dla: tomekarso@gmail.com
+auth.tsx:24 AuthProvider rendering
+auth.tsx:90 Status odpowiedzi logowania: 200
+auth.tsx:99 Dane zalogowanego użytkownika: {id: 1, email: 'tomekarso@gmail.com', name: 'Tomek Arso', phone: '500600700', role: 'admin', …}
+auth.tsx:24 AuthProvider rendering
+auth.tsx:108 Status sprawdzenia sesji po logowaniu: 200
+auth.tsx:110 Sesja poprawnie zapisana
+auth.tsx:24 AuthProvider rendering
+Sidebar.tsx:47 Sidebar - user: {id: 1, email: 'tomekarso@gmail.com', name: 'Tomek Arso', phone: '500600700', role: 'admin', …}
+Sidebar.tsx:48 Sidebar - isAdmin: true
+Sidebar.tsx:49 Sidebar - user?.role: admin
+AppShell.tsx:19 AppShell - Auth State: {isAuthenticated: true, isAdmin: true, userPresent: true, userRole: 'admin'}

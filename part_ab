@@ -1,0 +1,500 @@
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    const formattedDate = format(installationDate, 'yyyy-MM-dd');
+    
+    updateInstallationDateMutation.mutate({
+      installationDate: formattedDate,
+    });
+  };
+  
+  // Funkcja obsługująca aktualizację daty transportu (dla firm jednoosobowych)
+  const handleUpdateTransportDate = () => {
+    if (!transportDate) {
+      toast({
+        title: 'Wybierz datę transportu',
+        description: 'Musisz wybrać datę transportu.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // Sprawdzenie reguł biznesowych dla daty transportu
+    if (order.installationDate && order.serviceType && order.serviceType.toLowerCase().includes('podłog')) {
+      const installDate = parseISO(order.installationDate);
+      const minTransportDate = addDays(transportDate, 2);
+      
+      console.log('Sprawdzanie reguł dla podłóg:');
+      console.log('- Typ usługi:', order.serviceType);
+      console.log('- Data montażu:', format(installDate, 'yyyy-MM-dd'));
+      console.log('- Data transportu:', format(transportDate, 'yyyy-MM-dd'));
+      console.log('- Min data transportu:', format(minTransportDate, 'yyyy-MM-dd'));
+      console.log('- Czy data montażu przed datą minimalną:', isBefore(installDate, minTransportDate));
+      
+      if (isBefore(installDate, minTransportDate)) {
+        toast({
+          title: 'Nieprawidłowa data transportu',
+          description: 'Dla montażu podłóg transport musi być zaplanowany minimum 2 dni przed planowanym montażem.',
+          variant: 'destructive',
+        });
+        return;
+      }
+    } else if (order.installationDate && transportDate) {
+      const installDate = parseISO(order.installationDate);
+      
+      console.log('Sprawdzanie ogólnych reguł:');
+      console.log('- Data montażu:', format(installDate, 'yyyy-MM-dd'));
+      console.log('- Data transportu:', format(transportDate, 'yyyy-MM-dd'));
+      console.log('- Czy data montażu przed datą transportu:', isBefore(installDate, transportDate));
+      
+      if (isBefore(installDate, transportDate)) {
+        toast({
+          title: 'Nieprawidłowa data transportu',
+          description: 'Data transportu musi być wcześniejsza niż data montażu.',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
+    const formattedDate = format(transportDate, 'yyyy-MM-dd');
+
+    updateTransportDateMutation.mutate({
+      transportDate: formattedDate,
+    });
+  };
+
+  // Funkcja obsługująca przypisanie transportera
+  const handleAssignTransporter = () => {
+    if (!selectedTransporterId) {
+      toast({
+        title: 'Wybierz transportera',
+        description: 'Musisz wybrać transportera, aby go przypisać do zlecenia.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (!transportDate) {
+      toast({
+        title: 'Wybierz datę transportu',
+        description: 'Musisz wybrać datę transportu.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // Sprawdzenie reguł biznesowych dla daty transportu
+    if (order.installationDate && order.serviceType && order.serviceType.toLowerCase().includes('podłog')) {
+      const installDate = parseISO(order.installationDate);
+      const minTransportDate = addDays(transportDate, 2);
+      
+      console.log('Sprawdzanie reguł dla podłóg:');
+      console.log('- Typ usługi:', order.serviceType);
+      console.log('- Data montażu:', format(installDate, 'yyyy-MM-dd'));
+      console.log('- Data transportu:', format(transportDate, 'yyyy-MM-dd'));
+      console.log('- Min data transportu:', format(minTransportDate, 'yyyy-MM-dd'));
+      console.log('- Czy data montażu przed datą minimalną:', isBefore(installDate, minTransportDate));
+      
+      if (isBefore(installDate, minTransportDate)) {
+        toast({
+          title: 'Nieprawidłowa data transportu',
+          description: 'Dla montażu podłóg transport musi być zaplanowany minimum 2 dni przed planowanym montażem.',
+          variant: 'destructive',
+        });
+        return;
+      }
+    } else if (order.installationDate && transportDate) {
+      const installDate = parseISO(order.installationDate);
+      
+      console.log('Sprawdzanie ogólnych reguł:');
+      console.log('- Data montażu:', format(installDate, 'yyyy-MM-dd'));
+      console.log('- Data transportu:', format(transportDate, 'yyyy-MM-dd'));
+      console.log('- Czy data montażu przed datą transportu:', isBefore(installDate, transportDate));
+      
+      if (isBefore(installDate, transportDate)) {
+        toast({
+          title: 'Nieprawidłowa data transportu',
+          description: 'Data transportu musi być wcześniejsza niż data montażu.',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
+    const formattedDate = format(transportDate, 'yyyy-MM-dd');
+
+    assignTransporterMutation.mutate({
+      transporterId: selectedTransporterId,
+      transportDate: formattedDate,
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="mt-2 text-gray-500">Ładowanie danych zlecenia...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !order) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800">Nie znaleziono zlecenia</h2>
+          <p className="text-gray-600 mt-2">Zlecenie nie istnieje lub nie masz do niego dostępu.</p>
+          <Button asChild className="mt-4">
+            <Link href="/orders">Powrót do listy zleceń</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Inicjalizacja stanów na podstawie pobranych danych
+  if (!status && order.installationStatus) {
+    setStatus(order.installationStatus);
+  }
+  
+  if (invoiceIssued !== order.invoiceIssued) {
+    setInvoiceIssued(order.invoiceIssued);
+  }
+  
+  if (willBeSettled !== order.willBeSettled) {
+    setWillBeSettled(order.willBeSettled);
+  }
+  
+  if (documentsProvided !== order.documentsProvided) {
+    setDocumentsProvided(order.documentsProvided);
+  }
+  
+  if (!selectedInstallerId && order.installerId) {
+    setSelectedInstallerId(order.installerId);
+  }
+  
+  if (!selectedTransporterId && order.transporterId) {
+    setSelectedTransporterId(order.transporterId);
+  }
+
+  // Helper do wyświetlania statusów
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'Nowe': return 'default';
+      case 'Zaplanowane': return 'secondary';
+      case 'W realizacji': return 'warning';
+      case 'Zakończone': return 'success';
+      case 'Reklamacja': return 'destructive';
+      case 'zafakturowane': return 'outline';
+      case 'potwierdzone': return 'info';
+      // Obsługa starych statusów dla kompatybilności
+      case 'złożone': return 'default';
+      case 'zlecenie złożone': return 'info';
+      case 'montaż zaplanowany': return 'secondary';
+      case 'w trakcie montażu': return 'warning';
+      case 'montaż wykonany': return 'success';
+      case 'wykonane': return 'success';
+      case 'reklamacja': return 'destructive';
+      default: return 'default';
+    }
+  };
+  
+  // Helper do wyświetlania statusów transportu
+  const getTransportStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'gotowe do transportu': return 'info';
+      case 'transport zaplanowany': return 'secondary';
+      case 'transport dostarczony': return 'success';
+      default: return 'default';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
+  // Sprawdza czy użytkownik może edytować status
+  const canEditStatus = 
+    (user?.role === 'worker') || 
+    (user?.role === 'company' && user.companyId === order.companyId) ||
+    ((user?.role === 'installer') && user.id === order.installerId) ||
+    user?.role === 'admin';
+  
+  // Sprawdza czy user może dodawać reklamację
+  const canAddComplaint = 
+    (user?.role === 'worker') || 
+    (user?.role === 'company' && user.companyId === order.companyId) ||
+    ((user?.role === 'installer') && user.id === order.installerId) ||
+    user?.role === 'admin';
+  
+  // Sprawdza czy użytkownik może edytować dokumenty montażu
+  const canEditDocuments = 
+    (user?.role === 'worker') || 
+    (user?.role === 'company' && user.companyId === order.companyId) ||
+    ((user?.role === 'installer') && user.id === order.installerId) ||
+    user?.role === 'admin';
+  
+  // Sprawdza czy montażysta jest właścicielem firmy (dla finansów)
+  const isInstallerWithCompany = 
+    user?.role === 'installer' && 
+    user.companyId !== null && 
+    order.companyId === user.companyId;
+  
+  // Sprawdza czy właściciel firmy może edytować pola finansowe:
+  // 1. Ma rolę "company" (jest firmą)
+  // 2. Nie jest jednocześnie montażystą (companyOwnerOnly = true) - tylko "czyści" właściciele mogą edytować finanse
+  const isCompanyOwnerWithFinanceAccess =
+    user?.role === 'company' &&
+    user?.companyOwnerOnly === true;
+  
+  // Sprawdza czy użytkownik może widzieć zakładkę finansów
+  // Wszyscy właściciele firm i montażyści-właściciele powinni móc WIDZIEĆ zakładkę finansów
+  // (nawet jeśli niektórzy z nich nie mogą edytować pól)
+  const canSeeFinancials = 
+    user?.role === 'admin' || 
+    user?.role === 'worker' ||
+    user?.role === 'company' ||
+    isInstallerWithCompany;
+  
+  // Sprawdza czy użytkownik może edytować pola finansowe (faktura, rozliczenie)
+  // Uprawnienia do edycji mają mieć:
+  // 1. admin
+  // 2. kierownicy i zastępcy kierowników w sklepach
+  // 3. właściciel firmy montażowej, który NIE jest montażystą (companyOwnerOnly = true)
+  // Pozostali NIE mają dostępu do edycji pól finansowych:
+  // - Zwykli pracownicy sklepu (nie kierownicy)
+  // - Montażyści (nawet jeśli są przypisani do firmy, która jest właścicielem zlecenia)
+  // - Właściciele firm, którzy są również montażystami (companyOwnerOnly = false)
+  const canEditFinancialFields = 
+    user?.role === 'admin' || 
+    (user?.role === 'worker' && (user?.position === 'kierownik' || user?.position === 'zastępca')) ||
+    isCompanyOwnerWithFinanceAccess;
+    
+  // Sprawdzenie czy użytkownik może edytować pole "do rozliczenia"
+  // Jest to szerszy zbiór użytkowników niż canEditFinancialFields:
+  // 1. Wszyscy, którzy mają uprawnienia finansowe (admin, kierownicy, zastępcy, firmy)
+  // 2. Dodatkowo firmy jednoosobowe (montażyści z przypisaną firmą)
+  const canEditSettlementStatus = 
+    canEditFinancialFields || 
+    isOnePersonCompany;
+  
+  return (
+    <Card className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-20 md:mb-0">
+      <CardHeader className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="flex items-center gap-2">
+            <BackButton variant="ghost" size="icon" label="" className="h-8 w-8" fallbackPath="/orders" />
+            <CardTitle className="font-semibold text-gray-800">
+              Zlecenie #{order.orderNumber}
+            </CardTitle>
+            <Badge variant={getStatusBadgeVariant(order.installationStatus || '')}>
+              {getStatusLabel(order.installationStatus || '')}
+            </Badge>
+          </div>
+          
+          <div className="flex gap-2">
+            {order.clientPhone && (
+              <Button variant="outline" size="sm" onClick={handleCallClient}>
+                <Phone className="h-4 w-4 mr-2" />
+                Zadzwoń
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      
+      <Tabs defaultValue={getDefaultTab()} value={activeTab} onValueChange={setActiveTab}>
+        <div className="px-6 pt-4 border-b">
+          <TabsList>
+            {/* Zakładka Montaż - widoczna dla wszystkich */}
+            <TabsTrigger value="installation" className="data-[state=active]:bg-primary-50">
+              <Hammer className="h-4 w-4 mr-2" />
+              Montaż
+            </TabsTrigger>
+            
+            {/* Zakładka Transport - widoczna dla wszystkich */}
+            <TabsTrigger value="transport" className="data-[state=active]:bg-primary-50">
+              <Truck className="h-4 w-4 mr-2" />
+              Transport
+            </TabsTrigger>
+            
+            {/* Zakładka Reklamacja - widoczna dla wszystkich */}
+            <TabsTrigger value="complaint" className={`data-[state=active]:${(order.installationStatus || '') === 'Reklamacja' ? 'bg-red-50' : 'bg-primary-50'}`}>
+              <AlertTriangle className={`h-4 w-4 mr-2 ${(order.installationStatus || '') === 'Reklamacja' ? 'text-red-500' : ''}`} />
+              Reklamacja
+            </TabsTrigger>
+          </TabsList>
+        </div>
+        
+        <CardContent className="p-6">
+          <TabsContent value="installation" className="mt-0">
+            <div className="grid md:grid-cols-1 gap-6">
+              {/* Informacje dla montażysty */}
+              <div className="mb-4">
+                <h3 className="font-medium text-lg mb-2">Szczegóły montażu</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-blue-50 p-4 rounded-lg">
+                  <div>
+                    <dl className="space-y-4">
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Klient</dt>
+                        <dd className="mt-1 flex items-center">
+                          <User className="h-4 w-4 mr-2 text-blue-500" />
+                          <span>{order.clientName}</span>
+                        </dd>
+                      </div>
+                      
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Telefon</dt>
+                        <dd className="mt-1 flex items-center">
+                          <Phone className="h-4 w-4 mr-2 text-blue-500" />
+                          <a 
+                            href={`tel:${order.clientPhone}`} 
+                            className="text-primary-600 hover:underline flex items-center"
+                          >
+                            <span className="mr-1">{order.clientPhone}</span>
+                            {/* Duża ikona telefonu dla lepszej użyteczności na mobilnych urządzeniach */}
+                            <Button variant="outline" size="sm" onClick={handleCallClient} className="h-8 w-8 p-0 rounded-full">
+                              <Phone className="h-4 w-4" />
+                            </Button>
+                          </a>
+                        </dd>
+                      </div>
+                      
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Adres montażu</dt>
+                        <dd className="mt-1">
+                          <ClickableAddress 
+                            address={order.installationAddress || ''} 
+                            iconSize={20}
+                          />
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                  
+                  <div>
+                    <dl className="space-y-4">
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Rodzaj usługi</dt>
+                        <dd className="mt-1 flex items-center">
+                          <Package className="h-4 w-4 mr-2 text-blue-500" />
+                          <span className="font-medium">{order.serviceType}</span>
+                        </dd>
+                      </div>
+                      
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Data montażu</dt>
+                        <dd className="mt-1 flex items-center">
+                          <CalendarClock className="h-4 w-4 mr-2 text-blue-500" />
+                          <span className="font-medium">
+                            {order.installationDate 
+                              ? new Date(order.installationDate).toLocaleDateString('pl-PL') 
+                              : 'Nie zaplanowano'}
+                          </span>
+                        </dd>
+                      </div>
+                      
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Status</dt>
+                        <dd className="mt-1 flex items-center">
+                          <Badge variant={getStatusBadgeVariant(order.installationStatus || '')}>
+                            {getStatusLabel(order.installationStatus || '')}
+                          </Badge>
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Zdjęcia i komentarze */}
+              <div className="mb-6">
+                <h3 className="font-medium text-lg mb-2">Zdjęcia i dokumentacja</h3>
+                
+                {/* Istniejące zdjęcia */}
+                {order.photos && order.photos.length > 0 && (
+                  <div className="mb-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {order.photos.map((photo: string, index: number) => (
+                      <div key={index} className="relative group">
+                        <a href={photo} target="_blank" rel="noopener noreferrer">
+                          <img 
+                            src={photo} 
+                            alt={`Zdjęcie ${index + 1}`} 
+                            className="h-28 w-full object-cover rounded-md border border-gray-200" 
+                          />
+                        </a>
+                        {(order.installationStatus === 'W realizacji' || order.installationStatus === 'Reklamacja') && 
+                        (isAssignedInstaller || user?.role === 'admin' || user?.role === 'company') && (
+                          <button
+                            className="absolute top-1 right-1 bg-red-500 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => deletePhotoMutation.mutate(photo)}
+                          >
+                            <Trash2 className="h-4 w-4 text-white" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Dodawanie zdjęć - widoczne tylko dla montażysty przypisanego do zlecenia */}
+                {(order.installationStatus === 'W realizacji' || order.installationStatus === 'Reklamacja') && 
+                 (isAssignedInstaller || user?.role === 'admin' || user?.role === 'company') && (
+                  <div 
+                    className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center bg-gray-50 ${
+                      selectedFiles.length > 0 ? 'border-primary-300 bg-primary-50' : 'border-gray-300'
+                    }`}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                  >
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                    />
+                    
+                    <div className="text-center mb-4">
+                      <Camera className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                      <h3 className="text-sm font-medium text-gray-900">Dodaj zdjęcia</h3>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Przeciągnij i upuść pliki lub kliknij, aby wybrać
+                      </p>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      {selectedFiles.map((file, index) => (
+                        <div key={index} className="relative">
+                          <div className="p-1 border rounded-md bg-white">
+                            <img 
+                              src={URL.createObjectURL(file)} 
+                              alt={`Podgląd ${index + 1}`}
+                              className="h-16 w-16 object-cover rounded" 
+                            />
+                          </div>
+                          <button
+                            className="absolute -top-2 -right-2 bg-red-500 p-1 rounded-full"
+                            onClick={() => handleRemoveSelectedFile(index)}
+                          >
+                            <X className="h-3 w-3 text-white" />
+                          </button>
+                        </div>
+                      ))}
+                      
+                      <button
+                        onClick={triggerFileInput}
+                        className="h-16 w-16 border border-gray-300 rounded-md flex items-center justify-center bg-white hover:bg-gray-50"
+                      >
+                        <Upload className="h-6 w-6 text-gray-400" />
+                      </button>
+                    </div>
+                    
+                    {selectedFiles.length > 0 && (
+                      <div className="mt-4">

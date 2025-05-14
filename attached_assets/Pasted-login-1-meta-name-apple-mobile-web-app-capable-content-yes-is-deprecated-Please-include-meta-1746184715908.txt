@@ -1,0 +1,77 @@
+login:1 <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes">Understand this warning
+api/auth/me:1 
+            
+            
+           Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+client:536 WebSocket connection to 'wss://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/?token=LZgWEZiJNO4g' failed: 
+setupWebSocket @ client:536Understand this error
+client:536 Uncaught (in promise) SyntaxError: Failed to construct 'WebSocket': The URL 'wss://localhost:undefined/?token=LZgWEZiJNO4g' is invalid.
+    at setupWebSocket (client:536:19)
+    at fallback (client:509:16)
+    at WebSocket.<anonymous> (client:555:7)Understand this error
+chunk-WERSD76P.js?v=a51f9aa5:521 Warning: validateDOMNesting(...): <a> cannot appear as a descendant of <a>.
+    at a
+    at a
+    at https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=04789880:337:18
+    at div
+    at div
+    at Sidebar (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/src/components/layout/Sidebar.tsx:45:35)
+    at div
+    at AppShell (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/src/components/layout/AppShell.tsx:23:36)
+    at Route (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=04789880:323:16)
+    at Switch (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=04789880:379:17)
+    at Router (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/src/App.tsx?v=ppjOPcjfmOPUwbTgSPT02:35:22)
+    at Provider (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-VIFX6DEG.js?v=a51f9aa5:48:15)
+    at TooltipProvider (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=2e65c729:59:5)
+    at AuthProvider (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/src/lib/auth.tsx:23:32)
+    at QueryClientProvider (https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=9923f616:2805:3)
+    at App
+printWarning @ chunk-WERSD76P.js?v=a51f9aa5:521
+error @ chunk-WERSD76P.js?v=a51f9aa5:505
+validateDOMNesting @ chunk-WERSD76P.js?v=a51f9aa5:8256
+createInstance @ chunk-WERSD76P.js?v=a51f9aa5:8328
+completeWork @ chunk-WERSD76P.js?v=a51f9aa5:16290
+completeUnitOfWork @ chunk-WERSD76P.js?v=a51f9aa5:19224
+performUnitOfWork @ chunk-WERSD76P.js?v=a51f9aa5:19206
+workLoopSync @ chunk-WERSD76P.js?v=a51f9aa5:19137
+renderRootSync @ chunk-WERSD76P.js?v=a51f9aa5:19116
+performConcurrentWorkOnRoot @ chunk-WERSD76P.js?v=a51f9aa5:18678
+workLoop @ chunk-WERSD76P.js?v=a51f9aa5:197
+flushWork @ chunk-WERSD76P.js?v=a51f9aa5:176
+performWorkUntilDeadline @ chunk-WERSD76P.js?v=a51f9aa5:384Understand this error
+queryClient.ts:32 
+            
+            
+           GET https://a0e7ada3-6278-4d5b-828d-92fca71f4d19-00-3hk10wq7psbcs.kirk.replit.dev/api/companies/performance 400 (Bad Request)
+(anonymous) @ queryClient.ts:32
+fetchFn @ @tanstack_react-query.js?v=9923f616:840
+run @ @tanstack_react-query.js?v=9923f616:494
+start @ @tanstack_react-query.js?v=9923f616:536
+fetch @ @tanstack_react-query.js?v=9923f616:926
+executeFetch_fn @ @tanstack_react-query.js?v=9923f616:2211
+onSubscribe @ @tanstack_react-query.js?v=9923f616:1898
+subscribe @ @tanstack_react-query.js?v=9923f616:24
+(anonymous) @ @tanstack_react-query.js?v=9923f616:3022
+subscribeToStore @ chunk-WERSD76P.js?v=a51f9aa5:11984
+commitHookEffectListMount @ chunk-WERSD76P.js?v=a51f9aa5:16915
+commitPassiveMountOnFiber @ chunk-WERSD76P.js?v=a51f9aa5:18156
+commitPassiveMountEffects_complete @ chunk-WERSD76P.js?v=a51f9aa5:18129
+commitPassiveMountEffects_begin @ chunk-WERSD76P.js?v=a51f9aa5:18119
+commitPassiveMountEffects @ chunk-WERSD76P.js?v=a51f9aa5:18109
+flushPassiveEffectsImpl @ chunk-WERSD76P.js?v=a51f9aa5:19490
+flushPassiveEffects @ chunk-WERSD76P.js?v=a51f9aa5:19447
+performSyncWorkOnRoot @ chunk-WERSD76P.js?v=a51f9aa5:18868
+flushSyncCallbacks @ chunk-WERSD76P.js?v=a51f9aa5:9119
+commitRootImpl @ chunk-WERSD76P.js?v=a51f9aa5:19432
+commitRoot @ chunk-WERSD76P.js?v=a51f9aa5:19277
+finishConcurrentRender @ chunk-WERSD76P.js?v=a51f9aa5:18805
+performConcurrentWorkOnRoot @ chunk-WERSD76P.js?v=a51f9aa5:18718
+workLoop @ chunk-WERSD76P.js?v=a51f9aa5:197
+flushWork @ chunk-WERSD76P.js?v=a51f9aa5:176
+performWorkUntilDeadline @ chunk-WERSD76P.js?v=a51f9aa5:384Understand this error
+
+                
+          
+          
+          
+         Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies.
