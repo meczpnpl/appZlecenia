@@ -269,9 +269,57 @@ export default function Orders() {
     setIsFilterDialogOpen(!isFilterDialogOpen);
   };
   const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
-  const [dateFilterStart, setDateFilterStart] = useState<Date | undefined>(undefined);
-  const [dateFilterEnd, setDateFilterEnd] = useState<Date | undefined>(undefined);
+  const [dateFilterStart, setDateFilterStartOriginal] = useState<Date | undefined>(undefined);
+  const [dateFilterEnd, setDateFilterEndOriginal] = useState<Date | undefined>(undefined);
   const [dateFilterType, setDateFilterType] = useState<'installationDate' | 'transportDate'>('installationDate');
+  
+  // Dodajemy własną funkcję do ustawiania daty początkowej z automatycznym zamykaniem kalendarza
+  const setDateFilterStart = (date: Date | undefined) => {
+    setDateFilterStartOriginal(date);
+    
+    // Automatycznie zamknij kalendarz po wyborze daty
+    if (date) {
+      // Używamy setTimeout, aby dać czas na przetworzenie zmiany daty
+      setTimeout(() => {
+        // Znajdź element kalendarza i zamknij go
+        const calendarElements = document.querySelectorAll('[data-state="open"][role="dialog"][aria-modal="true"]');
+        calendarElements.forEach((el) => {
+          // Sprawdź, czy to kalendarz z datą początkową (ma nagłówek "Od:")
+          if (el.textContent?.includes("Od:")) {
+            // Znajdź przycisk zamykający i kliknij
+            const closeButton = el.querySelector('button[aria-label="Close"]');
+            if (closeButton instanceof HTMLElement) {
+              closeButton.click();
+            }
+          }
+        });
+      }, 100);
+    }
+  };
+  
+  // Dodajemy własną funkcję do ustawiania daty końcowej z automatycznym zamykaniem kalendarza
+  const setDateFilterEnd = (date: Date | undefined) => {
+    setDateFilterEndOriginal(date);
+    
+    // Automatycznie zamknij kalendarz po wyborze daty
+    if (date) {
+      // Używamy setTimeout, aby dać czas na przetworzenie zmiany daty
+      setTimeout(() => {
+        // Znajdź element kalendarza i zamknij go
+        const calendarElements = document.querySelectorAll('[data-state="open"][role="dialog"][aria-modal="true"]');
+        calendarElements.forEach((el) => {
+          // Sprawdź, czy to kalendarz z datą końcową (ma nagłówek "Do:")
+          if (el.textContent?.includes("Do:")) {
+            // Znajdź przycisk zamykający i kliknij
+            const closeButton = el.querySelector('button[aria-label="Close"]');
+            if (closeButton instanceof HTMLElement) {
+              closeButton.click();
+            }
+          }
+        });
+      }, 100);
+    }
+  };
   const [currentDateOffset, setCurrentDateOffset] = useState<number>(0); // 0 = dzisiaj, 1 = jutro, -1 = wczoraj
   
   // Zapis/odczyt filtrów z localStorage
