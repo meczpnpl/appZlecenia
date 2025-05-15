@@ -1714,6 +1714,111 @@ export default function Orders() {
                 </span>
               </AccordionTrigger>
               <AccordionContent className="pb-4">
+                {/* Filtry zakresu dat */}
+                <div className="border-b pb-4 mb-4">
+                  <div className="flex gap-4 mb-3">
+                    <Select
+                      value={dateFilterType}
+                      onValueChange={(value: 'installationDate' | 'transportDate') => setDateFilterType(value)}
+                    >
+                      <SelectTrigger className="w-[200px]">
+                        <span>
+                          {dateFilterType === 'installationDate' ? 'Data montażu' : 'Data transportu'}
+                        </span>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="installationDate">Data montażu</SelectItem>
+                        <SelectItem value="transportDate">Data transportu</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 mb-3">
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <p className="text-sm text-gray-500">Od:</p>
+                        {dateFilterStart && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => setDateFilterStartOriginal(undefined)}
+                            className="h-6 px-1 text-xs text-gray-500"
+                          >
+                            <X className="h-3 w-3 mr-1" />
+                            Wyczyść
+                          </Button>
+                        )}
+                      </div>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start text-left font-normal"
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {dateFilterStart ? formatDate(dateFilterStart) : 'Wybierz datę'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <CalendarUI
+                            mode="single"
+                            selected={dateFilterStart}
+                            onSelect={setDateFilterStart}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <p className="text-sm text-gray-500">Do:</p>
+                        {dateFilterEnd && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => setDateFilterEndOriginal(undefined)}
+                            className="h-6 px-1 text-xs text-gray-500"
+                          >
+                            <X className="h-3 w-3 mr-1" />
+                            Wyczyść
+                          </Button>
+                        )}
+                      </div>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start text-left font-normal"
+                            disabled={!dateFilterStart}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {dateFilterEnd ? formatDate(dateFilterEnd) : 'Wybierz datę'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <CalendarUI
+                            mode="single"
+                            selected={dateFilterEnd}
+                            onSelect={setDateFilterEnd}
+                            disabled={(date) => dateFilterStart ? date < dateFilterStart : false}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    className="w-full mt-2"
+                    onClick={addDateRangeFilter}
+                    disabled={!dateFilterStart}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Dodaj filtr zakresu dat
+                  </Button>
+                </div>
+                
+                {/* Przyciski szybkich filtrów */}
                 <div className="grid grid-cols-3 gap-3">
                   <Button 
                     variant="outline" 
@@ -1786,67 +1891,6 @@ export default function Orders() {
                       Do rozliczenia
                     </Button>
                   )}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-            
-            <AccordionItem value="date-range" className="border-b">
-              <AccordionTrigger className="hover:no-underline py-4">
-                <span className="flex items-center text-base font-medium">
-                  <CalendarIcon className="mr-2 h-5 w-5" />
-                  Zakres dat
-                </span>
-              </AccordionTrigger>
-              <AccordionContent className="pb-4">
-                <div className="space-y-4">
-                  <div className="flex gap-4">
-                    <Select
-                      value={dateFilterType}
-                      onValueChange={(value: 'installationDate' | 'transportDate') => setDateFilterType(value)}
-                    >
-                      <SelectTrigger className="w-[200px]">
-                        <span>
-                          {dateFilterType === 'installationDate' ? 'Data montażu' : 'Data transportu'}
-                        </span>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="installationDate">Data montażu</SelectItem>
-                        <SelectItem value="transportDate">Data transportu</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-500">Od:</p>
-                      <CalendarUI
-                        mode="single"
-                        selected={dateFilterStart}
-                        onSelect={setDateFilterStart}
-                        className="rounded border"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-500">Do:</p>
-                      <CalendarUI
-                        mode="single"
-                        selected={dateFilterEnd}
-                        onSelect={setDateFilterEnd}
-                        disabled={(date) => 
-                          dateFilterStart ? date < dateFilterStart : false
-                        }
-                        className="rounded border"
-                      />
-                    </div>
-                  </div>
-                  
-                  <Button 
-                    className="w-full"
-                    onClick={addDateRangeFilter}
-                    disabled={!dateFilterStart}
-                  >
-                    Dodaj filtr dat
-                  </Button>
                 </div>
               </AccordionContent>
             </AccordionItem>
