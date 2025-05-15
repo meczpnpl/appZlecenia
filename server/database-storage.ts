@@ -227,26 +227,26 @@ export class DatabaseStorage implements IStorage {
         // Filtrowanie po datach instalacji
         if (filters.installationDateFrom) {
           conditions.push(`installation_date >= $${paramIndex}`);
-          params.push(filters.installationDateFrom);
+          params.push(filters.installationDateFrom.toISOString());
           paramIndex++;
         }
         
         if (filters.installationDateTo) {
           conditions.push(`installation_date <= $${paramIndex}`);
-          params.push(filters.installationDateTo);
+          params.push(filters.installationDateTo.toISOString());
           paramIndex++;
         }
         
         // Filtrowanie po datach transportu
         if (filters.transportDateFrom) {
           conditions.push(`transport_date >= $${paramIndex}`);
-          params.push(filters.transportDateFrom);
+          params.push(filters.transportDateFrom.toISOString());
           paramIndex++;
         }
         
         if (filters.transportDateTo) {
           conditions.push(`transport_date <= $${paramIndex}`);
-          params.push(filters.transportDateTo);
+          params.push(filters.transportDateTo.toISOString());
           paramIndex++;
         }
         
