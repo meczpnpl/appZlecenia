@@ -1412,9 +1412,22 @@ export default function Orders() {
                     <CalendarUI
                       mode="single"
                       selected={tempDateRange.from}
-                      onSelect={(date) => 
-                        setTempDateRange(prev => ({ ...prev, from: date }))
-                      }
+                      onSelect={(date) => {
+                        setTempDateRange(prev => ({ ...prev, from: date }));
+                        // Zamykamy popover przez manipulację DOM
+                        // Poszukujemy przycisku z atrybutem data-state
+                        const closeButtons = document.querySelectorAll('[data-radix-popover-close=""]');
+                        if (closeButtons.length > 0) {
+                          (closeButtons[0] as HTMLElement).click();
+                        } else {
+                          // Fallback - szukamy pierwszego przycisku w rodzicu
+                          const popover = document.querySelector('[data-state="open"][role="dialog"]');
+                          if (popover) {
+                            // Symulujemy kliknięcie poza popoverem
+                            document.body.click();
+                          }
+                        }
+                      }}
                       initialFocus
                     />
                   </PopoverContent>
@@ -1456,12 +1469,18 @@ export default function Orders() {
                     <CalendarUI
                       mode="single"
                       selected={tempDateRange.to}
-                      onSelect={(date) => 
-                        setTempDateRange(prev => ({ ...prev, to: date }))
-                      }
-                      disabled={(date) => 
-                        tempDateRange.from ? date < tempDateRange.from : false
-                      }
+                      onSelect={(date) => {
+                        setTempDateRange(prev => ({ ...prev, to: date }));
+                        // Zamykamy popover przez manipulację DOM
+                        const closeButtons = document.querySelectorAll('[data-radix-popover-close=""]');
+                        if (closeButtons.length > 0) {
+                          (closeButtons[0] as HTMLElement).click();
+                        } else {
+                          // Fallback - symulujemy kliknięcie poza popoverem
+                          document.body.click();
+                        }
+                      }}
+                      disabled={(date) => tempDateRange.from ? date < tempDateRange.from : false}
                       initialFocus
                     />
                   </PopoverContent>
