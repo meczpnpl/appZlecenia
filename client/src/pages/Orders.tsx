@@ -1994,9 +1994,35 @@ export default function Orders() {
             <Button
               type="button"
               onClick={() => {
+                // Jeśli są ustawione daty, dodaj filtr daty
+                if (dateFilterStart) {
+                  // Tworzymy filtr zakresu dat
+                  const filterLabel = `${dateFilterType === 'installationDate' ? 'Montaż' : 'Transport'}: ${formatDate(dateFilterStart)}${dateFilterEnd ? ` - ${formatDate(dateFilterEnd)}` : ''}`;
+                  
+                  const filter: ActiveFilter = {
+                    id: `date-range-${dateFilterType}-${Date.now()}`,
+                    type: 'dateRange',
+                    label: filterLabel,
+                    value: {
+                      from: startOfDay(dateFilterStart),
+                      to: dateFilterEnd ? endOfDay(dateFilterEnd) : endOfDay(dateFilterStart)
+                    }
+                  };
+                  
+                  addFilter(filter);
+                  
+                  // Resetuj pola kalendarza
+                  setDateFilterStart(undefined);
+                  setDateFilterEnd(undefined);
+                }
+                
+                // Zamknij dialog
                 setIsFilterDialogOpen(false);
+                
                 // Odświeżamy listę zleceń, aby zastosować filtry
                 ordersQuery.refetch();
+                
+                console.log('Zastosowano filtry, w tym filtry dat');
               }}
             >
               Zastosuj filtry
@@ -2324,14 +2350,7 @@ export default function Orders() {
                           </div>
                         </div>
                         
-                        <Button 
-                          className="w-full"
-                          onClick={addDateRangeFilter}
-                          disabled={!dateFilterStart}
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Dodaj filtr zakresu dat
-                        </Button>
+                        {/* Usunięto przycisk "Dodaj filtr zakresu dat" - filtry dat będą dodawane przez główny przycisk "Zastosuj filtry" */}
                       </div>
                       
                       {/* Statusy montażu i transportu obok siebie w dwóch kolumnach */}
@@ -2431,6 +2450,29 @@ export default function Orders() {
                     <DialogClose asChild>
                       <Button 
                         onClick={() => {
+                          // Jeśli są ustawione daty, dodaj filtr daty
+                          if (dateFilterStart) {
+                            // Tworzymy filtr zakresu dat
+                            const filterLabel = `${dateFilterType === 'installationDate' ? 'Montaż' : 'Transport'}: ${formatDate(dateFilterStart)}${dateFilterEnd ? ` - ${formatDate(dateFilterEnd)}` : ''}`;
+                            
+                            const filter: ActiveFilter = {
+                              id: `date-range-${dateFilterType}-${Date.now()}`,
+                              type: 'dateRange',
+                              label: filterLabel,
+                              value: {
+                                from: startOfDay(dateFilterStart),
+                                to: dateFilterEnd ? endOfDay(dateFilterEnd) : endOfDay(dateFilterStart)
+                              }
+                            };
+                            
+                            addFilter(filter);
+                            
+                            // Resetuj pola kalendarza po dodaniu filtra
+                            setDateFilterStart(undefined);
+                            setDateFilterEnd(undefined);
+                          }
+                          
+                          // Odświeżamy listę zleceń
                           ordersQuery.refetch();
                         }}
                       >
