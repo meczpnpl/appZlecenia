@@ -281,19 +281,25 @@ export default function Orders() {
     if (date) {
       // Używamy setTimeout, aby dać czas na przetworzenie zmiany daty
       setTimeout(() => {
-        // Znajdź element kalendarza i zamknij go
-        const calendarElements = document.querySelectorAll('[data-state="open"][role="dialog"][aria-modal="true"]');
+        // Metoda 1: Znajdź wszystkie popovery zawierające kalendarz
+        const popoverElements = document.querySelectorAll('[data-radix-popover-content]');
+        popoverElements.forEach((element) => {
+          const calendarElement = element.querySelector('.rdp');
+          if (calendarElement) {
+            // To jest element kalendarza, więc zamykamy jego popover
+            document.body.click();
+          }
+        });
+        
+        // Metoda 2: Szukaj po elementach kalendarza z nagłówkiem "Od:"
+        const calendarElements = document.querySelectorAll('[data-state="open"][role="dialog"]');
         calendarElements.forEach((el) => {
           // Sprawdź, czy to kalendarz z datą początkową (ma nagłówek "Od:")
           if (el.textContent?.includes("Od:")) {
-            // Znajdź przycisk zamykający i kliknij
-            const closeButton = el.querySelector('button[aria-label="Close"]');
-            if (closeButton instanceof HTMLElement) {
-              closeButton.click();
-            }
+            document.body.click();
           }
         });
-      }, 100);
+      }, 50);
     }
   };
   
@@ -305,19 +311,25 @@ export default function Orders() {
     if (date) {
       // Używamy setTimeout, aby dać czas na przetworzenie zmiany daty
       setTimeout(() => {
-        // Znajdź element kalendarza i zamknij go
-        const calendarElements = document.querySelectorAll('[data-state="open"][role="dialog"][aria-modal="true"]');
+        // Metoda 1: Znajdź wszystkie popovery zawierające kalendarz
+        const popoverElements = document.querySelectorAll('[data-radix-popover-content]');
+        popoverElements.forEach((element) => {
+          const calendarElement = element.querySelector('.rdp');
+          if (calendarElement) {
+            // To jest element kalendarza, więc zamykamy jego popover
+            document.body.click();
+          }
+        });
+        
+        // Metoda 2: Szukaj po elementach kalendarza z nagłówkiem "Do:"
+        const calendarElements = document.querySelectorAll('[data-state="open"][role="dialog"]');
         calendarElements.forEach((el) => {
           // Sprawdź, czy to kalendarz z datą końcową (ma nagłówek "Do:")
           if (el.textContent?.includes("Do:")) {
-            // Znajdź przycisk zamykający i kliknij
-            const closeButton = el.querySelector('button[aria-label="Close"]');
-            if (closeButton instanceof HTMLElement) {
-              closeButton.click();
-            }
+            document.body.click();
           }
         });
-      }, 100);
+      }, 50);
     }
   };
   const [currentDateOffset, setCurrentDateOffset] = useState<number>(0); // 0 = dzisiaj, 1 = jutro, -1 = wczoraj
@@ -1461,22 +1473,21 @@ export default function Orders() {
                       mode="single"
                       selected={tempDateRange.from}
                       onSelect={(date) => {
+                        // Najpierw aktualizujemy datę
                         setTempDateRange(prev => ({ ...prev, from: date }));
-                        // Zamykamy popover przez manipulację DOM
-                        // Poszukujemy przycisku z atrybutem data-state
-                        const closeButtons = document.querySelectorAll('[data-radix-popover-close=""]');
-                        if (closeButtons.length > 0) {
-                          (closeButtons[0] as HTMLElement).click();
-                        } else {
-                          // Fallback - szukamy otwartego dialogu i zamykamy go
-                          const openDialogs = document.querySelectorAll('[data-state="open"][role="dialog"]');
-                          openDialogs.forEach(dialog => {
-                            if (dialog.textContent?.includes('Wybierz datę początkową')) {
-                              // Symulujemy kliknięcie poza dialogiem
+                        
+                        // Teraz zamykamy popover - używamy prostego sposobu z timeoutem
+                        setTimeout(() => {
+                          // Znajdujemy dokładnie ten popover, którego szukamy
+                          const popoverElements = document.querySelectorAll('[data-radix-popover-content]');
+                          popoverElements.forEach((element) => {
+                            const calendarElement = element.querySelector('.rdp');
+                            if (calendarElement) {
+                              // To jest element kalendarza, więc zamykamy jego popover
                               document.body.click();
                             }
                           });
-                        }
+                        }, 50);
                       }}
                       initialFocus
                     />
@@ -1520,22 +1531,21 @@ export default function Orders() {
                       mode="single"
                       selected={tempDateRange.to}
                       onSelect={(date) => {
+                        // Najpierw aktualizujemy datę
                         setTempDateRange(prev => ({ ...prev, to: date }));
-                        // Zamykamy popover przez manipulację DOM
-                        // Poszukujemy najpierw przycisku zamknięcia
-                        const closeButtons = document.querySelectorAll('[data-radix-popover-close=""]');
-                        if (closeButtons.length > 0) {
-                          (closeButtons[closeButtons.length - 1] as HTMLElement).click();
-                        } else {
-                          // Fallback - szukamy otwartego dialogu i zamykamy go
-                          const openDialogs = document.querySelectorAll('[data-state="open"][role="dialog"]');
-                          openDialogs.forEach(dialog => {
-                            if (dialog.textContent?.includes('Wybierz datę końcową')) {
-                              // Symulujemy kliknięcie poza dialogiem
+                        
+                        // Teraz zamykamy popover - używamy prostego sposobu z timeoutem
+                        setTimeout(() => {
+                          // Znajdujemy dokładnie ten popover, którego szukamy
+                          const popoverElements = document.querySelectorAll('[data-radix-popover-content]');
+                          popoverElements.forEach((element) => {
+                            const calendarElement = element.querySelector('.rdp');
+                            if (calendarElement) {
+                              // To jest element kalendarza, więc zamykamy jego popover
                               document.body.click();
                             }
                           });
-                        }
+                        }, 50);
                       }}
                       disabled={(date) => tempDateRange.from ? date < tempDateRange.from : false}
                       initialFocus
