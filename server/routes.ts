@@ -26,12 +26,13 @@ import { sendPushNotification, sendEmail } from "./utils/notifications";
 import { createInsertSchema } from "drizzle-zod";
 import bcrypt from "bcrypt";
 import { z } from "zod";
-import { insertUserSchema, insertOrderSchema, updateOrderStatusSchema, updateOrderFinancialStatusSchema, insertCompanySchema, insertStoreSchema, InsertOrder, InsertStore, companyStores, assignTransporterSchema, updateTransportStatusSchema } from "@shared/schema";
+import { insertUserSchema, insertOrderSchema, updateOrderStatusSchema, updateOrderFinancialStatusSchema, insertCompanySchema, insertStoreSchema, InsertOrder, InsertStore, companyStores, assignTransporterSchema, updateTransportStatusSchema, InsertUserFilter } from "@shared/schema";
 import { db } from "./db";
 import { and, eq } from "drizzle-orm";
 import session from "express-session";
 import MemoryStore from "memorystore";
 import { WebSocketServer } from 'ws';
+import { registerFilterRoutes } from "./routes/filters";
 
 const SessionStore = MemoryStore(session);
 
@@ -4059,6 +4060,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Błąd serwera" });
     }
   });
+
+  // Rejestracja endpointów dla filtrów użytkownika
+  registerFilterRoutes(app);
 
   // Create HTTP server
   const httpServer = createServer(app);
