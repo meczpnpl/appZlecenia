@@ -279,27 +279,8 @@ export default function Orders() {
     
     // Automatycznie zamknij kalendarz po wyborze daty
     if (date) {
-      // Używamy setTimeout, aby dać czas na przetworzenie zmiany daty
-      setTimeout(() => {
-        // Metoda 1: Znajdź wszystkie popovery zawierające kalendarz
-        const popoverElements = document.querySelectorAll('[data-radix-popover-content]');
-        popoverElements.forEach((element) => {
-          const calendarElement = element.querySelector('.rdp');
-          if (calendarElement) {
-            // To jest element kalendarza, więc zamykamy jego popover
-            document.body.click();
-          }
-        });
-        
-        // Metoda 2: Szukaj po elementach kalendarza z nagłówkiem "Od:"
-        const calendarElements = document.querySelectorAll('[data-state="open"][role="dialog"]');
-        calendarElements.forEach((el) => {
-          // Sprawdź, czy to kalendarz z datą początkową (ma nagłówek "Od:")
-          if (el.textContent?.includes("Od:")) {
-            document.body.click();
-          }
-        });
-      }, 50);
+      // Symulujemy naciśnięcie klawisza Escape, co zawsze zamyka otwarty dialog
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     }
   };
   
@@ -309,27 +290,8 @@ export default function Orders() {
     
     // Automatycznie zamknij kalendarz po wyborze daty
     if (date) {
-      // Używamy setTimeout, aby dać czas na przetworzenie zmiany daty
-      setTimeout(() => {
-        // Metoda 1: Znajdź wszystkie popovery zawierające kalendarz
-        const popoverElements = document.querySelectorAll('[data-radix-popover-content]');
-        popoverElements.forEach((element) => {
-          const calendarElement = element.querySelector('.rdp');
-          if (calendarElement) {
-            // To jest element kalendarza, więc zamykamy jego popover
-            document.body.click();
-          }
-        });
-        
-        // Metoda 2: Szukaj po elementach kalendarza z nagłówkiem "Do:"
-        const calendarElements = document.querySelectorAll('[data-state="open"][role="dialog"]');
-        calendarElements.forEach((el) => {
-          // Sprawdź, czy to kalendarz z datą końcową (ma nagłówek "Do:")
-          if (el.textContent?.includes("Do:")) {
-            document.body.click();
-          }
-        });
-      }, 50);
+      // Symulujemy naciśnięcie klawisza Escape, co zawsze zamyka otwarty dialog
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     }
   };
   const [currentDateOffset, setCurrentDateOffset] = useState<number>(0); // 0 = dzisiaj, 1 = jutro, -1 = wczoraj
@@ -1468,7 +1430,7 @@ export default function Orders() {
                       )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="w-auto p-0" id="mobile-calendar-start">
                     <CalendarUI
                       mode="single"
                       selected={tempDateRange.from}
@@ -1476,18 +1438,9 @@ export default function Orders() {
                         // Najpierw aktualizujemy datę
                         setTempDateRange(prev => ({ ...prev, from: date }));
                         
-                        // Teraz zamykamy popover - używamy prostego sposobu z timeoutem
-                        setTimeout(() => {
-                          // Znajdujemy dokładnie ten popover, którego szukamy
-                          const popoverElements = document.querySelectorAll('[data-radix-popover-content]');
-                          popoverElements.forEach((element) => {
-                            const calendarElement = element.querySelector('.rdp');
-                            if (calendarElement) {
-                              // To jest element kalendarza, więc zamykamy jego popover
-                              document.body.click();
-                            }
-                          });
-                        }, 50);
+                        // NOWA METODA: Symulujemy kliknięcie w tle za pomocą zdarzenia 'Escape'
+                        // Ta metoda jest bardziej niezawodna niż szukanie elementów w DOM
+                        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
                       }}
                       initialFocus
                     />
@@ -1526,7 +1479,7 @@ export default function Orders() {
                       )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="w-auto p-0" id="mobile-calendar-end">
                     <CalendarUI
                       mode="single"
                       selected={tempDateRange.to}
@@ -1534,18 +1487,8 @@ export default function Orders() {
                         // Najpierw aktualizujemy datę
                         setTempDateRange(prev => ({ ...prev, to: date }));
                         
-                        // Teraz zamykamy popover - używamy prostego sposobu z timeoutem
-                        setTimeout(() => {
-                          // Znajdujemy dokładnie ten popover, którego szukamy
-                          const popoverElements = document.querySelectorAll('[data-radix-popover-content]');
-                          popoverElements.forEach((element) => {
-                            const calendarElement = element.querySelector('.rdp');
-                            if (calendarElement) {
-                              // To jest element kalendarza, więc zamykamy jego popover
-                              document.body.click();
-                            }
-                          });
-                        }, 50);
+                        // NOWA METODA: Symulujemy kliknięcie Escape, które zawsze zamyka popover
+                        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
                       }}
                       disabled={(date) => tempDateRange.from ? date < tempDateRange.from : false}
                       initialFocus
