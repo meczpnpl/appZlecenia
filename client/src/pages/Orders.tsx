@@ -698,23 +698,38 @@ export default function Orders() {
     if (storeFilter !== 'all') params.append('store', storeFilter);
     
     // Dodajemy parametry filtrów zakresu dat
-    const dateRangeFilter = activeFilters.find(f => f.type === 'dateRange');
-    if (dateRangeFilter) {
-      const dateValue = dateRangeFilter.value as { from?: Date, to?: Date };
-      const dateType = dateRangeFilter.label.toLowerCase().includes('transport') ? 'transportDate' : 'installationDate';
+    const dateRangeFilters = activeFilters.filter(f => f.type === 'dateRange');
+    
+    // Przetwarzaj każdy filtr daty osobno
+    dateRangeFilters.forEach(dateRangeFilter => {
+      // Sprawdź, czy to filtr daty montażu czy transportu
+      const isTransportDate = dateRangeFilter.label.toLowerCase().includes('transport');
+      const dateType = isTransportDate ? 'transportDate' : 'installationDate';
       
+      // Pobierz wartości dat z filtra
+      const dateValue = dateRangeFilter.value as { from?: Date, to?: Date };
+      
+      // Dodaj daty do parametrów URL
       if (dateValue.from) {
+        // Konwertuj obiekt Date na ISO string
         params.append(`${dateType}From`, dateValue.from.toISOString());
+        console.log(`Dodaję parametr ${dateType}From:`, dateValue.from.toISOString());
       }
       
       if (dateValue.to) {
+        // Konwertuj obiekt Date na ISO string
         params.append(`${dateType}To`, dateValue.to.toISOString());
+        console.log(`Dodaję parametr ${dateType}To:`, dateValue.to.toISOString());
       }
-    }
+    });
+    
+    // Dodaj zapis filtru w konsoli, żeby łatwiej było debugować
+    console.log('Filtry dateRange:', dateRangeFilters);
     
     const queryString = params.toString();
     if (queryString) url += `?${queryString}`;
     
+    console.log('Pełny URL zapytania:', url);
     return url;
   };
   
