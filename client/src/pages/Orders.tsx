@@ -507,6 +507,12 @@ export default function Orders() {
       // Resetuj pola kalendarza
       setDateFilterStart(undefined);
       setDateFilterEnd(undefined);
+      
+      // Zamknij dialog po dodaniu filtra
+      setIsFilterDialogOpen(false);
+      
+      // Odśwież dane
+      ordersQuery.refetch();
     }
   };
   
@@ -691,6 +697,21 @@ export default function Orders() {
     if (statusFilter !== 'all') params.append('status', statusFilter);
     if (storeFilter !== 'all') params.append('store', storeFilter);
     
+    // Dodajemy parametry filtrów zakresu dat
+    const dateRangeFilter = activeFilters.find(f => f.type === 'dateRange');
+    if (dateRangeFilter) {
+      const dateValue = dateRangeFilter.value as { from?: Date, to?: Date };
+      const dateType = dateRangeFilter.label.toLowerCase().includes('transport') ? 'transportDate' : 'installationDate';
+      
+      if (dateValue.from) {
+        params.append(`${dateType}From`, dateValue.from.toISOString());
+      }
+      
+      if (dateValue.to) {
+        params.append(`${dateType}To`, dateValue.to.toISOString());
+      }
+    }
+    
     const queryString = params.toString();
     if (queryString) url += `?${queryString}`;
     
@@ -699,7 +720,7 @@ export default function Orders() {
   
   // Pobieranie danych z API z właściwym URL zawierającym parametry
   const ordersQuery = useQuery<Order[]>({
-    queryKey: [getOrdersUrl(), searchTerm, statusFilter, storeFilter],
+    queryKey: [getOrdersUrl(), searchTerm, statusFilter, storeFilter, ...activeFilters.map(f => f.id)],
   });
   const { data: fetchedOrders, isLoading, error } = ordersQuery;
   

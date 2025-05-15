@@ -1342,7 +1342,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Otrzymano zapytanie na /api/orders");
       
       // Wczytujemy wszystkie parametry zapytania
-      const { search, status, store, filters: filtersStr } = req.query;
+      const { 
+        search, status, store, filters: filtersStr,
+        installationDateFrom, installationDateTo,
+        transportDateFrom, transportDateTo
+      } = req.query;
       console.log("Parametry zapytania:", req.query);
       
       // Pobierz dane użytkownika z sesji
@@ -1371,30 +1375,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Obsługa zaawansowanych filtrów z frontendu
       let advancedFilters: any = {};
+      
+      // Obsługa parametrów dat bezpośrednio z zapytania
+      if (installationDateFrom && typeof installationDateFrom === 'string') {
+        advancedFilters.installationDateFrom = new Date(installationDateFrom);
+        console.log("Filtr instalacji od:", advancedFilters.installationDateFrom);
+      }
+      
+      if (installationDateTo && typeof installationDateTo === 'string') {
+        advancedFilters.installationDateTo = new Date(installationDateTo);
+        console.log("Filtr instalacji do:", advancedFilters.installationDateTo);
+      }
+      
+      if (transportDateFrom && typeof transportDateFrom === 'string') {
+        advancedFilters.transportDateFrom = new Date(transportDateFrom);
+        console.log("Filtr transportu od:", advancedFilters.transportDateFrom);
+      }
+      
+      if (transportDateTo && typeof transportDateTo === 'string') {
+        advancedFilters.transportDateTo = new Date(transportDateTo);
+        console.log("Filtr transportu do:", advancedFilters.transportDateTo);
+      }
+      
+      // Obsługa zaawansowanych filtrów z formatu JSON (dla kompatybilności wstecznej)
       if (filtersStr && typeof filtersStr === 'string') {
         try {
           const parsedFilters = JSON.parse(filtersStr);
           console.log("Parsowane filtry zaawansowane:", parsedFilters);
           
           // Przekształć filtry zaawansowane do formatu zrozumiałego dla storage
-          advancedFilters = {
+          const jsonFilters = {
             // Filtry statusu instalacji
             installationStatus: parsedFilters.status?.map((f: any) => f.value),
             
             // Filtry statusu transportu
             transportStatus: parsedFilters.transportStatus?.map((f: any) => f.value),
             
-            // Filtry dat instalacji
-            installationDateFrom: parsedFilters.dateRange?.find((f: any) => 
-              f.type === 'dateRange' && f.label.includes('Montaż'))?.value?.from,
-            installationDateTo: parsedFilters.dateRange?.find((f: any) => 
-              f.type === 'dateRange' && f.label.includes('Montaż'))?.value?.to,
+            // Filtry dat instalacji (tylko jeśli nie zostały już dodane z query params)
+            ...((!advancedFilters.installationDateFrom && parsedFilters.dateRange?.find((f: any) => 
+              f.type === 'dateRange' && f.label.includes('Montaż'))?.value?.from) ? {
+              installationDateFrom: parsedFilters.dateRange?.find((f: any) => 
+                f.type === 'dateRange' && f.label.includes('Montaż'))?.value?.from
+            } : {}),
             
-            // Filtry dat transportu
-            transportDateFrom: parsedFilters.dateRange?.find((f: any) => 
-              f.type === 'dateRange' && f.label.includes('Transport'))?.value?.from,
-            transportDateTo: parsedFilters.dateRange?.find((f: any) => 
-              f.type === 'dateRange' && f.label.includes('Transport'))?.value?.to,
+            ...((!advancedFilters.installationDateTo && parsedFilters.dateRange?.find((f: any) => 
+              f.type === 'dateRange' && f.label.includes('Montaż'))?.value?.to) ? {
+              installationDateTo: parsedFilters.dateRange?.find((f: any) => 
+                f.type === 'dateRange' && f.label.includes('Montaż'))?.value?.to
+            } : {}),
+            
+            // Filtry dat transportu (tylko jeśli nie zostały już dodane z query params)
+            ...((!advancedFilters.transportDateFrom && parsedFilters.dateRange?.find((f: any) => 
+              f.type === 'dateRange' && f.label.includes('Transport'))?.value?.from) ? {
+              transportDateFrom: parsedFilters.dateRange?.find((f: any) => 
+                f.type === 'dateRange' && f.label.includes('Transport'))?.value?.from
+            } : {}),
+            
+            ...((!advancedFilters.transportDateTo && parsedFilters.dateRange?.find((f: any) => 
+              f.type === 'dateRange' && f.label.includes('Transport'))?.value?.to) ? {
+              transportDateTo: parsedFilters.dateRange?.find((f: any) => 
+                f.type === 'dateRange' && f.label.includes('Transport'))?.value?.to
+            } : {}),
             
             // Filtry rozliczenia
             isSettled: parsedFilters.settlement?.map((f: any) => f.value),
@@ -1408,6 +1449,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Filtry sklepu
             storeId: parsedFilters.store?.map((f: any) => f.value),
           };
+          
+          // Połącz filtry z query params i filtry z JSON
+          advancedFilters = {...advancedFilters, ...jsonFilters};
           
           console.log("Przygotowane filtry zaawansowane:", advancedFilters);
         } catch (e) {
