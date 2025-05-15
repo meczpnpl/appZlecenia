@@ -24,7 +24,8 @@ import {
   Eye, Plus, Search, Filter, X, CalendarClock, Phone, MapPin, 
   Navigation, Calendar, Loader2, Pencil, Truck, Hammer, 
   Check, CheckCircle, CalendarDays, Clock, Calendar as CalendarIcon,
-  SlidersHorizontal, Tag, XCircle, Home, DoorOpen, Download, ArrowRight
+  SlidersHorizontal, Tag, XCircle, Home, DoorOpen, Download, ArrowRight,
+  Bookmark, Save
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { Order } from '@shared/schema';
