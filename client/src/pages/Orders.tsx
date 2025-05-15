@@ -298,45 +298,99 @@ export default function Orders() {
   };
   const [currentDateOffset, setCurrentDateOffset] = useState<number>(0); // 0 = dzisiaj, 1 = jutro, -1 = wczoraj
   
-  // Zapis/odczyt filtrów z localStorage
-  useEffect(() => {
+  // Funkcja do ładowania domyślnego filtra
+  const loadDefaultFilter = async () => {
     try {
-      // Wyczyśćmy najpierw localStorage żeby mieć pewność, że nie ma starych duplikatów
-      localStorage.removeItem('orderFilters');
+      // Pytanie do API o domyślny filtr użytkownika
+      const response = await fetch('/api/filters/default');
       
-      // Następnie spróbujmy ponownie załadować filtry
-      const savedFilters = localStorage.getItem('orderFilters');
-      if (savedFilters) {
-        const filters = JSON.parse(savedFilters);
+      // Jeśli znaleziono domyślny filtr, użyj go
+      if (response.ok) {
+        const defaultFilter = await response.json();
+        console.log('Znaleziono domyślny filtr:', defaultFilter);
         
-        // Deduplikacja filtrów - używamy obiektu, żeby zapewnić unikalność typów
-        const uniqueFilters = {} as Record<string, any>;
-        
-        // Konwertujemy daty i jednocześnie deduplikujemy
-        filters.forEach((filter: any) => {
-          if (filter.type === 'dateRange' && typeof filter.value === 'object') {
-            uniqueFilters[filter.type] = {
-              ...filter,
-              value: {
-                from: filter.value.from ? new Date(filter.value.from) : undefined,
-                to: filter.value.to ? new Date(filter.value.to) : undefined
-              }
-            };
-          } else {
-            uniqueFilters[filter.type] = filter;
-          }
-        });
-        
-        // Konwersja z powrotem do tablicy
-        const parsedFilters = Object.values(uniqueFilters);
-        setActiveFilters(parsedFilters);
+        if (defaultFilter && defaultFilter.filtersData) {
+          // Aplikuj zapisane filtry z konwersją dat
+          const filters = defaultFilter.filtersData;
+          
+          // Deduplikacja filtrów - używamy obiektu, żeby zapewnić unikalność typów
+          const uniqueFilters = {} as Record<string, any>;
+          
+          // Konwertujemy daty i jednocześnie deduplikujemy
+          filters.forEach((filter: any) => {
+            if (filter.type === 'dateRange' && typeof filter.value === 'object') {
+              uniqueFilters[filter.type] = {
+                ...filter,
+                value: {
+                  from: filter.value.from ? new Date(filter.value.from) : undefined,
+                  to: filter.value.to ? new Date(filter.value.to) : undefined
+                }
+              };
+            } else {
+              uniqueFilters[filter.type] = filter;
+            }
+          });
+          
+          // Konwersja z powrotem do tablicy
+          const parsedFilters = Object.values(uniqueFilters);
+          setActiveFilters(parsedFilters);
+          return true;
+        }
       }
+      return false;
     } catch (error) {
-      console.error('Error loading filters from localStorage', error);
-      // W przypadku błędu wyczyść localStorage i zresetuj stan
-      localStorage.removeItem('orderFilters');
-      setActiveFilters([]);
+      console.error('Błąd podczas ładowania domyślnego filtra:', error);
+      return false;
     }
+  };
+  
+  // Zapis/odczyt filtrów
+  useEffect(() => {
+    // Funkcja do inicjalizacji filtrów
+    const initFilters = async () => {
+      try {
+        // Najpierw próbujemy załadować domyślny filtr
+        const hasDefaultFilter = await loadDefaultFilter();
+        
+        // Jeśli nie ma domyślnego, próbujemy z localStorage
+        if (!hasDefaultFilter) {
+          const savedFilters = localStorage.getItem('orderFilters');
+          if (savedFilters) {
+            const filters = JSON.parse(savedFilters);
+            
+            // Deduplikacja filtrów - używamy obiektu, żeby zapewnić unikalność typów
+            const uniqueFilters = {} as Record<string, any>;
+            
+            // Konwertujemy daty i jednocześnie deduplikujemy
+            filters.forEach((filter: any) => {
+              if (filter.type === 'dateRange' && typeof filter.value === 'object') {
+                uniqueFilters[filter.type] = {
+                  ...filter,
+                  value: {
+                    from: filter.value.from ? new Date(filter.value.from) : undefined,
+                    to: filter.value.to ? new Date(filter.value.to) : undefined
+                  }
+                };
+              } else {
+                uniqueFilters[filter.type] = filter;
+              }
+            });
+            
+            // Konwersja z powrotem do tablicy
+            const parsedFilters = Object.values(uniqueFilters);
+            setActiveFilters(parsedFilters);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading filters:', error);
+        // Jeśli wystąpi błąd, wyczyść localStorage i zresetuj filtry
+        localStorage.removeItem('orderFilters');
+        setActiveFilters([]);
+      }
+    };
+    
+    // Wywołaj funkcję inicjalizującą filtry
+    initFilters();
   }, []);
   
   // Automatyczne zapisywanie filtrów do localStorage zostało przeniesione

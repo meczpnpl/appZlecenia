@@ -5,19 +5,7 @@ import { InsertUserFilter } from "../../shared/schema";
 
 // Funkcja konfigurująca endpointy API dla zarządzania filtrami
 export function registerFilterRoutes(app: any) {
-  // Pobieranie zapisanych filtrów dla bieżącego użytkownika
-  app.get("/api/filters", authMiddleware, async (req: Request, res: Response) => {
-    try {
-      const userId = req.session.user!.id;
-      const filters = await storage.getUserFilters(userId);
-      res.status(200).json(filters);
-    } catch (error) {
-      console.error("Błąd podczas pobierania filtrów:", error);
-      res.status(500).json({ message: "Wystąpił błąd podczas pobierania filtrów" });
-    }
-  });
-
-  // Pobieranie domyślnego filtra użytkownika
+  // Pobieranie domyślnego filtra użytkownika - UWAGA: musi być przed ścieżką z parametrem :id
   app.get("/api/filters/default", authMiddleware, async (req: Request, res: Response) => {
     try {
       const userId = req.session.user!.id;
@@ -31,6 +19,18 @@ export function registerFilterRoutes(app: any) {
     } catch (error) {
       console.error("Błąd podczas pobierania domyślnego filtra:", error);
       res.status(500).json({ message: "Wystąpił błąd podczas pobierania domyślnego filtra" });
+    }
+  });
+  
+  // Pobieranie zapisanych filtrów dla bieżącego użytkownika
+  app.get("/api/filters", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      const filters = await storage.getUserFilters(userId);
+      res.status(200).json(filters);
+    } catch (error) {
+      console.error("Błąd podczas pobierania filtrów:", error);
+      res.status(500).json({ message: "Wystąpił błąd podczas pobierania filtrów" });
     }
   });
 
