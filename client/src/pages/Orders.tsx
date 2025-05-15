@@ -1468,12 +1468,14 @@ export default function Orders() {
                         if (closeButtons.length > 0) {
                           (closeButtons[0] as HTMLElement).click();
                         } else {
-                          // Fallback - szukamy pierwszego przycisku w rodzicu
-                          const popover = document.querySelector('[data-state="open"][role="dialog"]');
-                          if (popover) {
-                            // Symulujemy kliknięcie poza popoverem
-                            document.body.click();
-                          }
+                          // Fallback - szukamy otwartego dialogu i zamykamy go
+                          const openDialogs = document.querySelectorAll('[data-state="open"][role="dialog"]');
+                          openDialogs.forEach(dialog => {
+                            if (dialog.textContent?.includes('Wybierz datę początkową')) {
+                              // Symulujemy kliknięcie poza dialogiem
+                              document.body.click();
+                            }
+                          });
                         }
                       }}
                       initialFocus
@@ -1520,12 +1522,19 @@ export default function Orders() {
                       onSelect={(date) => {
                         setTempDateRange(prev => ({ ...prev, to: date }));
                         // Zamykamy popover przez manipulację DOM
+                        // Poszukujemy najpierw przycisku zamknięcia
                         const closeButtons = document.querySelectorAll('[data-radix-popover-close=""]');
                         if (closeButtons.length > 0) {
-                          (closeButtons[0] as HTMLElement).click();
+                          (closeButtons[closeButtons.length - 1] as HTMLElement).click();
                         } else {
-                          // Fallback - symulujemy kliknięcie poza popoverem
-                          document.body.click();
+                          // Fallback - szukamy otwartego dialogu i zamykamy go
+                          const openDialogs = document.querySelectorAll('[data-state="open"][role="dialog"]');
+                          openDialogs.forEach(dialog => {
+                            if (dialog.textContent?.includes('Wybierz datę końcową')) {
+                              // Symulujemy kliknięcie poza dialogiem
+                              document.body.click();
+                            }
+                          });
                         }
                       }}
                       disabled={(date) => tempDateRange.from ? date < tempDateRange.from : false}
