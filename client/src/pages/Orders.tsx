@@ -1250,7 +1250,7 @@ export default function Orders() {
         const statusInfo = [...INSTALLATION_STATUSES, ...TRANSPORT_STATUSES].find(s => s.value === status);
         if (statusInfo) {
           const type = INSTALLATION_STATUSES.some(s => s.value === status) ? 'status' : 'transportStatus';
-          const label = type === 'status' ? `Status: ${statusInfo.label}` : `Transport: ${statusInfo.label}`;
+          const label = type === 'status' ? `Montaż: ${statusInfo.label}` : `Transport: ${statusInfo.label}`;
           
           const filter: ActiveFilter = {
             id: `${type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -1469,62 +1469,62 @@ export default function Orders() {
               </div>
             </div>
             
-            {/* Sekcja - Statusy */}
+            {/* Sekcja - Status montażu */}
             <div className="space-y-3 border-b pb-4">
-              <h4 className="text-sm font-medium">Status:</h4>
-              {isTransporter ? (
-                // Statusy dla transportera
-                <div className="grid grid-cols-1 gap-2">
-                  {TRANSPORT_STATUSES.map(status => (
-                    <div key={status.value} className="flex items-center space-x-2">
-                      <Checkbox 
-                        id={`status-${status.value}`}
-                        checked={selectedStatuses.includes(status.value)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setSelectedStatuses(prev => [...prev, status.value]);
-                          } else {
-                            setSelectedStatuses(prev => prev.filter(s => s !== status.value));
-                          }
-                        }}
-                      />
-                      <label 
-                        htmlFor={`status-${status.value}`}
-                        className="text-sm flex items-center cursor-pointer"
-                      >
-                        <Tag className="h-4 w-4 mr-2 text-gray-500" />
-                        {status.label}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                // Statusy dla zwykłego użytkownika
-                <div className="grid grid-cols-1 gap-2">
-                  {INSTALLATION_STATUSES.map(status => (
-                    <div key={status.value} className="flex items-center space-x-2">
-                      <Checkbox 
-                        id={`status-${status.value}`}
-                        checked={selectedStatuses.includes(status.value)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setSelectedStatuses(prev => [...prev, status.value]);
-                          } else {
-                            setSelectedStatuses(prev => prev.filter(s => s !== status.value));
-                          }
-                        }}
-                      />
-                      <label 
-                        htmlFor={`status-${status.value}`}
-                        className="text-sm flex items-center cursor-pointer"
-                      >
-                        <Tag className="h-4 w-4 mr-2 text-gray-500" />
-                        {status.label}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <h4 className="text-sm font-medium">Montaż:</h4>
+              <div className="grid grid-cols-1 gap-2">
+                {INSTALLATION_STATUSES.map(status => (
+                  <div key={`installation-${status.value}`} className="flex items-center space-x-2">
+                    <Checkbox 
+                      id={`installation-${status.value}`}
+                      checked={selectedStatuses.includes(status.value)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedStatuses(prev => [...prev, status.value]);
+                        } else {
+                          setSelectedStatuses(prev => prev.filter(s => s !== status.value));
+                        }
+                      }}
+                    />
+                    <label 
+                      htmlFor={`installation-${status.value}`}
+                      className="text-sm flex items-center cursor-pointer"
+                    >
+                      <Tag className="h-4 w-4 mr-2 text-gray-500" />
+                      {status.label}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Sekcja - Status transportu */}
+            <div className="space-y-3 border-b pb-4">
+              <h4 className="text-sm font-medium">Transport:</h4>
+              <div className="grid grid-cols-1 gap-2">
+                {TRANSPORT_STATUSES.map(status => (
+                  <div key={`transport-${status.value}`} className="flex items-center space-x-2">
+                    <Checkbox 
+                      id={`transport-${status.value}`}
+                      checked={selectedStatuses.includes(status.value)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedStatuses(prev => [...prev, status.value]);
+                        } else {
+                          setSelectedStatuses(prev => prev.filter(s => s !== status.value));
+                        }
+                      }}
+                    />
+                    <label 
+                      htmlFor={`transport-${status.value}`}
+                      className="text-sm flex items-center cursor-pointer"
+                    >
+                      <Tag className="h-4 w-4 mr-2 text-gray-500" />
+                      {status.label}
+                    </label>
+                  </div>
+                ))}
+              </div>
             </div>
             
             {/* Sekcja - Typ usługi */}
