@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/ui/back-button';
 import { Input } from '@/components/ui/input';
+import { SavedFilters } from '@/components/SavedFilters';
 
 // Faktyczne statusy z systemu
 const INSTALLATION_STATUSES = [
@@ -2235,6 +2236,15 @@ export default function Orders() {
                 )}
               </div>
               
+              {/* Komponenty zapisanych filtrów */}
+              <div className="hidden md:block">
+                <SavedFilters 
+                  activeFilters={activeFilters}
+                  onApplyFilter={(filters) => setActiveFilters(filters)}
+                  className="mr-2"
+                />
+              </div>
+              
               {/* Przycisk zaawansowanego filtrowania - desktop */}
               <Dialog>
                 <DialogTrigger asChild>
@@ -2503,6 +2513,15 @@ export default function Orders() {
                       Wybierz filtry według statusu montażu lub transportu
                     </DrawerDescription>
                   </DrawerHeader>
+                  
+                  {/* Zapisane filtry - wersja mobilna */}
+                  <div className="px-4 pb-2">
+                    <SavedFilters 
+                      activeFilters={activeFilters}
+                      onApplyFilter={(filters) => setActiveFilters(filters)}
+                    />
+                  </div>
+                  
                   <div className="px-4 space-y-4">
                     {/* Statusy montażu i transportu w mobilnej wersji */}
                     <div className="grid grid-cols-2 gap-4">

@@ -42,12 +42,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-// Typ dla aktywnego filtra (wzięty z Orders.tsx)
+// Typ dla aktywnego filtra (zgodny z interfejsem z Orders.tsx)
 export interface ActiveFilter {
   id: string;
-  type: string;
-  value: any;
+  type: 'status' | 'transportStatus' | 'installationDate' | 'transportDate' | 'dateRange' | 'serviceType' | 'settlement' | 'transport' | 'store';
   label: string;
+  value: string | { from?: Date, to?: Date } | boolean | number;
 }
 
 interface SavedFiltersProps {
