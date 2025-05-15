@@ -1844,14 +1844,7 @@ export default function Orders() {
                     </div>
                   </div>
                   
-                  <Button 
-                    className="w-full mt-2"
-                    onClick={addDateRangeFilter}
-                    disabled={!dateFilterStart}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Dodaj filtr zakresu dat
-                  </Button>
+                  {/* Usunięto przycisk "Dodaj filtr zakresu dat" - filtry dat będą dodawane przez główny przycisk "Zastosuj filtry" */}
                 </div>
                 
                 {/* Przyciski szybkich filtrów */}
