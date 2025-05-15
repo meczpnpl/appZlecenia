@@ -63,7 +63,7 @@ window.addEventListener('appinstalled', (e) => {
 });
 
 // Wykrywanie wersji aplikacji i czyszczenie cache
-const APP_VERSION = "1.9"; // zwiększaj wersję przy każdej publikacji
+const APP_VERSION = "2.0"; // zwiększaj wersję przy każdej publikacji
 
 // Funkcja do czyszczenia cache
 const clearCache = () => {
