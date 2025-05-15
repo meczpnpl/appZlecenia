@@ -1514,7 +1514,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...roleBasedFilters,
         
         // Zaawansowane filtry
-        ...advancedFilters
+        ...advancedFilters,
+        
+        // Parametry filtrowania dat bezpośrednio z URL
+        installationDateFrom: installationDateFrom ? new Date(installationDateFrom as string) : undefined,
+        installationDateTo: installationDateTo ? new Date(installationDateTo as string) : undefined,
+        transportDateFrom: transportDateFrom ? new Date(transportDateFrom as string) : undefined,
+        transportDateTo: transportDateTo ? new Date(transportDateTo as string) : undefined
       };
       
       console.log("Finalne filtry dla zapytania getOrders:", finalFilters);

@@ -158,7 +158,12 @@ export class DatabaseStorage implements IStorage {
     storeId?: number, 
     companyId?: number,
     installerId?: number,
-    installerWithCompany?: boolean
+    installerWithCompany?: boolean,
+    installationDateFrom?: Date,
+    installationDateTo?: Date,
+    transportDateFrom?: Date,
+    transportDateTo?: Date,
+    transportStatus?: string
   }): Promise<Order[]> {
     if (filters?.search && filters.search.trim()) {
       // Wyszukiwanie tekstu
@@ -210,6 +215,39 @@ export class DatabaseStorage implements IStorage {
             params.push(filters.installerId);
             paramIndex++;
           }
+        }
+        
+        // Status transportu
+        if (filters.transportStatus) {
+          conditions.push(`transport_status = $${paramIndex}`);
+          params.push(filters.transportStatus);
+          paramIndex++;
+        }
+        
+        // Filtrowanie po datach instalacji
+        if (filters.installationDateFrom) {
+          conditions.push(`installation_date >= $${paramIndex}`);
+          params.push(filters.installationDateFrom);
+          paramIndex++;
+        }
+        
+        if (filters.installationDateTo) {
+          conditions.push(`installation_date <= $${paramIndex}`);
+          params.push(filters.installationDateTo);
+          paramIndex++;
+        }
+        
+        // Filtrowanie po datach transportu
+        if (filters.transportDateFrom) {
+          conditions.push(`transport_date >= $${paramIndex}`);
+          params.push(filters.transportDateFrom);
+          paramIndex++;
+        }
+        
+        if (filters.transportDateTo) {
+          conditions.push(`transport_date <= $${paramIndex}`);
+          params.push(filters.transportDateTo);
+          paramIndex++;
         }
         
         // Dodajemy warunki do zapytania głównego
@@ -267,6 +305,34 @@ export class DatabaseStorage implements IStorage {
             query += ` AND installer_id = $${params.length + 1}`;
             params.push(filters.installerId);
           }
+        }
+        
+        // Status transportu
+        if (filters?.transportStatus) {
+          query += ` AND transport_status = $${params.length + 1}`;
+          params.push(filters.transportStatus);
+        }
+        
+        // Filtrowanie po datach instalacji
+        if (filters?.installationDateFrom) {
+          query += ` AND installation_date >= $${params.length + 1}`;
+          params.push(filters.installationDateFrom.toISOString());
+        }
+        
+        if (filters?.installationDateTo) {
+          query += ` AND installation_date <= $${params.length + 1}`;
+          params.push(filters.installationDateTo.toISOString());
+        }
+        
+        // Filtrowanie po datach transportu
+        if (filters?.transportDateFrom) {
+          query += ` AND transport_date >= $${params.length + 1}`;
+          params.push(filters.transportDateFrom.toISOString());
+        }
+        
+        if (filters?.transportDateTo) {
+          query += ` AND transport_date <= $${params.length + 1}`;
+          params.push(filters.transportDateTo.toISOString());
         }
         
         // Sortowanie
