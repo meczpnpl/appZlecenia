@@ -2601,6 +2601,29 @@ export default function Orders() {
                     <DrawerClose asChild>
                       <Button 
                         onClick={() => {
+                          // Jeśli są ustawione daty, dodaj filtr daty
+                          if (dateFilterStart) {
+                            // Tworzymy filtr zakresu dat
+                            const filterLabel = `${dateFilterType === 'installationDate' ? 'Montaż' : 'Transport'}: ${formatDate(dateFilterStart)}${dateFilterEnd ? ` - ${formatDate(dateFilterEnd)}` : ''}`;
+                            
+                            const filter: ActiveFilter = {
+                              id: `date-range-${dateFilterType}-${Date.now()}`,
+                              type: 'dateRange',
+                              label: filterLabel,
+                              value: {
+                                from: startOfDay(dateFilterStart),
+                                to: dateFilterEnd ? endOfDay(dateFilterEnd) : endOfDay(dateFilterStart)
+                              }
+                            };
+                            
+                            addFilter(filter);
+                            
+                            // Resetuj pola kalendarza po dodaniu filtra
+                            setDateFilterStart(undefined);
+                            setDateFilterEnd(undefined);
+                          }
+                          
+                          // Odświeżamy listę zleceń
                           ordersQuery.refetch();
                         }} 
                         className="w-full"
