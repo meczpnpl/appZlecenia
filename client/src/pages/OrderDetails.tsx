@@ -109,12 +109,12 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
   const [isEditTransportDialogOpen, setIsEditTransportDialogOpen] = useState<boolean>(false);
   const [editTransportDate, setEditTransportDate] = useState<Date | undefined>(undefined);
   const [editTransportStatus, setEditTransportStatus] = useState<string>('');
-  const [editTransporterId, setEditTransporterId] = useState<number | undefined>();
-  const [isUpdatingTransportDetails, setIsUpdatingTransportDetails] = useState<boolean>(false);
   
   // Stan dla listy dostępnych montażystów i transporterów
   const [availableInstallers, setAvailableInstallers] = useState<any[]>([]);
   const [availableTransporters, setAvailableTransporters] = useState<any[]>([]);
+  const [editTransporterId, setEditTransporterId] = useState<number | undefined>();
+  const [isUpdatingTransportDetails, setIsUpdatingTransportDetails] = useState<boolean>(false);
   const [isTransporterSelectOpen, setIsTransporterSelectOpen] = useState<boolean>(false);
   const [isCompanyDialogOpen, setIsCompanyDialogOpen] = useState<boolean>(false);
   const [isInstallerSelectOpen, setIsInstallerSelectOpen] = useState<boolean>(false);
@@ -710,6 +710,53 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
       toast({
         title: "Błąd",
         description: `Nie udało się zaktualizować danych montażu: ${error.message || 'Nieznany błąd'}`,
+        variant: "destructive"
+      });
+    }
+  });
+  
+  // Mutacja dla zbiorczej aktualizacji statusu transportu, daty i transportera
+  const { mutate: updateTransportDetails, isPending: isUpdatingTransportDetails } = useMutation({
+    mutationFn: async (data: { 
+      transportStatus: string, 
+      transportDate?: string,
+      transporterId?: number 
+    }) => {
+      // Dla firm z pracownikami, uwzględniamy wybranego transportera
+      if (user?.role === 'company' && user?.companyOwnerOnly === false) {
+        return apiRequest('PATCH', `/api/orders/${id}/assign-transporter`, {
+          transporterId: data.transporterId,
+          transportDate: data.transportDate,
+          transportStatus: data.transportStatus
+        });
+      } else {
+        // Dla firm jednoosobowych, wykorzystujemy standardową aktualizację statusu
+        return apiRequest('PATCH', `/api/orders/${id}/transport-status`, {
+          transportStatus: data.transportStatus,
+          transportDate: data.transportDate
+        });
+      }
+    },
+    onSuccess: () => {
+      toast({
+        title: "Sukces",
+        description: "Dane transportu zostały zaktualizowane",
+        variant: "success"
+      });
+      
+      // Zamykamy dialog i resetujemy stany
+      setIsEditTransportDialogOpen(false);
+      setEditTransportDate(undefined);
+      setEditTransportStatus('');
+      setEditTransporterId(undefined);
+      
+      // Odświeżamy dane zlecenia
+      queryClient.invalidateQueries({ queryKey: [`/api/orders/${id}`] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Błąd",
+        description: `Nie udało się zaktualizować danych transportu: ${error.message || 'Nieznany błąd'}`,
         variant: "destructive"
       });
     }
@@ -1469,6 +1516,21 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
                             <dd className="font-medium">
                               {order.transporterName || <span className="text-gray-400 italic">Nie przypisano</span>}
                             </dd>
+                          </div>
+                        )}
+                        
+                        {/* Przycisk edycji transportu - działa tak samo dla obu typów firm */}
+                        {canAssignTransporter && (
+                          <div className="mt-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="w-full flex items-center justify-center"
+                              onClick={openEditTransportDialog}
+                            >
+                              <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                              Edytuj transport
+                            </Button>
                           </div>
                         )}
                       </dl>
