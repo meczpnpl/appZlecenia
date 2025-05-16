@@ -460,17 +460,15 @@ export default function Orders() {
   // Funkcja do pobierania dostępnych montażystów dla firmy
   const fetchAvailableInstallers = async (serviceType: string) => {
     try {
-      // Określamy typ usługi do filtrowania montażystów
-      const serviceFilter = serviceType === 'montaż drzwi' ? 'Montaż drzwi' : 'Montaż podłogi';
-      const response = await fetch('/api/installers');
+      console.log(`Pobieranie montażystów dla usługi: ${serviceType}`);
+      
+      // Przekazujemy typ usługi jako parametr do API, aby serwer mógł filtrować
+      const response = await fetch(`/api/installers?serviceType=${encodeURIComponent(serviceType)}`);
       
       if (response.ok) {
         const installers = await response.json();
-        // Filtrowanie montażystów po odpowiedniej specjalizacji
-        const filteredInstallers = installers.filter((installer: any) => 
-          installer.services?.some((s: string) => s === serviceFilter)
-        );
-        setAvailableInstallers(filteredInstallers);
+        console.log(`Otrzymano ${installers.length} montażystów z API o odpowiedniej specjalizacji`);
+        setAvailableInstallers(installers);
       } else {
         console.error('Błąd podczas pobierania montażystów:', await response.text());
         setAvailableInstallers([]);
