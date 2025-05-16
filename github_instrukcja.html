@@ -245,5 +245,19 @@ echo "*.log" >> .gitignore</code></pre>
     <div class="note" style="margin-top: 30px;">
         <strong>Pamiętaj:</strong> Wykonuj regularne commity, aby mieć punkty kontrolne, do których możesz wrócić. Dobra praktyka to commit po każdej logicznej zmianie w kodzie.
     </div>
+    <div class="note" style=margin-top: 30px;">";
+        <strong>Doskonale! Teraz wersja aplikacji będzie automatycznie pobierana z centralnego miejsca (zmienna APP_VERSION z pliku main.tsx).
+
+        W ten sposób wystarczy zmienić wersję tylko w jednym miejscu:
+
+        W pliku client/src/main.tsx (zmienna APP_VERSION)
+        Pozostałe dwa miejsca nadal będą wymagały ręcznej aktualizacji:
+        2. W pliku client/index.html (w tytule i referencji do manifestu)
+
+        W pliku public/manifest.json (pole "version")
+        Ale strona logowania będzie zawsze pokazywała aktualną wersję z głównego pliku aplikacji, co znacznie ułatwi zarządzanie wersjonowaniem.
+
+        Czy są jeszcze jakieś zmiany, które chciałabyś wprowadzić w aplikacji?</strong>
+    </div>
 </body>
 </html>

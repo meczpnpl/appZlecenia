@@ -73,26 +73,42 @@ const clearCache = () => {
       names.forEach(name => caches.delete(name));
     });
   }
+  
+  // Usuń flagi odświeżania po 5 sekundach, aby zabezpieczyć przed ciągłym czyszczeniem
+  setTimeout(() => {
+    localStorage.removeItem('app_refresh_in_progress');
+  }, 5000);
 };
 
+// TYMCZASOWO WYŁĄCZAMY CAŁĄ OBSŁUGĘ SERVICE WORKERA
+// To jest awaryjne rozwiązanie, aby zatrzymać pętlę ciągłych odświeżeń
+console.log("Obsługa Service Workera jest tymczasowo wyłączona");
+
+/*
 // Rejestracja Service Workera dla PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    // Sprawdź zapisaną wersję aplikacji
+    // Tymczasowo wyłączamy kontrolę wersji, aby uniknąć pętli odświeżeń
     const savedVersion = localStorage.getItem('app_version');
     if (savedVersion !== APP_VERSION) {
-      console.log("Wykryto nową wersję aplikacji. Wymuszam odświeżenie cache.");
-      // Wyczyść cache przy wykryciu nowej wersji
-      clearCache();
-      // Zapisz nową wersję w localStorage
+      console.log("Wykryto nową wersję aplikacji, ale pomijam odświeżanie cache i strony.");
+      // Zapisz nową wersję w localStorage bez innych akcji
       localStorage.setItem('app_version', APP_VERSION);
     }
 
+    // Tymczasowo wyłączamy automatyczne odświeżanie przy aktualizacji service workera
+    console.log("Automatyczne odświeżanie przy aktualizacji Service Worker wyłączone");
+    
     // Dodaj obsługę controllerchange, aby automatycznie odświeżyć stronę
+    // Używaj flagi, aby zapobiec cyklicznemu odświeżaniu
+    let refreshing = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
       console.log("Service Worker uaktualniony. Odświeżam stronę.");
       window.location.reload();
     });
+    
 
     navigator.serviceWorker.register('/service-worker.js')
       .then(registration => {
@@ -103,6 +119,7 @@ if ('serviceWorker' in navigator) {
       });
   });
 }
+*/
 
 // Prosty render bez StrictMode i innych potencjalnie problematycznych komponentów
 const root = createRoot(document.getElementById("root")!);
