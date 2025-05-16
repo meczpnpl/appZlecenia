@@ -446,7 +446,9 @@ export default function Orders() {
     user?.services?.some(s => s.toLowerCase().includes('montaż'));
     
   // Sprawdzenie czy to firma jednoosobowa (montażysta z przypisaną firmą)
-  // lub zwykła firma - chcemy, żeby widok był identyczny dla obu typów firm
+  // lub zwykła firma - chcemy, żeby widok był identyczny dla obu typów firm.
+  // UWAGA: Zawsze zwracamy true dla firm i montażystów firmowych, 
+  // aby zapewnić pełną identyczność widoków
   const isOnePersonCompany = 
     (user?.role === 'installer' && 
     user?.companyId !== undefined && 
@@ -2951,13 +2953,13 @@ export default function Orders() {
                       </th>
                       <th scope="col" className="px-4 py-3">Usługa</th>
 {/* Usunięto kolumnę Data transportu */}
-                      {/* Dla transporterów pokazujemy status transportu zamiast statusu zamówienia */}
+                      {/* Dla transporterów i firm (obu typów) pokazujemy Montaż zamiast statusu zamówienia */}
                       <th scope="col" className="px-4 py-3">
-                        {isTransporter ? "Transport" : "Status"}
+                        {isTransporter || isOnePersonCompany ? "Montaż" : "Status"}
                       </th>
-                      {/* Kolumna Montaż */}
-                      {isTransporter && (
-                        <th scope="col" className="px-4 py-3">Montaż</th>
+                      {/* Kolumna Transport dla transporterów i firm (obu typów) */}
+                      {(isTransporter || isOnePersonCompany) && (
+                        <th scope="col" className="px-4 py-3">Transport</th>
                       )}
                       {/* Pola finansowe widoczne tylko dla adminów, pracowników i firm */}
                       {canModifyFinancialStatus && !isTransporter && (
@@ -3058,7 +3060,47 @@ export default function Orders() {
                         </td>
 {/* Usunięto osobną kolumnę daty transportu */}
                         <td className="px-4 py-3">
-                          {isTransporter ? (
+                          {/* Pokazujemy rozszerzoną wersję montażu dla transporterów i firm (obu typów) */}
+                          {isTransporter || isOnePersonCompany ? (
+                            <div className="flex flex-col space-y-1">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeVariant(order.installationStatus || '')}`}>
+                                {formatInstallationStatus(order.installationStatus) || 'Nowe'}
+                              </span>
+                              <div className="flex items-center text-xs text-gray-600">
+                                <button 
+                                  className="flex items-center hover:bg-gray-100 p-0.5 rounded"
+                                  onClick={() => {
+                                    // Otwarcie edytora daty montażu
+                                    const currentOrder = order;
+                                    openInstallationDateEditor(order.id, order.installationDate || undefined);
+                                    
+                                    // Ustaw aktualny status montażu
+                                    if (currentOrder.installationStatus) {
+                                      setSelectedInstallationStatus(currentOrder.installationStatus);
+                                    } else {
+                                      setSelectedInstallationStatus('montaż zaplanowany');
+                                    }
+                                  }}
+                                >
+                                  <Calendar className="h-3.5 w-3.5 mr-1.5 text-gray-500 flex-shrink-0" />
+                                  {order.installationDate ? (
+                                    <span>{new Date(order.installationDate).toLocaleDateString('pl-PL')}</span>
+                                  ) : (
+                                    <span className="text-gray-500 italic">nieustalona</span>
+                                  )}
+                                  <Pencil className="h-3 w-3 text-gray-500 ml-1.5" />
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeVariant(order.installationStatus || '')}`}>
+                              {order.installationStatus || 'Nie określono'}
+                            </span>
+                          )}
+                        </td>
+                        {/* Kolumna Transport dla transporterów i firm (obu typów) */}
+                        {(isTransporter || isOnePersonCompany) && (
+                          <td className="px-4 py-3">
                             <div className="flex flex-col space-y-1">
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeVariant(order.transportStatus || '')}`}>
                                 {formatTransportStatus(order.transportStatus) || 'Brak'}
@@ -3094,45 +3136,6 @@ export default function Orders() {
                                     brak transportu
                                   </span>
                                 )}
-                              </div>
-                            </div>
-                          ) : (
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeVariant(order.installationStatus || '')}`}>
-                              {order.installationStatus || 'Nie określono'}
-                            </span>
-                          )}
-                        </td>
-                        {/* Kolumna Montaż dla transporterów */}
-                        {isTransporter && (
-                          <td className="px-4 py-3">
-                            <div className="flex flex-col space-y-1">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeVariant(order.installationStatus || '')}`}>
-                                {formatInstallationStatus(order.installationStatus) || 'Nowe'}
-                              </span>
-                              <div className="flex items-center text-xs text-gray-600">
-                                <button 
-                                  className="flex items-center hover:bg-gray-100 p-0.5 rounded"
-                                  onClick={() => {
-                                    // Otwarcie edytora daty montażu
-                                    const currentOrder = order;
-                                    openInstallationDateEditor(order.id, order.installationDate || undefined);
-                                    
-                                    // Ustaw aktualny status montażu
-                                    if (currentOrder.installationStatus) {
-                                      setSelectedInstallationStatus(currentOrder.installationStatus);
-                                    } else {
-                                      setSelectedInstallationStatus('montaż zaplanowany');
-                                    }
-                                  }}
-                                >
-                                  <Calendar className="h-3.5 w-3.5 mr-1.5 text-gray-500 flex-shrink-0" />
-                                  {order.installationDate ? (
-                                    <span>{new Date(order.installationDate).toLocaleDateString('pl-PL')}</span>
-                                  ) : (
-                                    <span className="text-gray-500 italic">nieustalona</span>
-                                  )}
-                                  <Pencil className="h-3 w-3 text-gray-500 ml-1.5" />
-                                </button>
                               </div>
                             </div>
                           </td>
