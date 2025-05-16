@@ -943,11 +943,11 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
                                   <SelectValue placeholder="Wybierz status" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="nowe">Nowe</SelectItem>
-                                  <SelectItem value="zaplanowany">Zaplanowany</SelectItem>
-                                  <SelectItem value="w trakcie">W trakcie</SelectItem>
-                                  <SelectItem value="zakończony">Zakończony</SelectItem>
-                                  <SelectItem value="reklamacja">Reklamacja</SelectItem>
+                                  <SelectItem value="Nowe">Nowe</SelectItem>
+                                  <SelectItem value="Zaplanowane">Zaplanowane</SelectItem>
+                                  <SelectItem value="W realizacji">W realizacji</SelectItem>
+                                  <SelectItem value="Zakończone">Zakończone</SelectItem>
+                                  <SelectItem value="Reklamacja">Reklamacja</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
