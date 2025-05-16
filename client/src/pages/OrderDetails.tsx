@@ -105,8 +105,16 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
   const [editInstallationStatus, setEditInstallationStatus] = useState<string>('');
   const [editInstallerId, setEditInstallerId] = useState<number | undefined>();
   
-  // Stan dla listy dostępnych montażystów
+  // Stan dla okna dialogowego edycji transportu (status, data, transporter)
+  const [isEditTransportDialogOpen, setIsEditTransportDialogOpen] = useState<boolean>(false);
+  const [editTransportDate, setEditTransportDate] = useState<Date | undefined>(undefined);
+  const [editTransportStatus, setEditTransportStatus] = useState<string>('');
+  const [editTransporterId, setEditTransporterId] = useState<number | undefined>();
+  const [isUpdatingTransportDetails, setIsUpdatingTransportDetails] = useState<boolean>(false);
+  
+  // Stan dla listy dostępnych montażystów i transporterów
   const [availableInstallers, setAvailableInstallers] = useState<any[]>([]);
+  const [availableTransporters, setAvailableTransporters] = useState<any[]>([]);
   const [isTransporterSelectOpen, setIsTransporterSelectOpen] = useState<boolean>(false);
   const [isCompanyDialogOpen, setIsCompanyDialogOpen] = useState<boolean>(false);
   const [isInstallerSelectOpen, setIsInstallerSelectOpen] = useState<boolean>(false);
@@ -155,6 +163,30 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
     }
   };
   
+  // Funkcja pobierająca dostępnych transporterów
+  const fetchAvailableTransporters = async () => {
+    try {
+      const response = await fetch('/api/transporters');
+      if (response.ok) {
+        const data = await response.json();
+        // Przekształć dane na format potrzebny dla komponentu Select
+        const formattedTransporters = data.map((transporter: any) => ({
+          id: transporter.id,
+          name: transporter.name || transporter.email.split('@')[0],
+          email: transporter.email,
+          services: transporter.services
+        }));
+        setAvailableTransporters(formattedTransporters);
+      } else {
+        console.error('Nie udało się pobrać listy transporterów');
+        setAvailableTransporters([]);
+      }
+    } catch (error) {
+      console.error('Błąd podczas pobierania transporterów:', error);
+      setAvailableTransporters([]);
+    }
+  };
+  
   // Funkcja otwierająca dialog edycji montażu
   const openEditInstallationDialog = () => {
     if (!order) return;
@@ -187,6 +219,40 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
     
     // Otwieramy dialog
     setIsEditInstallationDialogOpen(true);
+  };
+  
+  // Funkcja otwierająca dialog edycji transportu
+  const openEditTransportDialog = () => {
+    if (!order) return;
+    
+    // Ustawiamy początkowe wartości
+    if (order.transportDate) {
+      setEditTransportDate(new Date(order.transportDate));
+    } else {
+      setEditTransportDate(undefined);
+    }
+    
+    // Ustawiamy status
+    if (order.transportStatus) {
+      setEditTransportStatus(order.transportStatus);
+    } else {
+      setEditTransportStatus('zaplanowany');
+    }
+    
+    // Ustawiamy transportera
+    if (order.transporterId) {
+      setEditTransporterId(order.transporterId);
+    } else {
+      setEditTransporterId(undefined);
+    }
+    
+    // Pobieramy listę dostępnych transporterów
+    if (user?.role === 'company') {
+      fetchAvailableTransporters();
+    }
+    
+    // Otwieramy dialog
+    setIsEditTransportDialogOpen(true);
   };
   
   // Efekt aktualizujący lokalne stany po załadowaniu danych zamówienia
@@ -776,6 +842,35 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
     
     // Wywołaj mutację
     updateInstallationDetails(data);
+  };
+  
+  // Handler dla aktualizacji wszystkich danych transportu (status, data, transporter)
+  const handleUpdateTransportDetails = () => {
+    if (!editTransportStatus) {
+      toast({
+        title: "Błąd",
+        description: "Wybierz status transportu",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const data: any = {
+      transportStatus: editTransportStatus
+    };
+    
+    // Dodaj datę transportu, jeśli została wybrana
+    if (editTransportDate) {
+      data.transportDate = format(editTransportDate, 'yyyy-MM-dd');
+    }
+    
+    // Dodaj transportera, jeśli został wybrany (tylko dla firm zatrudniających pracowników)
+    if (user?.role === 'company' && user?.companyOwnerOnly === false && editTransporterId) {
+      data.transporterId = editTransporterId;
+    }
+    
+    // Wywołaj mutację
+    updateTransportDetails(data);
   };
   
   // Handler dla aktualizacji statusu finansowego
