@@ -544,6 +544,53 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
     }
   });
   
+  // Mutacja dla zbiorczej aktualizacji statusu montażu, daty i montażysty
+  const { mutate: updateInstallationDetails, isPending: isUpdatingInstallationDetails } = useMutation({
+    mutationFn: async (data: { 
+      installationStatus: string, 
+      installationDate?: string,
+      installerId?: number 
+    }) => {
+      // Dla firm z pracownikami, uwzględniamy wybranego montażystę
+      if (user?.role === 'company' && user?.companyOwnerOnly === false) {
+        return apiRequest('PATCH', `/api/orders/${id}/assign-installer`, {
+          installerId: data.installerId,
+          installationDate: data.installationDate,
+          installationStatus: data.installationStatus
+        });
+      } else {
+        // Dla firm jednoosobowych, wykorzystujemy standardową aktualizację statusu
+        return apiRequest('PATCH', `/api/orders/${id}/status`, {
+          installationStatus: data.installationStatus,
+          installationDate: data.installationDate
+        });
+      }
+    },
+    onSuccess: () => {
+      toast({
+        title: "Sukces",
+        description: "Dane montażu zostały zaktualizowane",
+        variant: "success"
+      });
+      
+      // Zamykamy dialog i resetujemy stany
+      setIsEditInstallationDialogOpen(false);
+      setEditInstallationDate(undefined);
+      setEditInstallationStatus('');
+      setEditInstallerId(undefined);
+      
+      // Odświeżamy dane zlecenia
+      queryClient.invalidateQueries({ queryKey: [`/api/orders/${id}`] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Błąd",
+        description: `Nie udało się zaktualizować danych montażu: ${error.message || 'Nieznany błąd'}`,
+        variant: "destructive"
+      });
+    }
+  });
+  
   // Mutacja dla przypisania transportera
   const { mutate: assignTransporter, isPending: isAssigningTransporter } = useMutation({
     mutationFn: async (data: { transporterId: number, transportDate?: string }) => {
@@ -642,6 +689,35 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
     }
     
     setIsSubmittingStatus(false);
+  };
+  
+  // Handler dla aktualizacji wszystkich danych montażu (status, data, montażysta)
+  const handleUpdateInstallationDetails = () => {
+    if (!editInstallationStatus) {
+      toast({
+        title: "Błąd",
+        description: "Wybierz status montażu",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const data: any = {
+      installationStatus: editInstallationStatus
+    };
+    
+    // Dodaj datę montażu, jeśli została wybrana
+    if (editInstallationDate) {
+      data.installationDate = format(editInstallationDate, 'yyyy-MM-dd');
+    }
+    
+    // Dodaj montażystę, jeśli został wybrany (tylko dla firm zatrudniających pracowników)
+    if (user?.role === 'company' && user?.companyOwnerOnly === false && editInstallerId) {
+      data.installerId = editInstallerId;
+    }
+    
+    // Wywołaj mutację
+    updateInstallationDetails(data);
   };
   
   // Handler dla aktualizacji statusu finansowego
@@ -865,7 +941,22 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
             <TabsContent value="installation" className="mt-0 p-0 sm:p-3">
               <div className="space-y-4 sm:space-y-6">
                 <div className="bg-blue-50 p-4 sm:p-6 rounded-lg border border-blue-100">
-                  <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-blue-800">Panel Montażu</h3>
+                  <div className="flex justify-between items-center mb-3 sm:mb-4">
+                    <h3 className="text-base sm:text-lg font-semibold text-blue-800">Panel Montażu</h3>
+                    
+                    {/* Widoczny tylko dla firm z pracownikami */}
+                    {user?.role === 'company' && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="text-xs h-8"
+                        onClick={openEditInstallationDialog}
+                      >
+                        <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                        Edytuj montaż
+                      </Button>
+                    )}
+                  </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div>
