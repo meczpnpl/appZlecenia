@@ -2969,7 +2969,7 @@ export default function Orders() {
                         </>
                       )}
                       {/* Kolumna "Do rozliczenia" widoczna dla wszystkich firm (obu typów) */}
-                      {(isOnePersonCompany || (role === 'company' && !canModifyFinancialStatus)) && (
+                      {(isOnePersonCompany || (user?.role === 'company' && !canModifyFinancialStatus)) && (
                         <th scope="col" className="px-3 py-3 text-center">Do rozliczenia</th>
                       )}
                       <th scope="col" className="px-4 py-3"><span className="sr-only">Akcje</span></th>
