@@ -109,7 +109,7 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
   const [isEditTransportDialogOpen, setIsEditTransportDialogOpen] = useState<boolean>(false);
   const [editTransportDate, setEditTransportDate] = useState<Date | undefined>(undefined);
   const [editTransportStatus, setEditTransportStatus] = useState<string>('');
-  const [isUpdatingTransportDetails, setIsUpdatingTransportDetails] = useState<boolean>(false);
+  // Stan usunięty, ponieważ korzystamy z isPending z hook useMutation
   
   // Stan dla listy dostępnych montażystów i transporterów
   const [availableInstallers, setAvailableInstallers] = useState<any[]>([]);
@@ -716,7 +716,7 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
   });
   
   // Mutacja dla zbiorczej aktualizacji statusu transportu, daty i transportera
-  const { mutate: updateTransportDetails, isPending: isUpdatingTransportDetails } = useMutation({
+  const { mutate: updateTransportDetails, isPending: isTransportUpdatePending } = useMutation({
     mutationFn: async (data: { 
       transportStatus: string, 
       transportDate?: string,
@@ -916,8 +916,11 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
       data.transporterId = editTransporterId;
     }
     
-    // Wywołaj mutację
+    // Wywołaj mutację i zamknij okno
     updateTransportDetails(data);
+    
+    // Natychmiast zamknij dialog
+    setIsEditTransportDialogOpen(false);
   };
   
   // Handler dla aktualizacji statusu finansowego
@@ -2079,9 +2082,9 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
               </Button>
               <Button
                 onClick={handleUpdateTransportDetails}
-                disabled={!editTransportStatus || isUpdatingTransportDetails}
+                disabled={!editTransportStatus || isTransportUpdatePending}
               >
-                {isUpdatingTransportDetails ? (
+                {isTransportUpdatePending ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-1" />
                 ) : null}
                 Zapisz
