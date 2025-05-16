@@ -500,6 +500,28 @@ export class DatabaseStorage implements IStorage {
       throw new Error("Montażysta nie należy do firmy przypisanej do tego zlecenia");
     }
     
+    // Sprawdzenie, czy montażysta ma odpowiednią specjalizację do typu zlecenia
+    if (existingOrder.serviceType && installer.services && Array.isArray(installer.services)) {
+      // Mapowanie typu usługi zlecenia na wymaganą specjalizację montażysty
+      let requiredSpecialization = '';
+      if (existingOrder.serviceType.toLowerCase().includes('drzwi')) {
+        requiredSpecialization = 'Montaż drzwi';
+      } else if (existingOrder.serviceType.toLowerCase().includes('podłog')) {
+        requiredSpecialization = 'Montaż podłogi';
+      }
+      
+      // Sprawdzenie, czy montażysta ma wymaganą specjalizację
+      if (requiredSpecialization) {
+        const hasRequiredSpecialization = installer.services.some(
+          service => service === requiredSpecialization
+        );
+        
+        if (!hasRequiredSpecialization) {
+          throw new Error(`Montażysta nie ma wymaganej specjalizacji (${requiredSpecialization}) do tego typu zlecenia (${existingOrder.serviceType})`);
+        }
+      }
+    }
+    
     // Ustawiamy tylko status montażu bez statusu ogólnego
     const installationStatus = 'zaplanowany';
     

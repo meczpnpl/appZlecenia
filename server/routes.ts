@@ -2334,6 +2334,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Możesz przypisać tylko montażystów ze swojej firmy" });
       }
       
+      // Sprawdzenie, czy montażysta ma odpowiednią specjalizację do typu zlecenia
+      if (order.serviceType && installer.services && Array.isArray(installer.services)) {
+        // Mapowanie typu usługi zlecenia na wymaganą specjalizację montażysty
+        let requiredSpecialization = '';
+        if (order.serviceType.toLowerCase().includes('drzwi')) {
+          requiredSpecialization = 'Montaż drzwi';
+        } else if (order.serviceType.toLowerCase().includes('podłog')) {
+          requiredSpecialization = 'Montaż podłogi';
+        }
+        
+        // Sprawdzenie, czy montażysta ma wymaganą specjalizację
+        const hasRequiredSpecialization = installer.services.some(
+          service => service === requiredSpecialization
+        );
+        
+        if (!hasRequiredSpecialization) {
+          console.log(`Montażysta ${installer.name} (ID: ${installerId}) nie ma wymaganej specjalizacji (${requiredSpecialization}) do zlecenia ${order.orderNumber}, typ: ${order.serviceType}`);
+          return res.status(400).json({ 
+            message: `Montażysta nie ma wymaganej specjalizacji do tego typu zlecenia. Wymagana specjalizacja: ${requiredSpecialization}` 
+          });
+        }
+        
+        console.log(`Montażysta ${installer.name} (ID: ${installerId}) ma wymaganą specjalizację (${requiredSpecialization}) do zlecenia ${order.orderNumber}`);
+      }
+      
       // Aktualizuj zlecenie - zmieniamy status montażu zgodnie z przesłaną wartością lub używamy domyślnej
       const installationStatus = req.body.installationStatus || "montaż zaplanowany";
       console.log(`Przypisywanie statusu montażu: ${installationStatus}`);
