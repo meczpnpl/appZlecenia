@@ -1124,18 +1124,23 @@ export default function Orders() {
   
   // Mutacja do aktualizacji daty transportu
   const updateTransportDateMutation = useMutation({
-    mutationFn: async (params: { id: number; transportDate: Date; transportStatus?: string }) => {
-      const { id, transportDate, transportStatus } = params;
-      // Pobieramy dane zlecenia, żeby uzyskać ID transportera
-      const orderResponse = await apiRequest('GET', `/api/orders/${id}`);
-      if (!orderResponse.ok) {
-        throw new Error('Nie można pobrać danych zlecenia');
+    mutationFn: async (params: { id: number; transportDate: Date; transportStatus?: string; transporterId?: number }) => {
+      const { id, transportDate, transportStatus, transporterId } = params;
+      // Pobieramy dane zlecenia, żeby uzyskać ID transportera - tylko jeśli nie mamy przekazanego
+      let transporterIdToUse = transporterId;
+      
+      if (!transporterIdToUse) {
+        const orderResponse = await apiRequest('GET', `/api/orders/${id}`);
+        if (!orderResponse.ok) {
+          throw new Error('Nie można pobrać danych zlecenia');
+        }
+        const orderData = await orderResponse.json();
+        transporterIdToUse = orderData.transporterId || user?.id;
       }
-      const orderData = await orderResponse.json();
       
       // Wysyłamy zarówno ID transportera jak i datę transportu oraz status
       const response = await apiRequest('PATCH', `/api/orders/${id}/assign-transporter`, {
-        transporterId: orderData.transporterId || user?.id,
+        transporterId: transporterIdToUse,
         // Dostosujmy datę tak, aby uwzględniała strefę czasową
         transportDate: new Date(
           transportDate.getFullYear(),
@@ -1173,18 +1178,23 @@ export default function Orders() {
   
   // Mutacja do aktualizacji daty montażu
   const updateInstallationDateMutation = useMutation({
-    mutationFn: async (params: { id: number; installationDate: Date; installationStatus?: string }) => {
-      const { id, installationDate, installationStatus } = params;
-      // Pobieramy dane zlecenia, żeby uzyskać ID montażysty
-      const orderResponse = await apiRequest('GET', `/api/orders/${id}`);
-      if (!orderResponse.ok) {
-        throw new Error('Nie można pobrać danych zlecenia');
+    mutationFn: async (params: { id: number; installationDate: Date; installationStatus?: string; installerId?: number }) => {
+      const { id, installationDate, installationStatus, installerId } = params;
+      // Pobieramy dane zlecenia, żeby uzyskać ID montażysty - tylko jeśli nie mamy przekazanego
+      let installerIdToUse = installerId;
+      
+      if (!installerIdToUse) {
+        const orderResponse = await apiRequest('GET', `/api/orders/${id}`);
+        if (!orderResponse.ok) {
+          throw new Error('Nie można pobrać danych zlecenia');
+        }
+        const orderData = await orderResponse.json();
+        installerIdToUse = orderData.installerId || user?.id;
       }
-      const orderData = await orderResponse.json();
       
       // Wysyłamy zarówno ID montażysty jak i datę montażu oraz status
       const response = await apiRequest('PATCH', `/api/orders/${id}/assign-installer`, {
-        installerId: orderData.installerId || user?.id,
+        installerId: installerIdToUse,
         // Dostosujmy datę tak, aby uwzględniała strefę czasową
         installationDate: new Date(
           installationDate.getFullYear(),
@@ -1227,15 +1237,31 @@ export default function Orders() {
     // Wysyłamy także status transportu, jeśli został wybrany
     const transportStatus = selectedTransportStatus || 'transport zaplanowany';
     
-    updateTransportDateMutation.mutate({
-      id: orderId,
-      transportDate,
-      transportStatus
-    });
+    // Pobieramy obecne zlecenie
+    const currentOrder = ordersQuery.data?.find(o => o.id === orderId);
+    
+    // Dla firm z pracownikami, uwzględniamy wybranego transportera
+    if (user?.role === 'company' && user?.companyOwnerOnly === false) {
+      // Jeśli wybrano transportera, wysyłamy jego ID
+      updateTransportDateMutation.mutate({
+        id: orderId,
+        transportDate,
+        transportStatus,
+        transporterId: selectedTransporterId
+      });
+    } else {
+      // Dla firm jednoosobowych, używamy standardowej logiki
+      updateTransportDateMutation.mutate({
+        id: orderId,
+        transportDate,
+        transportStatus
+      });
+    }
     
     // Zamykamy kalendarz po wysłaniu żądania
     setEditingTransportDateOrderId(null);
     setSelectedTransportStatus('');
+    setSelectedTransporterId(undefined);
   };
   
   // Obsługa aktualizacji daty montażu
@@ -1245,15 +1271,31 @@ export default function Orders() {
     // Wysyłamy także status montażu, jeśli został wybrany
     const installationStatus = selectedInstallationStatus || 'montaż zaplanowany';
     
-    updateInstallationDateMutation.mutate({
-      id: orderId,
-      installationDate,
-      installationStatus
-    });
+    // Pobieramy obecne zlecenie
+    const currentOrder = ordersQuery.data?.find(o => o.id === orderId);
+    
+    // Dla firm z pracownikami, uwzględniamy wybranego montażystę
+    if (user?.role === 'company' && user?.companyOwnerOnly === false) {
+      // Jeśli wybrano montażystę, wysyłamy jego ID
+      updateInstallationDateMutation.mutate({
+        id: orderId,
+        installationDate,
+        installationStatus,
+        installerId: selectedInstallerId
+      });
+    } else {
+      // Dla firm jednoosobowych, używamy standardowej logiki
+      updateInstallationDateMutation.mutate({
+        id: orderId,
+        installationDate,
+        installationStatus
+      });
+    }
     
     // Zamykamy kalendarz po wysłaniu żądania
     setEditingInstallationDateOrderId(null);
     setSelectedInstallationStatus('');
+    setSelectedInstallerId(undefined);
   };
   
   // Can create orders logic
