@@ -116,8 +116,23 @@ export function SavedFilters({ activeFilters, onApplyFilter, className = '' }: S
     const filter = userFilters.find(f => f.id === filterId);
     if (filter && filter.filtersData) {
       setIsLoadingFilter(true);
-      // Zastosuj zapisany filtr
-      onApplyFilter(filter.filtersData);
+      
+      // Konwertuj daty w filtrach przed zastosowaniem
+      const parsedFilters = filter.filtersData.map((filterItem: any) => {
+        if (filterItem.type === 'dateRange' && typeof filterItem.value === 'object') {
+          return {
+            ...filterItem,
+            value: {
+              from: filterItem.value.from ? new Date(filterItem.value.from) : undefined,
+              to: filterItem.value.to ? new Date(filterItem.value.to) : undefined
+            }
+          };
+        }
+        return filterItem;
+      });
+      
+      // Zastosuj zapisany filtr z przekonwertowanymi datami
+      onApplyFilter(parsedFilters);
       setIsLoadingFilter(false);
       
       toast({
