@@ -3245,7 +3245,14 @@ export default function Orders() {
                                 >
                                   <Calendar className="h-3.5 w-3.5 mr-1.5 text-gray-500 flex-shrink-0" />
                                   {order.installationDate ? (
-                                    <span>{new Date(order.installationDate).toLocaleDateString('pl-PL')}</span>
+                                    <span>
+                                      {new Date(order.installationDate).toLocaleDateString('pl-PL')}
+                                      {order.installerName && (
+                                        <span className="text-gray-600 ml-1 italic">
+                                          - {order.installerName}
+                                        </span>
+                                      )}
+                                    </span>
                                   ) : (
                                     <span className="text-gray-500 italic">nieustalona</span>
                                   )}
@@ -3285,7 +3292,14 @@ export default function Orders() {
                                   >
                                     <Calendar className="h-3.5 w-3.5 mr-1.5 text-gray-500 flex-shrink-0" />
                                     {order.transportDate ? (
-                                      <span>{new Date(order.transportDate).toLocaleDateString('pl-PL')}</span>
+                                      <span>
+                                        {new Date(order.transportDate).toLocaleDateString('pl-PL')}
+                                        {order.transporterName && (
+                                          <span className="text-gray-600 ml-1 italic">
+                                            - {order.transporterName}
+                                          </span>
+                                        )}
+                                      </span>
                                     ) : (
                                       <span className="text-gray-500 italic">nieustalona</span>
                                     )}
