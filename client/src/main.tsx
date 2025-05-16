@@ -80,36 +80,16 @@ const clearCache = () => {
   }, 5000);
 };
 
-// TYMCZASOWO WYŁĄCZAMY CAŁĄ OBSŁUGĘ SERVICE WORKERA
-// To jest awaryjne rozwiązanie, aby zatrzymać pętlę ciągłych odświeżeń
-console.log("Obsługa Service Workera jest tymczasowo wyłączona");
-
-/*
 // Rejestracja Service Workera dla PWA
 if ('serviceWorker' in navigator) {
+  // Używamy zmiennej globalnej do śledzenia stanu odświeżania
+  window.skipRefresh = false;
+  
   window.addEventListener('load', () => {
-    // Tymczasowo wyłączamy kontrolę wersji, aby uniknąć pętli odświeżeń
-    const savedVersion = localStorage.getItem('app_version');
-    if (savedVersion !== APP_VERSION) {
-      console.log("Wykryto nową wersję aplikacji, ale pomijam odświeżanie cache i strony.");
-      // Zapisz nową wersję w localStorage bez innych akcji
-      localStorage.setItem('app_version', APP_VERSION);
-    }
-
-    // Tymczasowo wyłączamy automatyczne odświeżanie przy aktualizacji service workera
-    console.log("Automatyczne odświeżanie przy aktualizacji Service Worker wyłączone");
+    // Zapisz bieżącą wersję w localStorage niezależnie od wszystkiego
+    localStorage.setItem('app_version', APP_VERSION);
     
-    // Dodaj obsługę controllerchange, aby automatycznie odświeżyć stronę
-    // Używaj flagi, aby zapobiec cyklicznemu odświeżaniu
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshing) return;
-      refreshing = true;
-      console.log("Service Worker uaktualniony. Odświeżam stronę.");
-      window.location.reload();
-    });
-    
-
+    // Rejestruj service worker, ale nie reaguj na zmiany
     navigator.serviceWorker.register('/service-worker.js')
       .then(registration => {
         console.log('Service Worker zarejestrowany pomyślnie:', registration);
@@ -119,7 +99,6 @@ if ('serviceWorker' in navigator) {
       });
   });
 }
-*/
 
 // Prosty render bez StrictMode i innych potencjalnie problematycznych komponentów
 const root = createRoot(document.getElementById("root")!);
