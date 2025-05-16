@@ -403,6 +403,28 @@ export default function Orders() {
   // bezpośrednio do metod addFilter/removeFilter/clearAllFilters
   
   // Kiedy użytkownik otwiera kalendarz transportu, zamykamy kalendarz montażu i odwrotnie
+  // Funkcja do pobierania dostępnych transporterów dla firmy
+  const fetchAvailableTransporters = async () => {
+    try {
+      const response = await fetch('/api/transporters');
+      
+      if (response.ok) {
+        const transporters = await response.json();
+        // Filtrowanie transporterów po usłudze transportu
+        const filteredTransporters = transporters.filter((transporter: any) => 
+          transporter.services?.some((s: string) => s === 'Transport')
+        );
+        setAvailableTransporters(filteredTransporters);
+      } else {
+        console.error('Błąd podczas pobierania transporterów:', await response.text());
+        setAvailableTransporters([]);
+      }
+    } catch (error) {
+      console.error('Błąd podczas pobierania transporterów:', error);
+      setAvailableTransporters([]);
+    }
+  };
+
   const openTransportDateEditor = (orderId: number, date?: Date | null) => {
     setEditingInstallationDateOrderId(null);
     setEditingTransportDateOrderId(orderId);
@@ -415,13 +437,71 @@ export default function Orders() {
       setSelectedTransportStatus('transport zaplanowany');
     }
     
+    // Ustaw wybranego transportera jeśli jest przypisany do zlecenia
+    if (order?.transporterId) {
+      setSelectedTransporterId(order.transporterId);
+    } else {
+      setSelectedTransporterId(undefined);
+    }
+    
     if (date) {
       setTransportDate(new Date(date));
     } else {
       setTransportDate(undefined);
     }
+    
+    // Pobierz listę dostępnych transporterów dla firm z pracownikami
+    if (user?.role === 'company' && user?.companyOwnerOnly === false) {
+      fetchAvailableTransporters();
+    }
   };
   
+  // Funkcja do pobierania dostępnych montażystów dla firmy
+  const fetchAvailableInstallers = async (serviceType: string) => {
+    try {
+      // Określamy typ usługi do filtrowania montażystów
+      const serviceFilter = serviceType === 'montaż drzwi' ? 'Montaż drzwi' : 'Montaż podłogi';
+      const response = await fetch('/api/installers');
+      
+      if (response.ok) {
+        const installers = await response.json();
+        // Filtrowanie montażystów po odpowiedniej specjalizacji
+        const filteredInstallers = installers.filter((installer: any) => 
+          installer.services?.some((s: string) => s === serviceFilter)
+        );
+        setAvailableInstallers(filteredInstallers);
+      } else {
+        console.error('Błąd podczas pobierania montażystów:', await response.text());
+        setAvailableInstallers([]);
+      }
+    } catch (error) {
+      console.error('Błąd podczas pobierania montażystów:', error);
+      setAvailableInstallers([]);
+    }
+  };
+  
+  // Funkcja do pobierania dostępnych transporterów dla firmy
+  const fetchAvailableTransporters = async () => {
+    try {
+      const response = await fetch('/api/transporters');
+      
+      if (response.ok) {
+        const transporters = await response.json();
+        // Filtrowanie transporterów po usłudze transportu
+        const filteredTransporters = transporters.filter((transporter: any) => 
+          transporter.services?.some((s: string) => s === 'Transport')
+        );
+        setAvailableTransporters(filteredTransporters);
+      } else {
+        console.error('Błąd podczas pobierania transporterów:', await response.text());
+        setAvailableTransporters([]);
+      }
+    } catch (error) {
+      console.error('Błąd podczas pobierania transporterów:', error);
+      setAvailableTransporters([]);
+    }
+  };
+
   const openInstallationDateEditor = (orderId: number, date?: Date | null) => {
     setEditingTransportDateOrderId(null);
     setEditingInstallationDateOrderId(orderId);
@@ -434,10 +514,22 @@ export default function Orders() {
       setSelectedInstallationStatus('montaż zaplanowany');
     }
     
+    // Ustaw wybranego instalatora jeśli jest przypisany do zlecenia
+    if (order?.installerId) {
+      setSelectedInstallerId(order.installerId);
+    } else {
+      setSelectedInstallerId(undefined);
+    }
+    
     if (date) {
       setInstallationDate(new Date(date));
     } else {
       setInstallationDate(undefined);
+    }
+    
+    // Pobierz listę dostępnych montażystów dla firm z pracownikami
+    if (user?.role === 'company' && !user?.companyOwnerOnly && order) {
+      fetchAvailableInstallers(order.serviceType);
     }
   };
   
@@ -1261,6 +1353,45 @@ export default function Orders() {
               </SelectContent>
             </Select>
           </div>
+          
+          {/* Pole wyboru pracownika (montażysty lub transportera) dla firm wieloosobowych */}
+          {user?.role === 'company' && user?.companyOwnerOnly === false && (
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">
+                {isTransportCalendar ? "Przypisz transportera:" : "Przypisz montażystę:"}
+              </label>
+              <Select
+                value={(isTransportCalendar ? selectedTransporterId : selectedInstallerId)?.toString()}
+                onValueChange={(value) => {
+                  const workerId = parseInt(value);
+                  if (isTransportCalendar) {
+                    setSelectedTransporterId(workerId);
+                  } else {
+                    setSelectedInstallerId(workerId);
+                  }
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={isTransportCalendar ? "Wybierz transportera" : "Wybierz montażystę"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {isTransportCalendar ? (
+                    availableTransporters.map(transporter => (
+                      <SelectItem key={transporter.id} value={transporter.id.toString()}>
+                        {transporter.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    availableInstallers.map(installer => (
+                      <SelectItem key={installer.id} value={installer.id.toString()}>
+                        {installer.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           
           <CalendarUI
             mode="single"
