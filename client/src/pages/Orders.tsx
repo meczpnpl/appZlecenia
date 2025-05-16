@@ -446,10 +446,12 @@ export default function Orders() {
     user?.services?.some(s => s.toLowerCase().includes('montaż'));
     
   // Sprawdzenie czy to firma jednoosobowa (montażysta z przypisaną firmą)
+  // lub zwykła firma - chcemy, żeby widok był identyczny dla obu typów firm
   const isOnePersonCompany = 
-    user?.role === 'installer' && 
+    (user?.role === 'installer' && 
     user?.companyId !== undefined && 
-    user?.companyName;
+    user?.companyName) || 
+    (user?.role === 'company');
   
   // Uprawnienia do edycji pól finansowych mają mieć:
   // 1. admin

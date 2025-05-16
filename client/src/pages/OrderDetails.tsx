@@ -255,6 +255,7 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
   };
 
   // Sprawdza czy użytkownik może edytować status
+  // Identyczne zachowanie dla wszystkich typów firm
   const canEditStatus = 
     (user?.role === 'worker') || 
     (user?.role === 'company' && user.companyId === order.companyId) ||
@@ -262,6 +263,7 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
     user?.role === 'admin';
     
   // Sprawdza czy użytkownik może edytować status transportu
+  // Identyczne zachowanie dla wszystkich typów firm
   const canEditTransportStatus = 
     isUserAdmin || 
     isUserWorker || 
@@ -269,6 +271,7 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
     (user?.role === 'installer' && (user.id === order.transporterId || user.companyId === order.companyId));
     
   // Sprawdza czy użytkownik może przypisać transportera
+  // Identyczne zachowanie dla wszystkich typów firm
   const canAssignTransporter = 
     isUserAdmin || 
     isUserWorker || 
@@ -276,6 +279,7 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
     (user?.role === 'installer' && user.companyId === order.companyId);
     
   // Sprawdza czy użytkownik może przypisać montażystę
+  // Identyczne zachowanie dla wszystkich typów firm
   const canAssignInstaller = 
     isUserAdmin || 
     isUserWorker || 
@@ -283,13 +287,16 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
     (user?.role === 'installer' && user.companyId === order.companyId);
     
   // Sprawdza czy użytkownik może zmienić status zamówienia
+  // Identyczne zachowanie dla wszystkich typów firm
   const userCanChangeOrderStatus = 
     isUserAdmin || 
     isUserWorker || 
     (isUserCompany && order.companyId === user?.companyId) ||
-    (user?.role === 'installer' && user.id === order.installerId);
+    // Dodajemy także możliwość zmiany statusu dla pracowników firm (nie tylko montażysty)
+    (user?.role === 'installer' && (user.id === order.installerId || user.companyId === order.companyId));
     
   // Sprawdza czy użytkownik jest właścicielem/pracownikiem firmy przypisanej do zlecenia
+  // Traktujemy wszystkie firmy tak samo, niezależnie czy są jednoosobowe czy z pracownikami
   const isCompanyMember = 
     (user?.role === 'company' && user.companyId === order.companyId) ||
     (user?.role === 'installer' && user.companyId === order.companyId);
