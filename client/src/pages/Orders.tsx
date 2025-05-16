@@ -238,6 +238,12 @@ export default function Orders() {
   const [installationDate, setInstallationDate] = useState<Date | undefined>(undefined);
   const [selectedTransportStatus, setSelectedTransportStatus] = useState<string>('');
   const [selectedInstallationStatus, setSelectedInstallationStatus] = useState<string>('');
+  const [selectedInstallerId, setSelectedInstallerId] = useState<number | undefined>();
+  const [selectedTransporterId, setSelectedTransporterId] = useState<number | undefined>();
+  
+  // Stan do przechowywania listy dostępnych montażystów i transporterów
+  const [availableInstallers, setAvailableInstallers] = useState<any[]>([]);
+  const [availableTransporters, setAvailableTransporters] = useState<any[]>([]);
   
   // Stan dla zaawansowanego filtrowania
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
