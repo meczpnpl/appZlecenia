@@ -98,6 +98,15 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
   const [statusForm, setStatusForm] = useState<any>({});
   const [selectedInstallerId, setSelectedInstallerId] = useState<number | null>(null);
   const [selectedTransporterId, setSelectedTransporterId] = useState<number | null>(null);
+  
+  // Stan dla okna dialogowego edycji montażu (status, data, montażysta)
+  const [isEditInstallationDialogOpen, setIsEditInstallationDialogOpen] = useState<boolean>(false);
+  const [editInstallationDate, setEditInstallationDate] = useState<Date | undefined>(undefined);
+  const [editInstallationStatus, setEditInstallationStatus] = useState<string>('');
+  const [editInstallerId, setEditInstallerId] = useState<number | undefined>();
+  
+  // Stan dla listy dostępnych montażystów
+  const [availableInstallers, setAvailableInstallers] = useState<any[]>([]);
   const [isTransporterSelectOpen, setIsTransporterSelectOpen] = useState<boolean>(false);
   const [isCompanyDialogOpen, setIsCompanyDialogOpen] = useState<boolean>(false);
   const [isInstallerSelectOpen, setIsInstallerSelectOpen] = useState<boolean>(false);
