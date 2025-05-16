@@ -2875,7 +2875,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Sprawdź czy to firma jednoosobowa (montażysta z przypisaną firmą), której zlecenie dotyczy
       const isOnePersonCompany = role === 'installer' && companyId && companyId === order.companyId;
       
-      if (!isAssignedTransporter && !hasAdminAccess && !hasWorkerAccess && !isOnePersonCompany) {
+      // Sprawdź czy to firma z pracownikami, której zlecenie dotyczy
+      const isCompany = role === 'company' && companyId && companyId === order.companyId;
+      
+      if (!isAssignedTransporter && !hasAdminAccess && !hasWorkerAccess && !isOnePersonCompany && !isCompany) {
         return res.status(403).json({ message: "Brak uprawnień do aktualizacji statusu transportu" });
       }
       
