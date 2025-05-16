@@ -600,7 +600,8 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
   const handleStatusUpdate = () => {
     setIsSubmittingStatus(true);
     
-    const status = statusForm.status || statusForm.transportStatus;
+    // Poprawiona zmienna - używamy odpowiednich pól dla różnych statusów
+    const status = statusForm.installationStatus || statusForm.transportStatus;
     
     if (!status) {
       toast({
