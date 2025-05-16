@@ -70,7 +70,7 @@ const SaveFilterDialog: React.FC<SaveFilterDialogProps> = ({
 
           // Teraz możemy bezpiecznie utworzyć nowy filtr
           console.log('Tworzenie nowego filtru w bazie danych');
-          await apiRequest('POST', '/api/user/filters', {
+          await apiRequest('POST', '/api/filters', {
             name: filterName,
             isDefault,
             filtersData: activeFilters
