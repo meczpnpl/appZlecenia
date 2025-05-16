@@ -131,6 +131,64 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
     refetchOnWindowFocus: false,
   });
   
+  // Funkcja pobierająca dostępnych montażystów z odpowiednią specjalizacją
+  const fetchAvailableInstallers = async (serviceType?: string) => {
+    try {
+      const response = await fetch(`/api/installers?serviceType=${serviceType || ''}`);
+      if (response.ok) {
+        const data = await response.json();
+        // Przekształć dane na format potrzebny dla komponentu Select
+        const formattedInstallers = data.map((installer: any) => ({
+          id: installer.id,
+          name: installer.name || installer.email.split('@')[0],
+          email: installer.email,
+          services: installer.services
+        }));
+        setAvailableInstallers(formattedInstallers);
+      } else {
+        console.error('Nie udało się pobrać listy montażystów');
+        setAvailableInstallers([]);
+      }
+    } catch (error) {
+      console.error('Błąd podczas pobierania montażystów:', error);
+      setAvailableInstallers([]);
+    }
+  };
+  
+  // Funkcja otwierająca dialog edycji montażu
+  const openEditInstallationDialog = () => {
+    if (!order) return;
+    
+    // Ustawiamy początkowe wartości
+    if (order.installationDate) {
+      setEditInstallationDate(new Date(order.installationDate));
+    } else {
+      setEditInstallationDate(undefined);
+    }
+    
+    // Ustawiamy status
+    if (order.installationStatus) {
+      setEditInstallationStatus(order.installationStatus);
+    } else {
+      setEditInstallationStatus('Zaplanowane');
+    }
+    
+    // Ustawiamy montażystę
+    if (order.installerId) {
+      setEditInstallerId(order.installerId);
+    } else {
+      setEditInstallerId(undefined);
+    }
+    
+    // Pobieramy listę dostępnych montażystów
+    if (user?.role === 'company' && order) {
+      fetchAvailableInstallers(order.serviceType);
+    }
+    
+    // Otwieramy dialog
+    setIsEditInstallationDialogOpen(true);
+  };
+  
   // Efekt aktualizujący lokalne stany po załadowaniu danych zamówienia
   useEffect(() => {
     if (order) {
@@ -1660,6 +1718,113 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
           }}
           initialText={complaintNotes}
         />
+      )}
+      
+      {/* Dialog edycji montażu (status, data, montażysta w jednym oknie) */}
+      {isEditInstallationDialogOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-4 max-w-md w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium">
+                Edycja parametrów montażu
+              </h3>
+              <button 
+                className="p-1 rounded-full hover:bg-gray-100"
+                onClick={() => setIsEditInstallationDialogOpen(false)}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* Pole wyboru statusu */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">
+                Status montażu:
+              </label>
+              <Select
+                value={editInstallationStatus}
+                onValueChange={setEditInstallationStatus}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Wybierz status montażu" />
+                </SelectTrigger>
+                <SelectContent>
+                  {[
+                    { value: 'Nowe', label: 'Nowe' },
+                    { value: 'Zaplanowane', label: 'Zaplanowane' },
+                    { value: 'W realizacji', label: 'W realizacji' },
+                    { value: 'Zakończone', label: 'Zakończone' },
+                    { value: 'Reklamacja', label: 'Reklamacja' }
+                  ].map(status => (
+                    <SelectItem key={status.value} value={status.value}>
+                      {status.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Pole wyboru montażysty (tylko dla firm z pracownikami) */}
+            {user?.role === 'company' && user?.companyOwnerOnly === false && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-1">
+                  Przypisz montażystę:
+                </label>
+                <Select
+                  value={editInstallerId?.toString()}
+                  onValueChange={(value) => {
+                    const installerId = parseInt(value);
+                    setEditInstallerId(installerId);
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Wybierz montażystę" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableInstallers.map(installer => (
+                      <SelectItem key={installer.id} value={installer.id.toString()}>
+                        {installer.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            
+            {/* Kalendarz do wyboru daty */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">
+                Data montażu:
+              </label>
+              <CalendarComponent
+                mode="single"
+                selected={editInstallationDate}
+                onSelect={setEditInstallationDate}
+                initialFocus
+                className="mx-auto border rounded-md p-3"
+              />
+            </div>
+            
+            {/* Przyciski */}
+            <div className="flex justify-end gap-2 mt-4">
+              <Button 
+                variant="outline"
+                onClick={() => setIsEditInstallationDialogOpen(false)}
+              >
+                Anuluj
+              </Button>
+              <Button
+                onClick={handleUpdateInstallationDetails}
+                disabled={!editInstallationStatus || isUpdatingInstallationDetails}
+              >
+                {isUpdatingInstallationDetails ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                ) : null}
+                Zapisz
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
