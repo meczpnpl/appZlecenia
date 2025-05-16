@@ -73,23 +73,27 @@ const clearCache = () => {
       names.forEach(name => caches.delete(name));
     });
   }
-  
-  // Usuń flagi odświeżania po 5 sekundach, aby zabezpieczyć przed ciągłym czyszczeniem
-  setTimeout(() => {
-    localStorage.removeItem('app_refresh_in_progress');
-  }, 5000);
 };
 
 // Rejestracja Service Workera dla PWA
 if ('serviceWorker' in navigator) {
-  // Używamy zmiennej globalnej do śledzenia stanu odświeżania
-  window.skipRefresh = false;
-  
   window.addEventListener('load', () => {
-    // Zapisz bieżącą wersję w localStorage niezależnie od wszystkiego
-    localStorage.setItem('app_version', APP_VERSION);
-    
-    // Rejestruj service worker, ale nie reaguj na zmiany
+    // Sprawdź zapisaną wersję aplikacji
+    const savedVersion = localStorage.getItem('app_version');
+    if (savedVersion !== APP_VERSION) {
+      console.log("Wykryto nową wersję aplikacji. Wymuszam odświeżenie cache.");
+      // Wyczyść cache przy wykryciu nowej wersji
+      clearCache();
+      // Zapisz nową wersję w localStorage
+      localStorage.setItem('app_version', APP_VERSION);
+    }
+
+    // Dodaj obsługę controllerchange, aby automatycznie odświeżyć stronę
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      console.log("Service Worker uaktualniony. Odświeżam stronę.");
+      window.location.reload();
+    });
+
     navigator.serviceWorker.register('/service-worker.js')
       .then(registration => {
         console.log('Service Worker zarejestrowany pomyślnie:', registration);

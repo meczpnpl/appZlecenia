@@ -7,7 +7,6 @@ import { LockKeyhole, Building2, Store, UserPlus } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { APP_VERSION } from '../main';
 
 export default function Login() {
   const { login } = useAuth();
@@ -324,7 +323,7 @@ export default function Login() {
           <p className="text-xs text-center w-full text-gray-500">
             Dostęp do systemu możliwy tylko dla uprawnionych użytkowników Bel-Pol.<br/>
             Skontaktuj się z administratorem w sprawie dostępu.<br/>
-            <span className="mt-2 inline-block">Wersja aplikacji: {APP_VERSION}</span>
+            <span className="mt-2 inline-block">Wersja aplikacji: 2.0.4</span>
           </p>
         </CardFooter>
       </Card>
