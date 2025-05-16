@@ -2878,6 +2878,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Sprawdź czy to firma z pracownikami, której zlecenie dotyczy
       const isCompany = role === 'company' && companyId && companyId === order.companyId;
       
+      // Debugowanie - wypisz wszystkie warunki, aby znaleźć przyczynę błędu
+      console.log("Sprawdzanie uprawnień transportu dla zlecenia:", orderId);
+      console.log("Dane użytkownika:", { role, storeId, id, companyId });
+      console.log("Dane zlecenia:", { 
+        companyId: order.companyId, 
+        transporterId: order.transporterId,
+        storeId: order.storeId
+      });
+      console.log("Warunki dostępu:", { 
+        isAssignedTransporter, 
+        hasAdminAccess, 
+        hasWorkerAccess, 
+        isOnePersonCompany,
+        isCompany 
+      });
+      
+      // UWAGA: Dla firm mamy pełną identyczność interfejsów i uprawnień
+      // Aby zapewnić pełną identyczność, wszystkie firmy (role='company') mają pełne uprawnienia do zleceń swojej firmy
       if (!isAssignedTransporter && !hasAdminAccess && !hasWorkerAccess && !isOnePersonCompany && !isCompany) {
         return res.status(403).json({ message: "Brak uprawnień do aktualizacji statusu transportu" });
       }
