@@ -40,7 +40,7 @@ const SavedFiltersDialog: React.FC<SavedFiltersDialogProps> = ({
       // Pobierz z bazy danych jeśli użytkownik jest zalogowany
       if (user) {
         try {
-          const response = await apiRequest('GET', '/api/user/filters');
+          const response = await apiRequest('GET', '/api/filters');
           const data = await response.json();
           setSavedFilters(data);
           return;

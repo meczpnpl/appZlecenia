@@ -46,7 +46,7 @@ const SaveFilterDialog: React.FC<SaveFilterDialogProps> = ({
       if (user) {
         try {
           console.log('Sprawdzam istniejące filtry użytkownika przed zapisaniem nowego');
-          const response = await fetch('/api/user/filters');
+          const response = await fetch('/api/filters');
           
           if (response.ok) {
             const existingFilters = await response.json();
@@ -59,7 +59,7 @@ const SaveFilterDialog: React.FC<SaveFilterDialogProps> = ({
               
               for (const defaultFilter of defaultFilters) {
                 console.log(`Wyłączanie domyślnego filtru ID ${defaultFilter.id}`);
-                await apiRequest('PUT', `/api/user/filters/${defaultFilter.id}`, {
+                await apiRequest('PUT', `/api/filters/${defaultFilter.id}`, {
                   name: defaultFilter.name,
                   isDefault: false,
                   filtersData: defaultFilter.filtersData
