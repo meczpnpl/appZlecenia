@@ -177,8 +177,10 @@ function AppRoutes() {
           <CompanyStores />
         </Route>
         
+        {/* Wszystkie firmy (również z pracownikami) używają teraz jednego widoku harmonogramu,
+            identycznego jak firmy jednoosobowe */}
         <Route path="/company/schedule">
-          <CompanySchedule />
+          <InstallerSchedule />
         </Route>
         
         {/* Installer routes */}

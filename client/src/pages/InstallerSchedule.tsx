@@ -86,7 +86,8 @@ export default function InstallerSchedule() {
   // Generate week days
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(startDate, i));
   
-  // Get current installer's orders
+  // Pobierz zlecenia dla montażysty lub firmy (niezależnie czy jednoosobowej czy z pracownikami)
+  // Ujednolicony interfejs dla wszystkich typów firm
   const { data: installerOrders = [], isLoading } = useQuery<any[]>({
     queryKey: ['/api/orders'],
     enabled: !!user?.id
@@ -109,6 +110,7 @@ export default function InstallerSchedule() {
   };
 
   // Filter orders for the current week
+  // Ujednolicone filtrowanie zleceń niezależnie od typu firmy (jednoosobowa czy z pracownikami)
   const ordersForWeek = installerOrders.filter(order => {
     if (!order.installationDate) return false;
     const orderDate = new Date(order.installationDate);
