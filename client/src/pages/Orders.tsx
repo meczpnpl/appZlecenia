@@ -403,27 +403,6 @@ export default function Orders() {
   // bezpośrednio do metod addFilter/removeFilter/clearAllFilters
   
   // Kiedy użytkownik otwiera kalendarz transportu, zamykamy kalendarz montażu i odwrotnie
-  // Funkcja do pobierania dostępnych transporterów dla firmy
-  const fetchAvailableTransporters = async () => {
-    try {
-      const response = await fetch('/api/transporters');
-      
-      if (response.ok) {
-        const transporters = await response.json();
-        // Filtrowanie transporterów po usłudze transportu
-        const filteredTransporters = transporters.filter((transporter: any) => 
-          transporter.services?.some((s: string) => s === 'Transport')
-        );
-        setAvailableTransporters(filteredTransporters);
-      } else {
-        console.error('Błąd podczas pobierania transporterów:', await response.text());
-        setAvailableTransporters([]);
-      }
-    } catch (error) {
-      console.error('Błąd podczas pobierania transporterów:', error);
-      setAvailableTransporters([]);
-    }
-  };
 
   const openTransportDateEditor = (orderId: number, date?: Date | null) => {
     setEditingInstallationDateOrderId(null);
@@ -452,7 +431,29 @@ export default function Orders() {
     
     // Pobierz listę dostępnych transporterów dla firm z pracownikami
     if (user?.role === 'company' && user?.companyOwnerOnly === false) {
-      fetchAvailableTransporters();
+      // Funkcja do pobierania dostępnych transporterów
+      const fetchTransporters = async () => {
+        try {
+          const response = await fetch('/api/transporters');
+          
+          if (response.ok) {
+            const transporters = await response.json();
+            // Filtrowanie transporterów po usłudze transportu
+            const filteredTransporters = transporters.filter((transporter: any) => 
+              transporter.services?.some((s: string) => s === 'Transport')
+            );
+            setAvailableTransporters(filteredTransporters);
+          } else {
+            console.error('Błąd podczas pobierania transporterów:', await response.text());
+            setAvailableTransporters([]);
+          }
+        } catch (error) {
+          console.error('Błąd podczas pobierania transporterów:', error);
+          setAvailableTransporters([]);
+        }
+      };
+      
+      fetchTransporters();
     }
   };
   
@@ -480,27 +481,7 @@ export default function Orders() {
     }
   };
   
-  // Funkcja do pobierania dostępnych transporterów dla firmy
-  const fetchAvailableTransporters = async () => {
-    try {
-      const response = await fetch('/api/transporters');
-      
-      if (response.ok) {
-        const transporters = await response.json();
-        // Filtrowanie transporterów po usłudze transportu
-        const filteredTransporters = transporters.filter((transporter: any) => 
-          transporter.services?.some((s: string) => s === 'Transport')
-        );
-        setAvailableTransporters(filteredTransporters);
-      } else {
-        console.error('Błąd podczas pobierania transporterów:', await response.text());
-        setAvailableTransporters([]);
-      }
-    } catch (error) {
-      console.error('Błąd podczas pobierania transporterów:', error);
-      setAvailableTransporters([]);
-    }
-  };
+
 
   const openInstallationDateEditor = (orderId: number, date?: Date | null) => {
     setEditingTransportDateOrderId(null);
