@@ -509,7 +509,8 @@ export default function Orders() {
     }
     
     // Pobierz listę dostępnych montażystów dla firm z pracownikami
-    if (user?.role === 'company' && !user?.companyOwnerOnly && order) {
+    if (user?.role === 'company' && user?.companyOwnerOnly === false && order) {
+      // Wywołaj funkcję pobierania montażystów z odpowiednią specjalizacją
       fetchAvailableInstallers(order.serviceType);
     }
   };
