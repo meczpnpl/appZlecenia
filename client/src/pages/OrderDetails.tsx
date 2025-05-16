@@ -1983,6 +1983,111 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
           </div>
         </div>
       )}
+
+      {/* Dialog edycji transportu (status, data, transporter w jednym oknie) */}
+      {isEditTransportDialogOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-4 max-w-md w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium">
+                Edycja parametrów transportu
+              </h3>
+              <button 
+                className="p-1 rounded-full hover:bg-gray-100"
+                onClick={() => setIsEditTransportDialogOpen(false)}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* Pole wyboru statusu */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">
+                Status transportu:
+              </label>
+              <Select
+                value={editTransportStatus}
+                onValueChange={setEditTransportStatus}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Wybierz status transportu" />
+                </SelectTrigger>
+                <SelectContent>
+                  {[
+                    { value: 'skompletowany', label: 'Skompletowany' },
+                    { value: 'zaplanowany', label: 'Zaplanowany' },
+                    { value: 'dostarczony', label: 'Dostarczony' }
+                  ].map(status => (
+                    <SelectItem key={status.value} value={status.value}>
+                      {status.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Pole wyboru transportera (tylko dla firm z pracownikami) */}
+            {user?.role === 'company' && user?.companyOwnerOnly === false && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-1">
+                  Przypisz transportera:
+                </label>
+                <Select
+                  value={editTransporterId?.toString()}
+                  onValueChange={(value) => {
+                    const transporterId = parseInt(value);
+                    setEditTransporterId(transporterId);
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Wybierz transportera" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableTransporters.map(transporter => (
+                      <SelectItem key={transporter.id} value={transporter.id.toString()}>
+                        {transporter.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            
+            {/* Kalendarz do wyboru daty */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">
+                Data transportu:
+              </label>
+              <CalendarComponent
+                mode="single"
+                selected={editTransportDate}
+                onSelect={setEditTransportDate}
+                initialFocus
+                className="mx-auto border rounded-md p-3"
+              />
+            </div>
+            
+            {/* Przyciski */}
+            <div className="flex justify-end gap-2 mt-4">
+              <Button 
+                variant="outline"
+                onClick={() => setIsEditTransportDialogOpen(false)}
+              >
+                Anuluj
+              </Button>
+              <Button
+                onClick={handleUpdateTransportDetails}
+                disabled={!editTransportStatus || isUpdatingTransportDetails}
+              >
+                {isUpdatingTransportDetails ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                ) : null}
+                Zapisz
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
