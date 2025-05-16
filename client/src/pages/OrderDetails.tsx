@@ -716,7 +716,7 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
   });
   
   // Mutacja dla zbiorczej aktualizacji statusu transportu, daty i transportera
-  const { mutate: updateTransportDetails } = useMutation({
+  const { mutate: updateTransportDetails, isPending: isUpdatingTransportDetails } = useMutation({
     mutationFn: async (data: { 
       transportStatus: string, 
       transportDate?: string,
