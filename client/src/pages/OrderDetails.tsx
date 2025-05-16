@@ -1450,12 +1450,27 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
             </TabsContent>
             
             {/* Transport Tab - For transporters */}
-            <TabsContent value="transport" className="mt-0 p-1 sm:p-3">
-              <div className="space-y-6">
-                <div className="bg-blue-50 p-6 rounded-lg border border-blue-100">
-                  <h3 className="text-lg font-semibold mb-4 text-blue-800">Panel Transportu</h3>
+            <TabsContent value="transport" className="mt-0 p-0 sm:p-3">
+              <div className="space-y-4 sm:space-y-6">
+                <div className="bg-blue-50 p-4 sm:p-6 rounded-lg border border-blue-100">
+                  <div className="flex justify-between items-center mb-3 sm:mb-4">
+                    <h3 className="text-base sm:text-lg font-semibold text-blue-800">Panel Transportu</h3>
+                    
+                    {/* Widoczny tylko dla firm */}
+                    {user?.role === 'company' && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="text-xs h-8"
+                        onClick={openEditTransportDialog}
+                      >
+                        <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                        Edytuj transport
+                      </Button>
+                    )}
+                  </div>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div>
                       <h4 className="text-sm font-medium text-gray-600 mb-2">Szczegóły dostawy</h4>
                       <dl className="space-y-3">
@@ -1519,20 +1534,7 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
                           </div>
                         )}
                         
-                        {/* Przycisk edycji transportu - działa tak samo dla obu typów firm */}
-                        {canAssignTransporter && (
-                          <div className="mt-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="w-full flex items-center justify-center"
-                              onClick={openEditTransportDialog}
-                            >
-                              <Pencil className="h-3.5 w-3.5 mr-1.5" />
-                              Edytuj transport
-                            </Button>
-                          </div>
-                        )}
+                        {/* Usunięto stary przycisk edycji transportu - teraz jest tylko w nagłówku */}
                       </dl>
                       
                       {canEditTransportStatus && order.withTransport && (
