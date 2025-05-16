@@ -429,8 +429,8 @@ export default function Orders() {
       setTransportDate(undefined);
     }
     
-    // Pobierz listę dostępnych transporterów dla firm z pracownikami
-    if (user?.role === 'company' && user?.companyOwnerOnly === false) {
+    // Pobierz listę dostępnych transporterów dla firm
+    if (user?.role === 'company') {
       // Funkcja do pobierania dostępnych transporterów
       const fetchTransporters = async () => {
         try {
@@ -508,8 +508,8 @@ export default function Orders() {
       setInstallationDate(undefined);
     }
     
-    // Pobierz listę dostępnych montażystów dla firm z pracownikami
-    if (user?.role === 'company' && user?.companyOwnerOnly === false && order) {
+    // Pobierz listę dostępnych montażystów dla firm
+    if (user?.role === 'company' && order) {
       // Wywołaj funkcję pobierania montażystów z odpowiednią specjalizacją
       fetchAvailableInstallers(order.serviceType);
     }
@@ -1379,7 +1379,7 @@ export default function Orders() {
           </div>
           
           {/* Pole wyboru pracownika (montażysty lub transportera) dla firm wieloosobowych */}
-          {user?.role === 'company' && user?.companyOwnerOnly === false && (
+          {user?.role === 'company' && (
             <div className="mb-4">
               <label className="block text-sm font-medium mb-1">
                 {isTransportCalendar ? "Przypisz transportera:" : "Przypisz montażystę:"}
