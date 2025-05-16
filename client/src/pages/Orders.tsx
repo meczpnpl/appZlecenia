@@ -2961,15 +2961,15 @@ export default function Orders() {
                       {(isTransporter || isOnePersonCompany) && (
                         <th scope="col" className="px-4 py-3">Transport</th>
                       )}
-                      {/* Pola finansowe widoczne tylko dla adminów, pracowników i firm */}
-                      {canModifyFinancialStatus && !isTransporter && (
+                      {/* Pola finansowe widoczne tylko dla adminów i pracowników (nie dla firm) */}
+                      {canModifyFinancialStatus && !isTransporter && !isOnePersonCompany && (
                         <>
                           <th scope="col" className="px-3 py-3 text-center">Faktura</th>
                           <th scope="col" className="px-3 py-3 text-center">Do rozliczenia</th>
                         </>
                       )}
-                      {/* Kolumna "Do rozliczenia" widoczna dla firm jednoosobowych */}
-                      {isOnePersonCompany && !canModifyFinancialStatus && (
+                      {/* Kolumna "Do rozliczenia" widoczna dla wszystkich firm (obu typów) */}
+                      {(isOnePersonCompany || (role === 'company' && !canModifyFinancialStatus)) && (
                         <th scope="col" className="px-3 py-3 text-center">Do rozliczenia</th>
                       )}
                       <th scope="col" className="px-4 py-3"><span className="sr-only">Akcje</span></th>
