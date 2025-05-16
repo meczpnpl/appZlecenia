@@ -323,7 +323,7 @@ export default function Login() {
           <p className="text-xs text-center w-full text-gray-500">
             Dostęp do systemu możliwy tylko dla uprawnionych użytkowników Bel-Pol.<br/>
             Skontaktuj się z administratorem w sprawie dostępu.<br/>
-            <span className="mt-2 inline-block">Wersja aplikacji: 2.1.1</span>
+            <span className="mt-2 inline-block">Wersja aplikacji: 2.1.002</span>
           </p>
         </CardFooter>
       </Card>
