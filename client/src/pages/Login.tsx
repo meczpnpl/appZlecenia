@@ -322,7 +322,8 @@ export default function Login() {
         <CardFooter className="border-t pt-4">
           <p className="text-xs text-center w-full text-gray-500">
             Dostęp do systemu możliwy tylko dla uprawnionych użytkowników Bel-Pol.<br/>
-            Skontaktuj się z administratorem w sprawie dostępu.
+            Skontaktuj się z administratorem w sprawie dostępu.<br/>
+            <span className="mt-2 inline-block">Wersja aplikacji: 2.0.4</span>
           </p>
         </CardFooter>
       </Card>
