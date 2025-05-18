@@ -19,45 +19,45 @@
             border-bottom: 2px solid #e5e7eb;
             padding-bottom: 10px;
         }
-        h2 {
-            color: #4b5563;
-            margin-top: 30px;
-            border-bottom: 1px solid #e5e7eb;
-            padding-bottom: 5px;
-        }
-        h3 {
-            color: #6b7280;
-            margin-top: 20px;
-        }
         .folder {
-            margin-left: 20px;
-            position: relative;
+            cursor: pointer;
+            color: #333;
+            font-weight: bold;
         }
         .folder::before {
-            content: "📁";
-            margin-right: 5px;
+            content: "📁 ";
+        }
+        .folder.open::before {
+            content: "📂 ";
         }
         .file {
-            margin-left: 40px;
+            margin-left: 20px;
             position: relative;
+            padding: 2px 0;
         }
         .file::before {
-            content: "📄";
-            margin-right: 5px;
+            content: "📄 ";
         }
-        .description {
-            color: #6b7280;
-            font-style: italic;
-            margin-left: 10px;
-        }
-        .key-file {
-            font-weight: bold;
-            color: #1e40af;
-        }
-        .tree-structure {
+        .children {
             margin-left: 20px;
-            border-left: 1px dotted #d1d5db;
-            padding-left: 20px;
+            display: none;
+        }
+        .open > .children {
+            display: block;
+        }
+        .toggle-btn {
+            margin-left: 5px;
+            cursor: pointer;
+        }
+        #search-box {
+            padding: 8px;
+            margin: 10px 0;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .highlight {
+            background-color: yellow;
         }
     </style>
 </head>
@@ -65,125 +65,362 @@
     <div class="container">
         <h1>Struktura Aplikacji Bel-Pol</h1>
         
-        <p>Poniżej przedstawiona jest pełna struktura katalogów i plików aplikacji wraz z opisami najważniejszych elementów.</p>
+        <input type="text" id="search-box" placeholder="Szukaj plików..." />
         
-        <h2>Główne foldery projektu</h2>
-        
-        <div class="folder">client <span class="description">Kod źródłowy frontendu aplikacji (React)</span></div>
-        <div class="tree-structure">
-            <div class="folder">public <span class="description">Pliki statyczne dostępne publicznie</span></div>
-            <div class="folder">src <span class="description">Kod źródłowy aplikacji frontendowej</span></div>
-            <div class="tree-structure">
-                <div class="folder">components <span class="description">Komponenty React używane w aplikacji</span></div>
-                <div class="tree-structure">
-                    <div class="folder">orders <span class="description">Komponenty specyficzne dla zleceń</span></div>
-                    <div class="folder">permissions <span class="description">Komponenty do zarządzania uprawnieniami</span></div>
-                    <div class="tree-structure">
-                        <div class="file key-file">permission-gate.tsx <span class="description">Komponent do warunkowego renderowania elementów na podstawie uprawnień</span></div>
-                        <div class="file key-file">permission-guard.tsx <span class="description">Komponent do ochrony całych stron/widoków na podstawie uprawnień</span></div>
+        <div id="file-tree">
+            <!-- Struktura katalogu będzie tutaj wygenerowana -->
+            
+            <div class="folder" onclick="toggleFolder(this)">client
+                <div class="children">
+                    <div class="file">client/.env</div>
+                    <div class="file">client/index.html</div>
+                    <div class="file">client/main.tsx</div>
+                    
+                    <div class="folder" onclick="toggleFolder(this)">client/public
+                        <div class="children">
+                            <div class="file">client/public/icon.svg</div>
+                            <div class="file">client/public/manifest.json</div>
+                            <div class="file">client/public/service-worker.js</div>
+                        </div>
                     </div>
-                    <div class="folder">ui <span class="description">Podstawowe komponenty UI</span></div>
+                    
+                    <div class="folder" onclick="toggleFolder(this)">client/src
+                        <div class="children">
+                            <div class="file">client/src/App.tsx</div>
+                            <div class="file">client/src/index.css</div>
+                            <div class="file">client/src/main.tsx</div>
+                            <div class="file">client/src/permissions-fix.js</div>
+                            
+                            <div class="folder" onclick="toggleFolder(this)">client/src/components
+                                <div class="children">
+                                    <div class="folder" onclick="toggleFolder(this)">client/src/components/address
+                                        <div class="children">
+                                            <div class="file">client/src/components/address/ClickableAddress.tsx</div>
+                                            <div class="file">client/src/components/address/GoogleAddressInput.tsx</div>
+                                            <div class="file">client/src/components/address/index.ts</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="folder" onclick="toggleFolder(this)">client/src/components/dashboard
+                                        <div class="children">
+                                            <div class="file">client/src/components/dashboard/CompanyPerformance.tsx</div>
+                                            <div class="file">client/src/components/dashboard/RecentOrders.tsx</div>
+                                            <div class="file">client/src/components/dashboard/SalesProgress.tsx</div>
+                                            <div class="file">client/src/components/dashboard/Stats.tsx</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="folder" onclick="toggleFolder(this)">client/src/components/layout
+                                        <div class="children">
+                                            <div class="file">client/src/components/layout/AppShell.tsx</div>
+                                            <div class="file">client/src/components/layout/Footer.tsx</div>
+                                            <div class="file">client/src/components/layout/Header.tsx</div>
+                                            <div class="file">client/src/components/layout/MobileNav.tsx</div>
+                                            <div class="file">client/src/components/layout/Sidebar.tsx</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="folder" onclick="toggleFolder(this)">client/src/components/notifications
+                                        <div class="children">
+                                            <div class="file">client/src/components/notifications/NotificationBell.tsx</div>
+                                            <div class="file">client/src/components/notifications/NotificationItem.tsx</div>
+                                            <div class="file">client/src/components/notifications/NotificationList.tsx</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="folder" onclick="toggleFolder(this)">client/src/components/orders
+                                        <div class="children">
+                                            <div class="file">client/src/components/orders/CalendarDialog.tsx</div>
+                                            <div class="file">client/src/components/orders/CompanyOrderStatus.tsx</div>
+                                            <div class="file">client/src/components/orders/OrderDocumentDialog.tsx</div>
+                                            <div class="file">client/src/components/orders/OrderFilters.tsx</div>
+                                            <div class="file">client/src/components/orders/OrderStatus.tsx</div>
+                                            <div class="file">client/src/components/orders/PhotoUpload.tsx</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="folder" onclick="toggleFolder(this)">client/src/components/ui
+                                        <div class="children">
+                                            <div class="file">client/src/components/ui/accordion.tsx</div>
+                                            <div class="file">client/src/components/ui/alert-dialog.tsx</div>
+                                            <div class="file">client/src/components/ui/avatar.tsx</div>
+                                            <div class="file">client/src/components/ui/back-button.tsx</div>
+                                            <div class="file">client/src/components/ui/badge.tsx</div>
+                                            <div class="file">client/src/components/ui/button.tsx</div>
+                                            <div class="file">client/src/components/ui/calendar.tsx</div>
+                                            <div class="file">client/src/components/ui/card.tsx</div>
+                                            <div class="file">client/src/components/ui/checkbox.tsx</div>
+                                            <div class="file">client/src/components/ui/dialog.tsx</div>
+                                            <div class="file">client/src/components/ui/drawer.tsx</div>
+                                            <div class="file">client/src/components/ui/dropdown-menu.tsx</div>
+                                            <div class="file">client/src/components/ui/form.tsx</div>
+                                            <div class="file">client/src/components/ui/input.tsx</div>
+                                            <div class="file">client/src/components/ui/label.tsx</div>
+                                            <div class="file">client/src/components/ui/navigation-menu.tsx</div>
+                                            <div class="file">client/src/components/ui/popover.tsx</div>
+                                            <div class="file">client/src/components/ui/progress.tsx</div>
+                                            <div class="file">client/src/components/ui/radio-group.tsx</div>
+                                            <div class="file">client/src/components/ui/select.tsx</div>
+                                            <div class="file">client/src/components/ui/separator.tsx</div>
+                                            <div class="file">client/src/components/ui/sheet.tsx</div>
+                                            <div class="file">client/src/components/ui/switch.tsx</div>
+                                            <div class="file">client/src/components/ui/table.tsx</div>
+                                            <div class="file">client/src/components/ui/tabs.tsx</div>
+                                            <div class="file">client/src/components/ui/textarea.tsx</div>
+                                            <div class="file">client/src/components/ui/toast.tsx</div>
+                                            <div class="file">client/src/components/ui/toaster.tsx</div>
+                                            <div class="file">client/src/components/ui/tooltip.tsx</div>
+                                            <div class="file">client/src/components/ui/use-toast.ts</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="file">client/src/components/DeleteConfirmationDialog.tsx</div>
+                                    <div class="file">client/src/components/FilterButtons.tsx</div>
+                                    <div class="file">client/src/components/InstallPushDialog.tsx</div>
+                                    <div class="file">client/src/components/ProfileMenu.tsx</div>
+                                    <div class="file">client/src/components/SavedFilters.tsx</div>
+                                </div>
+                            </div>
+                            
+                            <div class="folder" onclick="toggleFolder(this)">client/src/hooks
+                                <div class="children">
+                                    <div class="file">client/src/hooks/use-auth.ts</div>
+                                    <div class="file">client/src/hooks/use-companies.ts</div>
+                                    <div class="file">client/src/hooks/use-events.ts</div>
+                                    <div class="file">client/src/hooks/use-filters.ts</div>
+                                    <div class="file">client/src/hooks/use-google-maps.ts</div>
+                                    <div class="file">client/src/hooks/use-installers.ts</div>
+                                    <div class="file">client/src/hooks/use-mobile.ts</div>
+                                    <div class="file">client/src/hooks/use-notifications.ts</div>
+                                    <div class="file">client/src/hooks/use-orders.ts</div>
+                                    <div class="file">client/src/hooks/use-permissions.ts</div>
+                                    <div class="file">client/src/hooks/use-push.ts</div>
+                                    <div class="file">client/src/hooks/use-stores.ts</div>
+                                    <div class="file">client/src/hooks/use-toast.ts</div>
+                                    <div class="file">client/src/hooks/use-window-size.ts</div>
+                                </div>
+                            </div>
+                            
+                            <div class="folder" onclick="toggleFolder(this)">client/src/lib
+                                <div class="children">
+                                    <div class="file">client/src/lib/apiRequest.ts</div>
+                                    <div class="file">client/src/lib/auth.ts</div>
+                                    <div class="file">client/src/lib/constants.ts</div>
+                                    <div class="file">client/src/lib/queryClient.ts</div>
+                                    <div class="file">client/src/lib/utils.ts</div>
+                                </div>
+                            </div>
+                            
+                            <div class="folder" onclick="toggleFolder(this)">client/src/pages
+                                <div class="children">
+                                    <div class="file">client/src/pages/Companies.tsx</div>
+                                    <div class="file">client/src/pages/CompanyDetails.tsx</div>
+                                    <div class="file">client/src/pages/Dashboard.tsx</div>
+                                    <div class="file">client/src/pages/Error.tsx</div>
+                                    <div class="file">client/src/pages/Home.tsx</div>
+                                    <div class="file">client/src/pages/Login.tsx</div>
+                                    <div class="file">client/src/pages/NewOrder.tsx</div>
+                                    <div class="file">client/src/pages/NotFound.tsx</div>
+                                    <div class="file">client/src/pages/OrderDetails.tsx</div>
+                                    <div class="file">client/src/pages/Orders.tsx</div>
+                                    <div class="file">client/src/pages/Profile.tsx</div>
+                                    <div class="file">client/src/pages/Reports.tsx</div>
+                                    <div class="file">client/src/pages/Roles.tsx</div>
+                                    <div class="file">client/src/pages/SalesPlans.tsx</div>
+                                    <div class="file">client/src/pages/Settings.tsx</div>
+                                    <div class="file">client/src/pages/Stores.tsx</div>
+                                    <div class="file">client/src/pages/Users.tsx</div>
+                                    <div class="file">client/src/pages/ViewPermissionsManager.tsx</div>
+                                </div>
+                            </div>
+                            
+                            <div class="folder" onclick="toggleFolder(this)">client/src/utils
+                                <div class="children">
+                                    <div class="file">client/src/utils/date-utils.ts</div>
+                                    <div class="file">client/src/utils/format-utils.ts</div>
+                                    <div class="file">client/src/utils/permission-utils.ts</div>
+                                    <div class="file">client/src/utils/push-utils.ts</div>
+                                    <div class="file">client/src/utils/storage-utils.ts</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="folder">hooks <span class="description">Hooki React</span></div>
-                <div class="tree-structure">
-                    <div class="file key-file">use-permissions.ts <span class="description">Hook do sprawdzania uprawnień użytkownika</span></div>
-                    <div class="file">use-toast.ts <span class="description">Hook do wyświetlania powiadomień</span></div>
-                    <div class="file">use-auth.ts <span class="description">Hook do obsługi autoryzacji</span></div>
+            </div>
+            
+            <div class="folder" onclick="toggleFolder(this)">public
+                <div class="children">
+                    <div class="folder" onclick="toggleFolder(this)">public/assets
+                        <div class="children">
+                            <div class="file">public/assets/logo.svg</div>
+                            <div class="file">public/assets/logo-dark.svg</div>
+                            <div class="file">public/assets/placeholder.png</div>
+                        </div>
+                    </div>
+                    <div class="folder" onclick="toggleFolder(this)">public/icons
+                        <div class="children">
+                            <div class="file">public/icons/icon-192x192.png</div>
+                            <div class="file">public/icons/icon-512x512.png</div>
+                        </div>
+                    </div>
+                    <div class="folder" onclick="toggleFolder(this)">public/uploads
+                        <div class="children">
+                            <!-- Katalog na przesyłane pliki -->
+                        </div>
+                    </div>
+                    <div class="file">public/icon-192x192.png</div>
+                    <div class="file">public/icon-512x512.png</div>
+                    <div class="file">public/logo192.png</div>
+                    <div class="file">public/manifest.json</div>
+                    <div class="file">public/service-worker.js</div>
                 </div>
-                <div class="folder">lib <span class="description">Biblioteki i funkcje pomocnicze</span></div>
-                <div class="tree-structure">
-                    <div class="file">queryClient.ts <span class="description">Konfiguracja React Query</span></div>
-                    <div class="file">apiRequest.ts <span class="description">Funkcja do wykonywania zapytań API</span></div>
-                    <div class="file">auth.ts <span class="description">Logika autoryzacji</span></div>
+            </div>
+            
+            <div class="folder" onclick="toggleFolder(this)">scripts
+                <div class="children">
+                    <div class="file">scripts/init-permissions.ts</div>
+                    <div class="file">scripts/init_settings.ts</div>
+                    <div class="file">scripts/migrate_photos.js</div>
+                    <div class="file">scripts/migrate_photos.ts</div>
+                    <div class="file">scripts/seed.ts</div>
                 </div>
-                <div class="folder">middleware <span class="description">Middleware dla aplikacji klienckiej</span></div>
-                <div class="folder">pages <span class="description">Komponenty stron/podstron aplikacji</span></div>
-                <div class="tree-structure">
-                    <div class="file key-file">Orders.tsx <span class="description">Strona z listą zleceń</span></div>
-                    <div class="file">OrderDetails.tsx <span class="description">Strona ze szczegółami zlecenia</span></div>
-                    <div class="file key-file">ViewPermissionsManager.tsx <span class="description">Panel zarządzania uprawnieniami</span></div>
-                    <div class="file">Dashboard.tsx <span class="description">Strona główna/dashboard</span></div>
-                    <div class="file">Login.tsx <span class="description">Strona logowania</span></div>
+            </div>
+            
+            <div class="folder" onclick="toggleFolder(this)">server
+                <div class="children">
+                    <div class="folder" onclick="toggleFolder(this)">server/middleware
+                        <div class="children">
+                            <div class="file">server/middleware/auth-middleware.ts</div>
+                            <div class="file">server/middleware/cors-middleware.ts</div>
+                            <div class="file">server/middleware/error-middleware.ts</div>
+                            <div class="file">server/middleware/permissions-middleware.ts</div>
+                        </div>
+                    </div>
+                    
+                    <div class="folder" onclick="toggleFolder(this)">server/routes
+                        <div class="children">
+                            <div class="file">server/routes/auth.ts</div>
+                            <div class="file">server/routes/companies.ts</div>
+                            <div class="file">server/routes/filters.ts</div>
+                            <div class="file">server/routes/installers.ts</div>
+                            <div class="file">server/routes/notifications.ts</div>
+                            <div class="file">server/routes/orders.ts</div>
+                            <div class="file">server/routes/permissions.ts</div>
+                            <div class="file">server/routes/photos.ts</div>
+                            <div class="file">server/routes/push.ts</div>
+                            <div class="file">server/routes/sales-plans.ts</div>
+                            <div class="file">server/routes/settings.ts</div>
+                            <div class="file">server/routes/stores.ts</div>
+                            <div class="file">server/routes/transporters.ts</div>
+                            <div class="file">server/routes/users.ts</div>
+                        </div>
+                    </div>
+                    
+                    <div class="folder" onclick="toggleFolder(this)">server/services
+                        <div class="children">
+                            <div class="file">server/services/auth-service.ts</div>
+                            <div class="file">server/services/email-service.ts</div>
+                            <div class="file">server/services/notification-service.ts</div>
+                            <div class="file">server/services/permission-service.ts</div>
+                            <div class="file">server/services/push-service.ts</div>
+                        </div>
+                    </div>
+                    
+                    <div class="file">server/database-storage.ts</div>
+                    <div class="file">server/db.ts</div>
+                    <div class="file">server/index.ts</div>
+                    <div class="file">server/memory-storage.ts</div>
+                    <div class="file">server/routes.ts</div>
+                    <div class="file">server/vite.ts</div>
                 </div>
-                <div class="folder">utils <span class="description">Funkcje pomocnicze</span></div>
-                <div class="file">App.tsx <span class="description">Główny komponent aplikacji</span></div>
-                <div class="file">main.tsx <span class="description">Punkt wejściowy aplikacji React</span></div>
-                <div class="file">index.css <span class="description">Główny plik CSS</span></div>
-                <div class="file key-file">permissions-fix.js <span class="description">Skrypt naprawy systemu uprawnień</span></div>
             </div>
-            <div class="file">.env <span class="description">Zmienne środowiskowe dla frontendu</span></div>
-            <div class="file">index.html <span class="description">Główny plik HTML aplikacji</span></div>
-        </div>
-        
-        <div class="folder">server <span class="description">Kod źródłowy backendu aplikacji (Express.js)</span></div>
-        <div class="tree-structure">
-            <div class="folder">routes <span class="description">Definicje tras API</span></div>
-            <div class="tree-structure">
-                <div class="file key-file">permissions.ts <span class="description">Endpointy zarządzania uprawnieniami</span></div>
-                <div class="file">orders.ts <span class="description">Endpointy zarządzania zleceniami</span></div>
-                <div class="file">auth.ts <span class="description">Endpointy autoryzacji</span></div>
-                <div class="file">users.ts <span class="description">Endpointy zarządzania użytkownikami</span></div>
+            
+            <div class="folder" onclick="toggleFolder(this)">shared
+                <div class="children">
+                    <div class="file">shared/permission-schema.ts</div>
+                    <div class="file">shared/schema.ts</div>
+                    <div class="file">shared/session.d.ts</div>
+                    <div class="file">shared/types.ts</div>
+                </div>
             </div>
-            <div class="folder">services <span class="description">Usługi biznesowe</span></div>
-            <div class="tree-structure">
-                <div class="file key-file">permission-service.ts <span class="description">Usługa zarządzania uprawnieniami</span></div>
-                <div class="file">order-service.ts <span class="description">Usługa zarządzania zleceniami</span></div>
-                <div class="file">notification-service.ts <span class="description">Usługa powiadomień</span></div>
-            </div>
-            <div class="folder">middleware <span class="description">Middleware dla API</span></div>
-            <div class="tree-structure">
-                <div class="file key-file">auth-middleware.ts <span class="description">Middleware do autoryzacji</span></div>
-                <div class="file">permission-middleware.ts <span class="description">Middleware do sprawdzania uprawnień</span></div>
-            </div>
-            <div class="file">index.ts <span class="description">Główny plik serwera</span></div>
-            <div class="file key-file">database-storage.ts <span class="description">Warstwa dostępu do bazy danych</span></div>
-            <div class="file key-file">db.ts <span class="description">Konfiguracja połączenia z bazą danych</span></div>
-            <div class="file key-file">routes.ts <span class="description">Główny plik konfiguracji tras API</span></div>
+            
+            <!-- Pliki konfiguracyjne w głównym katalogu -->
+            <div class="file">.env</div>
+            <div class="file">.env.nazwa.pl</div>
+            <div class="file">.env.nazwa.pl.example</div>
+            <div class="file">.replit</div>
+            <div class="file">components.json</div>
+            <div class="file">drizzle.config.ts</div>
+            <div class="file">package.json</div>
+            <div class="file">postcss.config.js</div>
+            <div class="file">tailwind.config.ts</div>
+            <div class="file">tsconfig.json</div>
+            <div class="file">vite.config.ts</div>
+            
+            <!-- Pliki skryptów i baz danych -->
+            <div class="file">clean_external_database.sql</div>
+            <div class="file">generate-vapid-keys.js</div>
+            <div class="file">migrate_local_to_external.sql</div>
+            <div class="file">migrate_photos.sql</div>
+            <div class="file">migrate_settings.sql</div>
         </div>
-        
-        <div class="folder">shared <span class="description">Pliki współdzielone między frontendem i backendem</span></div>
-        <div class="tree-structure">
-            <div class="file key-file">schema.ts <span class="description">Definicje schematów bazy danych (Drizzle ORM)</span></div>
-            <div class="file key-file">permission-schema.ts <span class="description">Definicje schematów uprawnień</span></div>
-            <div class="file">types.ts <span class="description">Współdzielone typy TypeScript</span></div>
-        </div>
-        
-        <div class="folder">scripts <span class="description">Skrypty narzędziowe</span></div>
-        <div class="tree-structure">
-            <div class="file key-file">init-permissions.ts <span class="description">Skrypt inicjalizujący system uprawnień</span></div>
-            <div class="file">init_settings.ts <span class="description">Skrypt inicjalizujący ustawienia</span></div>
-            <div class="file">seed.ts <span class="description">Skrypt zasilający bazę danych przykładowymi danymi</span></div>
-            <div class="file">migrate_photos.ts <span class="description">Skrypt migracji zdjęć</span></div>
-        </div>
-        
-        <div class="folder">public <span class="description">Pliki statyczne serwera</span></div>
-        <div class="tree-structure">
-            <div class="folder">assets <span class="description">Zasoby statyczne (obrazy, ikony)</span></div>
-            <div class="folder">uploads <span class="description">Folder na przesyłane pliki</span></div>
-            <div class="file">service-worker.js <span class="description">Service worker do obsługi PWA</span></div>
-        </div>
-        
-        <div class="folder">backups <span class="description">Kopie zapasowe plików</span></div>
-        
-        <h2>Najważniejsze pliki konfiguracyjne</h2>
-        
-        <div class="file">package.json <span class="description">Konfiguracja projektu i zależności</span></div>
-        <div class="file">drizzle.config.ts <span class="description">Konfiguracja ORM Drizzle</span></div>
-        <div class="file">postcss.config.js <span class="description">Konfiguracja PostCSS</span></div>
-        <div class="file">tailwind.config.ts <span class="description">Konfiguracja Tailwind CSS</span></div>
-        <div class="file">vite.config.ts <span class="description">Konfiguracja Vite (bundler)</span></div>
-        <div class="file">tsconfig.json <span class="description">Konfiguracja TypeScript</span></div>
-        
-        <h2>System Uprawnień - Kluczowe Pliki</h2>
-        
-        <div class="file key-file">shared/permission-schema.ts <span class="description">Definicje schematów uprawnień</span></div>
-        <div class="file key-file">client/src/hooks/use-permissions.ts <span class="description">Hook do sprawdzania uprawnień</span></div>
-        <div class="file key-file">client/src/components/permissions/permission-gate.tsx <span class="description">Komponent warunkowego renderowania</span></div>
-        <div class="file key-file">client/src/components/permissions/permission-guard.tsx <span class="description">Komponent ochrony stron</span></div>
-        <div class="file key-file">client/src/pages/ViewPermissionsManager.tsx <span class="description">Panel zarządzania uprawnieniami</span></div>
-        <div class="file key-file">server/routes/permissions.ts <span class="description">API uprawnień</span></div>
-        <div class="file key-file">server/services/permission-service.ts <span class="description">Usługa zarządzania uprawnieniami</span></div>
-        <div class="file key-file">scripts/init-permissions.ts <span class="description">Inicjalizacja uprawnień</span></div>
     </div>
+
+    <script>
+        function toggleFolder(element) {
+            // Zatrzymujemy propagację, aby nie zamykać/otwierać 
+            // nadrzędnych folderów przy kliknięciu w zagnieżdżony folder
+            event.stopPropagation(); 
+            element.classList.toggle('open');
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchBox = document.getElementById('search-box');
+            searchBox.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                searchFiles(searchTerm);
+            });
+        });
+        
+        function searchFiles(searchTerm) {
+            const allFiles = document.querySelectorAll('.file');
+            const allFolders = document.querySelectorAll('.folder');
+            
+            // Resetujemy wszystkie podświetlenia
+            allFiles.forEach(file => {
+                file.innerHTML = file.innerHTML.replace(/<span class="highlight">(.*?)<\/span>/g, '$1');
+            });
+            
+            // Zamykamy wszystkie foldery
+            allFolders.forEach(folder => {
+                folder.classList.remove('open');
+            });
+            
+            if (!searchTerm) return;
+            
+            // Podświetlamy pasujące pliki i otwieramy ich foldery rodzicielskie
+            allFiles.forEach(file => {
+                const fileName = file.textContent.toLowerCase();
+                
+                if (fileName.includes(searchTerm)) {
+                    // Podświetlamy pasujący tekst
+                    const regex = new RegExp(searchTerm, 'gi');
+                    file.innerHTML = file.textContent.replace(regex, match => `<span class="highlight">${match}</span>`);
+                    
+                    // Otwieramy wszystkie foldery nadrzędne
+                    let parent = file.parentElement;
+                    while (parent) {
+                        if (parent.classList.contains('children')) {
+                            const parentFolder = parent.parentElement;
+                            if (parentFolder && parentFolder.classList.contains('folder')) {
+                                parentFolder.classList.add('open');
+                            }
+                        }
+                        parent = parent.parentElement;
+                    }
+                }
+            });
+        }
+    </script>
 </body>
 </html>
