@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Struktura Aplikacji Bel-Pol</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #2563eb;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #4b5563;
+            margin-top: 30px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 5px;
+        }
+        h3 {
+            color: #6b7280;
+            margin-top: 20px;
+        }
+        .folder {
+            margin-left: 20px;
+            position: relative;
+        }
+        .folder::before {
+            content: "📁";
+            margin-right: 5px;
+        }
+        .file {
+            margin-left: 40px;
+            position: relative;
+        }
+        .file::before {
+            content: "📄";
+            margin-right: 5px;
+        }
+        .description {
+            color: #6b7280;
+            font-style: italic;
+            margin-left: 10px;
+        }
+        .key-file {
+            font-weight: bold;
+            color: #1e40af;
+        }
+        .tree-structure {
+            margin-left: 20px;
+            border-left: 1px dotted #d1d5db;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Struktura Aplikacji Bel-Pol</h1>
+        
+        <p>Poniżej przedstawiona jest pełna struktura katalogów i plików aplikacji wraz z opisami najważniejszych elementów.</p>
+        
+        <h2>Główne foldery projektu</h2>
+        
+        <div class="folder">client <span class="description">Kod źródłowy frontendu aplikacji (React)</span></div>
+        <div class="tree-structure">
+            <div class="folder">public <span class="description">Pliki statyczne dostępne publicznie</span></div>
+            <div class="folder">src <span class="description">Kod źródłowy aplikacji frontendowej</span></div>
+            <div class="tree-structure">
+                <div class="folder">components <span class="description">Komponenty React używane w aplikacji</span></div>
+                <div class="tree-structure">
+                    <div class="folder">orders <span class="description">Komponenty specyficzne dla zleceń</span></div>
+                    <div class="folder">permissions <span class="description">Komponenty do zarządzania uprawnieniami</span></div>
+                    <div class="tree-structure">
+                        <div class="file key-file">permission-gate.tsx <span class="description">Komponent do warunkowego renderowania elementów na podstawie uprawnień</span></div>
+                        <div class="file key-file">permission-guard.tsx <span class="description">Komponent do ochrony całych stron/widoków na podstawie uprawnień</span></div>
+                    </div>
+                    <div class="folder">ui <span class="description">Podstawowe komponenty UI</span></div>
+                </div>
+                <div class="folder">hooks <span class="description">Hooki React</span></div>
+                <div class="tree-structure">
+                    <div class="file key-file">use-permissions.ts <span class="description">Hook do sprawdzania uprawnień użytkownika</span></div>
+                    <div class="file">use-toast.ts <span class="description">Hook do wyświetlania powiadomień</span></div>
+                    <div class="file">use-auth.ts <span class="description">Hook do obsługi autoryzacji</span></div>
+                </div>
+                <div class="folder">lib <span class="description">Biblioteki i funkcje pomocnicze</span></div>
+                <div class="tree-structure">
+                    <div class="file">queryClient.ts <span class="description">Konfiguracja React Query</span></div>
+                    <div class="file">apiRequest.ts <span class="description">Funkcja do wykonywania zapytań API</span></div>
+                    <div class="file">auth.ts <span class="description">Logika autoryzacji</span></div>
+                </div>
+                <div class="folder">middleware <span class="description">Middleware dla aplikacji klienckiej</span></div>
+                <div class="folder">pages <span class="description">Komponenty stron/podstron aplikacji</span></div>
+                <div class="tree-structure">
+                    <div class="file key-file">Orders.tsx <span class="description">Strona z listą zleceń</span></div>
+                    <div class="file">OrderDetails.tsx <span class="description">Strona ze szczegółami zlecenia</span></div>
+                    <div class="file key-file">ViewPermissionsManager.tsx <span class="description">Panel zarządzania uprawnieniami</span></div>
+                    <div class="file">Dashboard.tsx <span class="description">Strona główna/dashboard</span></div>
+                    <div class="file">Login.tsx <span class="description">Strona logowania</span></div>
+                </div>
+                <div class="folder">utils <span class="description">Funkcje pomocnicze</span></div>
+                <div class="file">App.tsx <span class="description">Główny komponent aplikacji</span></div>
+                <div class="file">main.tsx <span class="description">Punkt wejściowy aplikacji React</span></div>
+                <div class="file">index.css <span class="description">Główny plik CSS</span></div>
+                <div class="file key-file">permissions-fix.js <span class="description">Skrypt naprawy systemu uprawnień</span></div>
+            </div>
+            <div class="file">.env <span class="description">Zmienne środowiskowe dla frontendu</span></div>
+            <div class="file">index.html <span class="description">Główny plik HTML aplikacji</span></div>
+        </div>
+        
+        <div class="folder">server <span class="description">Kod źródłowy backendu aplikacji (Express.js)</span></div>
+        <div class="tree-structure">
+            <div class="folder">routes <span class="description">Definicje tras API</span></div>
+            <div class="tree-structure">
+                <div class="file key-file">permissions.ts <span class="description">Endpointy zarządzania uprawnieniami</span></div>
+                <div class="file">orders.ts <span class="description">Endpointy zarządzania zleceniami</span></div>
+                <div class="file">auth.ts <span class="description">Endpointy autoryzacji</span></div>
+                <div class="file">users.ts <span class="description">Endpointy zarządzania użytkownikami</span></div>
+            </div>
+            <div class="folder">services <span class="description">Usługi biznesowe</span></div>
+            <div class="tree-structure">
+                <div class="file key-file">permission-service.ts <span class="description">Usługa zarządzania uprawnieniami</span></div>
+                <div class="file">order-service.ts <span class="description">Usługa zarządzania zleceniami</span></div>
+                <div class="file">notification-service.ts <span class="description">Usługa powiadomień</span></div>
+            </div>
+            <div class="folder">middleware <span class="description">Middleware dla API</span></div>
+            <div class="tree-structure">
+                <div class="file key-file">auth-middleware.ts <span class="description">Middleware do autoryzacji</span></div>
+                <div class="file">permission-middleware.ts <span class="description">Middleware do sprawdzania uprawnień</span></div>
+            </div>
+            <div class="file">index.ts <span class="description">Główny plik serwera</span></div>
+            <div class="file key-file">database-storage.ts <span class="description">Warstwa dostępu do bazy danych</span></div>
+            <div class="file key-file">db.ts <span class="description">Konfiguracja połączenia z bazą danych</span></div>
+            <div class="file key-file">routes.ts <span class="description">Główny plik konfiguracji tras API</span></div>
+        </div>
+        
+        <div class="folder">shared <span class="description">Pliki współdzielone między frontendem i backendem</span></div>
+        <div class="tree-structure">
+            <div class="file key-file">schema.ts <span class="description">Definicje schematów bazy danych (Drizzle ORM)</span></div>
+            <div class="file key-file">permission-schema.ts <span class="description">Definicje schematów uprawnień</span></div>
+            <div class="file">types.ts <span class="description">Współdzielone typy TypeScript</span></div>
+        </div>
+        
+        <div class="folder">scripts <span class="description">Skrypty narzędziowe</span></div>
+        <div class="tree-structure">
+            <div class="file key-file">init-permissions.ts <span class="description">Skrypt inicjalizujący system uprawnień</span></div>
+            <div class="file">init_settings.ts <span class="description">Skrypt inicjalizujący ustawienia</span></div>
+            <div class="file">seed.ts <span class="description">Skrypt zasilający bazę danych przykładowymi danymi</span></div>
+            <div class="file">migrate_photos.ts <span class="description">Skrypt migracji zdjęć</span></div>
+        </div>
+        
+        <div class="folder">public <span class="description">Pliki statyczne serwera</span></div>
+        <div class="tree-structure">
+            <div class="folder">assets <span class="description">Zasoby statyczne (obrazy, ikony)</span></div>
+            <div class="folder">uploads <span class="description">Folder na przesyłane pliki</span></div>
+            <div class="file">service-worker.js <span class="description">Service worker do obsługi PWA</span></div>
+        </div>
+        
+        <div class="folder">backups <span class="description">Kopie zapasowe plików</span></div>
+        
+        <h2>Najważniejsze pliki konfiguracyjne</h2>
+        
+        <div class="file">package.json <span class="description">Konfiguracja projektu i zależności</span></div>
+        <div class="file">drizzle.config.ts <span class="description">Konfiguracja ORM Drizzle</span></div>
+        <div class="file">postcss.config.js <span class="description">Konfiguracja PostCSS</span></div>
+        <div class="file">tailwind.config.ts <span class="description">Konfiguracja Tailwind CSS</span></div>
+        <div class="file">vite.config.ts <span class="description">Konfiguracja Vite (bundler)</span></div>
+        <div class="file">tsconfig.json <span class="description">Konfiguracja TypeScript</span></div>
+        
+        <h2>System Uprawnień - Kluczowe Pliki</h2>
+        
+        <div class="file key-file">shared/permission-schema.ts <span class="description">Definicje schematów uprawnień</span></div>
+        <div class="file key-file">client/src/hooks/use-permissions.ts <span class="description">Hook do sprawdzania uprawnień</span></div>
+        <div class="file key-file">client/src/components/permissions/permission-gate.tsx <span class="description">Komponent warunkowego renderowania</span></div>
+        <div class="file key-file">client/src/components/permissions/permission-guard.tsx <span class="description">Komponent ochrony stron</span></div>
+        <div class="file key-file">client/src/pages/ViewPermissionsManager.tsx <span class="description">Panel zarządzania uprawnieniami</span></div>
+        <div class="file key-file">server/routes/permissions.ts <span class="description">API uprawnień</span></div>
+        <div class="file key-file">server/services/permission-service.ts <span class="description">Usługa zarządzania uprawnieniami</span></div>
+        <div class="file key-file">scripts/init-permissions.ts <span class="description">Inicjalizacja uprawnień</span></div>
+    </div>
+</body>
+</html>
