@@ -290,10 +290,41 @@ if ('serviceWorker' in navigator) {
     const shouldContinue = await checkServerVersion();
     if (!shouldContinue) return;
     
-    // Usuń parametr force, jeśli istnieje w URL
-    if (window.location.search.includes('force')) {
+    // Usuń parametr force lub refresh, jeśli istnieje w URL
+    if (window.location.search.includes('force') || window.location.search.includes('refresh')) {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
+    
+    // Nasłuchuj na wiadomości od Service Workera
+    navigator.serviceWorker.addEventListener('message', event => {
+      if (event.data && event.data.type === 'VERSION_UPDATE') {
+        const { oldVersion, newVersion } = event.data;
+        console.log(`Otrzymano informację o nowej wersji: ${oldVersion} -> ${newVersion}`);
+        
+        // Zaktualizuj wersję w localStorage
+        localStorage.setItem('app_version', newVersion);
+        
+        // Wyświetl informację użytkownikowi
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          background: #2563eb;
+          color: white;
+          padding: 10px 15px;
+          border-radius: 4px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+          z-index: 9999;
+          font-family: Arial, sans-serif;
+          transition: opacity 0.3s;
+        `;
+        notification.innerHTML = `
+          <div>Wykryto nową wersję aplikacji. Odświeżanie...</div>
+        `;
+        document.body.appendChild(notification);
+      }
+    });
     
     // Dodaj obsługę controllerchange, aby automatycznie odświeżyć stronę
     navigator.serviceWorker.addEventListener('controllerchange', () => {
