@@ -234,14 +234,48 @@ const checkServerVersion = async () => {
         localStorage.setItem('app_version', serverVersion);
         
         // Użyj iframe z wymuszonym odświeżeniem
-        console.log("Przekierowuję do nowej wersji aplikacji używając metody radykalnej...");
+        console.log("Przekierowuję do nowej wersji aplikacji używając najsilniejszej metody...");
+        
+        // Najpierw wyślemy żądanie wylogowania, aby usunąć sesję po stronie serwera
+        try {
+          await fetch('/api/auth/logout', {
+            method: 'POST',
+            credentials: 'include',
+            cache: 'no-store',
+            headers: {
+              'Content-Type': 'application/json',
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
+            }
+          });
+          console.log("Sesja została zniszczona po stronie serwera");
+        } catch (error) {
+          console.error("Błąd podczas niszczenia sesji:", error);
+        }
+        
+        // Następnie czyścimy ciasteczka ręcznie
+        const cookies = document.cookie.split(";");
+        cookies.forEach(cookie => {
+          const name = cookie.split("=")[0].trim();
+          if (name) {
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${window.location.hostname}`;
+          }
+        });
         
         // Tworzymy tymczasową stronę HTML z automatycznym odświeżeniem
+        const timestamp = Date.now();
+        const serverVersion = serverVersion;
+        
         const html = `
           <!DOCTYPE html>
           <html>
             <head>
               <meta charset="utf-8">
+              <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+              <meta http-equiv="Pragma" content="no-cache">
+              <meta http-equiv="Expires" content="0">
               <title>Odświeżanie aplikacji</title>
               <style>
                 body {
@@ -280,12 +314,61 @@ const checkServerVersion = async () => {
                 }
               </style>
               <script>
-                // Poczekaj na załadowanie strony, wyczyść cache i odśwież
+                // Zapisujemy dane do LocalStorage, aby nowa strona wiedziała, że to było odświeżenie
+                localStorage.setItem('forced_refresh', 'true');
+                localStorage.setItem('refresh_timestamp', '${timestamp}');
+                
+                // Wyczyść wszystkie dane cache
+                if ('caches' in window) {
+                  caches.keys().then(function(names) {
+                    names.forEach(function(name) {
+                      caches.delete(name);
+                      console.log('Cache ' + name + ' deleted');
+                    });
+                  });
+                }
+                
+                // Wyrejestruj service workery
+                if ('serviceWorker' in navigator) {
+                  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for (let registration of registrations) {
+                      registration.unregister();
+                      console.log('ServiceWorker unregistered');
+                    }
+                  });
+                }
+                
+                // Poczekaj na załadowanie strony
                 window.onload = function() {
+                  // Spróbuj otworzyć nowe okno z wymuszonym odświeżeniem
                   setTimeout(function() {
-                    // Przekieruj do głównej strony
-                    window.location.href = "/?v=" + Date.now();
-                  }, 2000);
+                    try {
+                      // Sprawdź, czy otwarcie nowego okna się powiedzie
+                      const testOpener = window.open('', '_blank');
+                      
+                      if (testOpener) {
+                        // Zamknij testowe okno
+                        testOpener.close();
+                        
+                        // Otwórz nowe okno z aktualną lokalizacją + losowy parametr
+                        const url = window.location.origin + '/?refresh=' + Date.now();
+                        const newWindow = window.open(url, '_self');
+                        
+                        // Dla pewności jeszcze ustaw timeout
+                        setTimeout(function() {
+                          // Jeśli z jakiegoś powodu okno nie zostało odświeżone, użyj tradycyjnego reload
+                          window.location.href = url;
+                        }, 500);
+                      } else {
+                        // Wymuś całkowite odświeżenie strony z serwera (true - nie używaj cache)
+                        window.location.reload(true);
+                      }
+                    } catch (e) {
+                      console.error('Błąd podczas otwierania nowego okna:', e);
+                      // Awaryjne przeładowanie strony
+                      window.location.reload(true);
+                    }
+                  }, 1000);
                 };
               </script>
             </head>
@@ -293,6 +376,7 @@ const checkServerVersion = async () => {
               <div class="container">
                 <h1>Wykryto nową wersję</h1>
                 <p>Trwa aktualizacja aplikacji. Proszę czekać...</p>
+                <p>Odświeżanie do najnowszej wersji...</p>
                 <div class="spinner"></div>
               </div>
             </body>
