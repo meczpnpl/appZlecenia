@@ -174,7 +174,7 @@ const clearCacheAndCookies = async () => {
 // Zmienna do śledzenia aktualnie trwającego sprawdzenia
 let isCheckingVersion = false;
 
-// Funkcja sprawdzająca wersję aplikacji na serwerze
+// Funkcja sprawdzająca wersję aplikacji na serwerze - UPROSZCZONA WERSJA
 const checkServerVersion = async () => {
   // Zapobiegaj równoczesnym wywołaniom
   if (isCheckingVersion) {
@@ -185,219 +185,97 @@ const checkServerVersion = async () => {
   try {
     isCheckingVersion = true;
     
-    // Sprawdź, czy nie jesteśmy w trakcie odświeżania z parametrem force
-    if (window.location.search.includes('force')) {
-      console.log("Wykryto parametr force, pomijam sprawdzanie wersji...");
+    // Sprawdź parametr refresh w URL - jeśli istnieje, pomijamy sprawdzanie
+    if (window.location.search.includes('refresh')) {
+      // Usuń parametr z URL, ale nie odświeżaj strony
+      const newUrl = window.location.pathname + 
+                    window.location.search.replace(/[?&]refresh=[^&]+/, '') +
+                    window.location.hash;
+      window.history.replaceState({}, document.title, newUrl);
+      
+      console.log("Wykryto parametr refresh, pomijam sprawdzanie wersji...");
       isCheckingVersion = false;
       return true;
     }
     
     console.log("Sprawdzam wersję aplikacji na serwerze...");
     
-    const response = await fetch('/api/version', {
-      cache: 'no-store',
-      headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' },
-      // Dodaj losowy parametr dla uniknięcia cache
-      credentials: 'same-origin'
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      const serverVersion = data.version;
-      const serviceWorkerVersion = data.serviceWorkerVersion;
-      const serverInstanceId = data.serverInstanceId;
+    // Używamy XMLHttpRequest zamiast fetch dla lepszego omijania cache
+    return new Promise((resolve) => {
+      const xhr = new XMLHttpRequest();
+      // Dodajemy losowy parametr, aby uniknąć cache
+      xhr.open('GET', '/api/version?nocache=' + Date.now(), true);
+      xhr.setRequestHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      xhr.setRequestHeader('Pragma', 'no-cache');
+      xhr.setRequestHeader('Expires', '0');
+      xhr.responseType = 'json';
       
-      // Pobierz zapisane wartości
-      const savedVersion = localStorage.getItem('app_version');
-      const savedInstanceId = localStorage.getItem('server_instance_id');
-      
-      console.log(`Wersja na serwerze: ${serverVersion} (SW: ${serviceWorkerVersion}), zapisana wersja: ${savedVersion || 'brak'}`);
-      console.log(`ID instancji serwera: ${serverInstanceId}, zapisane ID: ${savedInstanceId || 'brak'}`);
-      
-      // Sprawdź czy serwer został zrestartowany (nowa instancja)
-      const serverRestarted = savedInstanceId && savedInstanceId !== serverInstanceId;
-      
-      // Jeśli nie ma zapisanej wersji, zapisz ją
-      if (!savedVersion || !savedInstanceId) {
-        localStorage.setItem('app_version', serverVersion);
-        localStorage.setItem('server_instance_id', serverInstanceId);
-      } 
-      // Jeśli wersje się różnią lub serwer został zrestartowany
-      else if (savedVersion !== serverVersion || serverRestarted) {
-        console.log(`Wykryto zmianę: ${serverRestarted ? 'restart serwera' : 'nowa wersja aplikacji'}`);
-        console.log(`Wykryto nową wersję aplikacji: ${serverVersion} (obecna: ${savedVersion})`);
-        
-        // Wyczyść wszystkie dane przeglądarki i odśwież stronę
-        await clearCacheAndCookies();
-        
-        // Zaktualizuj wersję w localStorage przed odświeżeniem
-        localStorage.setItem('app_version', serverVersion);
-        
-        // Użyj iframe z wymuszonym odświeżeniem
-        console.log("Przekierowuję do nowej wersji aplikacji używając najsilniejszej metody...");
-        
-        // Najpierw wyślemy żądanie wylogowania, aby usunąć sesję po stronie serwera
-        try {
-          await fetch('/api/auth/logout', {
-            method: 'POST',
-            credentials: 'include',
-            cache: 'no-store',
-            headers: {
-              'Content-Type': 'application/json',
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache'
-            }
-          });
-          console.log("Sesja została zniszczona po stronie serwera");
-        } catch (error) {
-          console.error("Błąd podczas niszczenia sesji:", error);
-        }
-        
-        // Następnie czyścimy ciasteczka ręcznie
-        const cookies = document.cookie.split(";");
-        cookies.forEach(cookie => {
-          const name = cookie.split("=")[0].trim();
-          if (name) {
-            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
-            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${window.location.hostname}`;
+      xhr.onload = function() {
+        if (xhr.status === 200 && xhr.response) {
+          const data = xhr.response;
+          const serverVersion = data.version;
+          const serverInstanceId = data.serverInstanceId;
+          
+          // Pobierz zapisane wartości
+          const savedVersion = localStorage.getItem('app_version');
+          const savedInstanceId = localStorage.getItem('server_instance_id');
+          
+          console.log(`Wersja na serwerze: ${serverVersion}, zapisana wersja: ${savedVersion || 'brak'}`);
+          console.log(`ID instancji serwera: ${serverInstanceId}, zapisane ID: ${savedInstanceId || 'brak'}`);
+          
+          // Sprawdź czy serwer został zrestartowany (nowa instancja)
+          const serverRestarted = savedInstanceId && savedInstanceId !== serverInstanceId;
+          
+          // Jeśli nie ma zapisanej wersji lub ID instancji, zapisz je
+          if (!savedVersion || !savedInstanceId) {
+            localStorage.setItem('app_version', serverVersion);
+            localStorage.setItem('server_instance_id', serverInstanceId);
+            isCheckingVersion = false;
+            resolve(true); // Kontynuuj normalnie
+          } 
+          // Jeśli wersje się różnią lub serwer został zrestartowany
+          else if (savedVersion !== serverVersion || serverRestarted) {
+            console.log(`Wykryto zmianę: ${serverRestarted ? 'restart serwera' : 'nowa wersja aplikacji'}`);
+            
+            // Zaktualizuj wersję w localStorage
+            localStorage.setItem('app_version', serverVersion);
+            localStorage.setItem('server_instance_id', serverInstanceId);
+            
+            // BARDZO PROSTY MECHANIZM ODŚWIEŻANIA:
+            // 1. Zapisz informację o wykryciu nowej wersji
+            sessionStorage.setItem('version_changed', 'true');
+            sessionStorage.setItem('new_version', serverVersion);
+            
+            // 2. Natychmiast odśwież stronę używając location.replace - omija historię i cache
+            console.log("Wykryto nową wersję. Odświeżam stronę...");
+            
+            // Dodaj parametr z czasem do URL, aby wymusić odświeżenie
+            const refreshUrl = window.location.pathname + '?refresh=' + Date.now();
+            
+            // Użyj window.location.replace zamiast reload/href - bardziej radykalne
+            window.location.replace(refreshUrl);
+            
+            isCheckingVersion = false;
+            resolve(false); // Przerwij dalsze wykonanie
+          } else {
+            isCheckingVersion = false;
+            resolve(true); // Kontynuuj normalnie
           }
-        });
-        
-        // Tworzymy tymczasową stronę HTML z automatycznym odświeżeniem
-        const timestamp = Date.now();
-        const serverVersion = serverVersion;
-        
-        const html = `
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <meta charset="utf-8">
-              <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-              <meta http-equiv="Pragma" content="no-cache">
-              <meta http-equiv="Expires" content="0">
-              <title>Odświeżanie aplikacji</title>
-              <style>
-                body {
-                  font-family: Arial, sans-serif;
-                  display: flex;
-                  justify-content: center;
-                  align-items: center;
-                  height: 100vh;
-                  margin: 0;
-                  background-color: #f5f5f5;
-                  color: #333;
-                }
-                .container {
-                  text-align: center;
-                  background: white;
-                  padding: 2rem;
-                  border-radius: 8px;
-                  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                  max-width: 400px;
-                }
-                h1 {
-                  margin-top: 0;
-                  color: #2563eb;
-                }
-                .spinner {
-                  margin: 20px auto;
-                  width: 40px;
-                  height: 40px;
-                  border: 4px solid rgba(0,0,0,0.1);
-                  border-radius: 50%;
-                  border-top-color: #2563eb;
-                  animation: spin 1s ease-in-out infinite;
-                }
-                @keyframes spin {
-                  to { transform: rotate(360deg); }
-                }
-              </style>
-              <script>
-                // Zapisujemy dane do LocalStorage, aby nowa strona wiedziała, że to było odświeżenie
-                localStorage.setItem('forced_refresh', 'true');
-                localStorage.setItem('refresh_timestamp', '${timestamp}');
-                
-                // Wyczyść wszystkie dane cache
-                if ('caches' in window) {
-                  caches.keys().then(function(names) {
-                    names.forEach(function(name) {
-                      caches.delete(name);
-                      console.log('Cache ' + name + ' deleted');
-                    });
-                  });
-                }
-                
-                // Wyrejestruj service workery
-                if ('serviceWorker' in navigator) {
-                  navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                    for (let registration of registrations) {
-                      registration.unregister();
-                      console.log('ServiceWorker unregistered');
-                    }
-                  });
-                }
-                
-                // Poczekaj na załadowanie strony
-                window.onload = function() {
-                  // Spróbuj otworzyć nowe okno z wymuszonym odświeżeniem
-                  setTimeout(function() {
-                    try {
-                      // Sprawdź, czy otwarcie nowego okna się powiedzie
-                      const testOpener = window.open('', '_blank');
-                      
-                      if (testOpener) {
-                        // Zamknij testowe okno
-                        testOpener.close();
-                        
-                        // Otwórz nowe okno z aktualną lokalizacją + losowy parametr
-                        const url = window.location.origin + '/?refresh=' + Date.now();
-                        const newWindow = window.open(url, '_self');
-                        
-                        // Dla pewności jeszcze ustaw timeout
-                        setTimeout(function() {
-                          // Jeśli z jakiegoś powodu okno nie zostało odświeżone, użyj tradycyjnego reload
-                          window.location.href = url;
-                        }, 500);
-                      } else {
-                        // Wymuś całkowite odświeżenie strony z serwera (true - nie używaj cache)
-                        window.location.reload(true);
-                      }
-                    } catch (e) {
-                      console.error('Błąd podczas otwierania nowego okna:', e);
-                      // Awaryjne przeładowanie strony
-                      window.location.reload(true);
-                    }
-                  }, 1000);
-                };
-              </script>
-            </head>
-            <body>
-              <div class="container">
-                <h1>Wykryto nową wersję</h1>
-                <p>Trwa aktualizacja aplikacji. Proszę czekać...</p>
-                <p>Odświeżanie do najnowszej wersji...</p>
-                <div class="spinner"></div>
-              </div>
-            </body>
-          </html>
-        `;
-        
-        // Zastąp całą stronę tymczasową stroną odświeżającą
-        document.open();
-        document.write(html);
-        document.close();
-        
-        isCheckingVersion = false;
-        return false; // Przerwij dalsze wykonanie
-      }
+        } else {
+          console.error("Błąd podczas pobierania wersji:", xhr.statusText);
+          isCheckingVersion = false;
+          resolve(true); // Kontynuuj mimo błędu
+        }
+      };
       
-      isCheckingVersion = false;
-      return true; // Kontynuuj normalnie
-    }
-    
-    isCheckingVersion = false;
-    return true;
+      xhr.onerror = function() {
+        console.error("Błąd sieciowy podczas sprawdzania wersji");
+        isCheckingVersion = false;
+        resolve(true); // Kontynuuj mimo błędu
+      };
+      
+      xhr.send();
+    });
   } catch (error) {
     console.error("Błąd podczas sprawdzania wersji:", error);
     isCheckingVersion = false;
