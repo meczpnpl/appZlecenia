@@ -1,5 +1,5 @@
 // Używamy wersji aplikacji w nazwie cache, aby wymusić odświeżenie po zmianie wersji
-const APP_VERSION = '2.1.20';  // Ta wartość będzie aktualizowana automatycznie przez skrypt wersjonowania
+const APP_VERSION = '2.1.23';  // Ta wartość będzie aktualizowana automatycznie przez skrypt wersjonowania
 const CACHE_NAME = `bel-pol-cache-${APP_VERSION}`;
 
 // Zwiększamy liczbę cachowanych plików dla lepszej pracy offline

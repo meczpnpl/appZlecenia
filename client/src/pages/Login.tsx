@@ -441,6 +441,19 @@ export default function Login() {
               Wersja aplikacji: {appVersion}
               {isLoadingVersion && <RefreshCw className="inline ml-1 h-3 w-3 animate-spin" />}
               {versionError && <span className="text-red-500 ml-1">!</span>}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 px-2 text-gray-500 hover:text-gray-700"
+                onClick={() => {
+                  // Wymuś odświeżenie wersji
+                  localStorage.removeItem('app_version');
+                  window.location.href = `/?force_reload=${Date.now()}`;
+                }}
+              >
+                <RefreshCw className="h-3 w-3 mr-1" />
+                Odśwież
+              </Button>
             </span>
           </p>
         </CardFooter>
