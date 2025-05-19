@@ -82,31 +82,10 @@ export default function Login() {
       if (response.ok) {
         const data = await response.json();
         if (data && data.version) {
-          // Sprawdź czy wersja się zmieniła
-          const oldVersion = localStorage.getItem('app_version');
           const newVersion = data.version;
+          console.log(`[Login] Pobrano wersję z serwera: ${newVersion}`);
           
-          console.log(`[Login] Pobrano wersję z serwera: ${newVersion}, zapisana wersja w localStorage: ${oldVersion || 'brak'}`);
-          
-          // Sprawdź, czy wersja na serwerze różni się od konfiguracji klienta
-          if (configVersion.toString() !== newVersion) {
-            console.log(`[Login] Wykryto różnicę między wersją klienta (${configVersion.toString()}) a serwera (${newVersion})`);
-            
-            // Automatyczne odświeżenie przy różnicy wersji
-            forceRefresh();
-            return;
-          }
-          
-          // Sprawdź, czy wersja w localStorage się zmieniła
-          if (oldVersion && oldVersion !== newVersion) {
-            console.log(`[Login] Wykryto zmianę wersji: ${oldVersion} -> ${newVersion}.`);
-            
-            // Automatyczne odświeżenie przy zmianie wersji
-            forceRefresh();
-            return;
-          }
-          
-          // Zapisz nową wersję do localStorage
+          // Zapisz wersję do localStorage (tylko do referencji, automatyczne odświeżanie wyłączone)
           localStorage.setItem('app_version', newVersion);
           
           // Zaktualizuj stan
@@ -145,25 +124,10 @@ export default function Login() {
     }
   }, []);
   
-  // Pobierz wersję przy montowaniu komponentu
+  // Pobierz wersję tylko przy montowaniu komponentu
   useEffect(() => {
-    // Natychmiast sprawdź wersję
+    // Sprawdź wersję tylko raz przy załadowaniu strony
     fetchCurrentVersion();
-    
-    // Ustaw interwał do okresowego sprawdzania wersji (co 5 sekund)
-    const intervalId = setInterval(fetchCurrentVersion, 5000);
-    
-    // Dodaj jeszcze jedno sprawdzenie z opóźnieniem 1 sekunda (duże szanse na odświeżenie)
-    const timeoutId = setTimeout(() => {
-      console.log("[Login] Dodatkowe sprawdzenie wersji po opóźnieniu...");
-      fetchCurrentVersion();
-    }, 1000);
-    
-    // Wyczyść interwał i timeout przy odmontowaniu komponentu
-    return () => {
-      clearInterval(intervalId);
-      clearTimeout(timeoutId);
-    };
   }, []);
   
   // Obsługa formularza logowania
