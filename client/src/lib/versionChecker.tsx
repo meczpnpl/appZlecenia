@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { version } from '@shared/config';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { version } from '../../shared/config';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
 import { RefreshCw } from 'lucide-react';
 
 // Funkcja do sprawdzania czy pojawiła się nowa wersja aplikacji

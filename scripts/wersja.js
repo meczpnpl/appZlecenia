@@ -123,6 +123,22 @@ try {
         console.log(`\x1b[32mZaktualizowano wersję w package.json: ${packageJson.version}\x1b[0m`);
       }
       
+      // Aktualizacja Service Workera
+      const serviceWorkerPath = path.resolve(__dirname, '../public/service-worker.js');
+      if (fileExists(serviceWorkerPath)) {
+        let serviceWorkerContent = fs.readFileSync(serviceWorkerPath, 'utf8');
+        
+        // Aktualizacja wersji w Service Workerze
+        const newVersionString = `${major}.${minor}.${patch}`;
+        serviceWorkerContent = serviceWorkerContent.replace(
+          /const APP_VERSION = ['"].*?['"]/,
+          `const APP_VERSION = '${newVersionString}'`
+        );
+        
+        fs.writeFileSync(serviceWorkerPath, serviceWorkerContent);
+        console.log(`\x1b[32mZaktualizowano wersję w service-worker.js: ${newVersionString}\x1b[0m`);
+      }
+      
       // Na koniec wypisz informację o aktualnej konfiguracji wersji
       console.log(`\x1b[32mZaktualizowano konfigurację wersji w shared/config.ts\x1b[0m`);
       console.log(`\x1b[34m${configResult}\x1b[0m`);

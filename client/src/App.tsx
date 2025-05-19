@@ -2,7 +2,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { queryClient } from "./lib/queryClient";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { AuthProvider, useAuth } from "./lib/auth";
 import { Route, Switch, useLocation } from "wouter";
 import AppShell from "@/components/layout/AppShell";
@@ -23,36 +23,99 @@ import CompanyStores from "./pages/CompanyStores";
 import CompanySchedule from "./pages/CompanySchedule";
 import InstallerSchedule from "./pages/InstallerSchedule";
 import Settings from "./pages/Settings";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 // App component with AuthProvider
 const App = () => {
-  console.log("App.tsx został załadowany - v1.4");
+  console.log("App.tsx został załadowany - v1.5");
+  const [showUpdateNotification, setShowUpdateNotification] = useState(false);
+  const [newVersion, setNewVersion] = useState("");
   
+  // Sprawdzanie nowej wersji aplikacji
   useEffect(() => {
-    // Obsługa błędów i odświeżania Service Workera
-    function handleServiceWorkerFailure() {
-      if ('serviceWorker' in navigator) {
-        // Odrejestruj wszystkie Service Workery, aby wymusić odświeżenie
-        navigator.serviceWorker.getRegistrations().then(registrations => {
-          registrations.forEach(registration => {
-            console.log("Wyrejestrowuję Service Worker...");
-            registration.unregister();
-          });
+    let intervalId: NodeJS.Timeout;
+    
+    const checkForNewVersion = async () => {
+      try {
+        // Pobieramy wersję z pamięci podręcznej przeglądarki
+        const cachedVersion = localStorage.getItem('app_version');
+        
+        // Pobieramy aktualną wersję z serwera
+        const response = await fetch('/api/version', {
+          cache: 'no-store', // Wymuszamy pobranie świeżych danych
+          headers: { 'Cache-Control': 'no-cache' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const serverVersion = data.version;
           
+          console.log(`Wersja z cache: ${cachedVersion}, wersja z serwera: ${serverVersion}`);
+          
+          // Jeśli wersje się różnią i nie jest to pierwsze uruchomienie
+          if (cachedVersion && cachedVersion !== serverVersion) {
+            setNewVersion(serverVersion);
+            setShowUpdateNotification(true);
+          }
+          
+          // Zapisujemy aktualną wersję w pamięci podręcznej
+          localStorage.setItem('app_version', serverVersion);
+        }
+      } catch (error) {
+        console.error("Błąd podczas sprawdzania wersji:", error);
+      }
+    };
+    
+    // Sprawdzamy wersję przy uruchomieniu aplikacji
+    checkForNewVersion();
+    
+    // Następnie sprawdzamy co 5 minut (300000 ms)
+    intervalId = setInterval(checkForNewVersion, 300000);
+    
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, []);
+  
+  // Funkcja do czyszczenia pamięci podręcznej i odświeżania aplikacji
+  const clearCacheAndReload = () => {
+    if ('serviceWorker' in navigator) {
+      // Odrejestruj wszystkie Service Workery
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        const unregisterPromises = registrations.map(registration => {
+          console.log("Wyrejestrowuję Service Worker...");
+          return registration.unregister();
+        });
+        
+        Promise.all(unregisterPromises).then(() => {
           // Wyczyść wszystkie cache
           if ('caches' in window) {
             caches.keys().then(names => {
-              names.forEach(name => {
+              const deletePromises = names.map(name => {
                 console.log("Usuwam cache:", name);
-                caches.delete(name);
+                return caches.delete(name);
+              });
+              
+              Promise.all(deletePromises).then(() => {
+                console.log("Wszystkie cache wyczyszczone, odświeżam stronę...");
+                window.location.reload();
               });
             });
+          } else {
+            window.location.reload();
           }
-          
-          // Przekieruj do strony głównej
-          window.location.reload();
         });
-      }
+      });
+    } else {
+      window.location.reload();
+    }
+  };
+  
+  // Obsługa błędów i odświeżania Service Workera
+  useEffect(() => {
+    function handleServiceWorkerFailure() {
+      clearCacheAndReload();
     }
     
     // Obserwuj zmiany w Service Workerze
@@ -73,11 +136,37 @@ const App = () => {
     });
   }, []);
   
+  // Komponent powiadomienia o aktualizacji
+  const VersionUpdateNotification = () => {
+    if (!showUpdateNotification) return null;
+    
+    return (
+      <div className="fixed top-0 left-0 right-0 z-50 flex justify-center items-start p-4">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 flex flex-col items-center max-w-md">
+          <div className="text-center mb-3">
+            <h3 className="text-lg font-semibold mb-1">Dostępna nowa wersja</h3>
+            <p className="text-sm text-gray-600">
+              Wykryto nową wersję aplikacji ({newVersion}). Odśwież stronę, aby zainstalować aktualizację.
+            </p>
+          </div>
+          <Button 
+            onClick={clearCacheAndReload}
+            className="w-full"
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Odśwież stronę
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>
           <Toaster />
+          <VersionUpdateNotification />
           <Suspense fallback={<Loading />}>
             <AppRoutes />
           </Suspense>

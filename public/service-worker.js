@@ -1,4 +1,6 @@
-const CACHE_NAME = 'bel-pol-cache-v7';
+// Używamy wersji aplikacji w nazwie cache, aby wymusić odświeżenie po zmianie wersji
+const APP_VERSION = '2.1.5';  // Ta wartość będzie aktualizowana automatycznie przez skrypt wersjonowania
+const CACHE_NAME = `bel-pol-cache-${APP_VERSION}`;
 const urlsToCache = [
   '/',
   '/index.html',
