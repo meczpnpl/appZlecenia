@@ -34,6 +34,7 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 import { WebSocketServer } from 'ws';
 import { registerFilterRoutes } from "./routes/filters";
+import { versionRouter } from "./routes/version";
 
 const SessionStore = MemoryStore(session);
 
