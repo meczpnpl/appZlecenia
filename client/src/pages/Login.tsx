@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { LockKeyhole, Building2, Store, UserPlus } from 'lucide-react';
+import { LockKeyhole, Building2, Store, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
-import { version } from '@shared/config';
+import { version as configVersion } from '@shared/config';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function Login() {
@@ -23,6 +23,58 @@ export default function Login() {
   const [adminPassword, setAdminPassword] = useState('ToM01111965');
   const [adminSetupError, setAdminSetupError] = useState('');
   const [isAdminSetupLoading, setIsAdminSetupLoading] = useState(false);
+  
+  // Stan wersji aplikacji - używamy configVersion jako wartości początkowej
+  const [appVersion, setAppVersion] = useState(configVersion.toString());
+  const [isLoadingVersion, setIsLoadingVersion] = useState(false);
+  const [versionError, setVersionError] = useState(false);
+  
+  // Funkcja do pobierania aktualnej wersji z serwera
+  const fetchCurrentVersion = async () => {
+    setIsLoadingVersion(true);
+    setVersionError(false);
+    
+    try {
+      // Dodaj parametr czasowy, aby uniknąć cache
+      const timestamp = Date.now();
+      const response = await fetch(`/api/version?t=${timestamp}`, {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        },
+        cache: 'no-store'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.version) {
+          setAppVersion(data.version);
+          // Zaktualizuj również w localStorage
+          localStorage.setItem('app_version', data.version);
+        }
+      } else {
+        setVersionError(true);
+      }
+    } catch (error) {
+      console.error("Błąd podczas pobierania wersji:", error);
+      setVersionError(true);
+    } finally {
+      setIsLoadingVersion(false);
+    }
+  };
+  
+  // Pobierz wersję przy montowaniu komponentu
+  useEffect(() => {
+    fetchCurrentVersion();
+    
+    // Ustaw interwał do okresowego sprawdzania wersji (co 30 sekund)
+    const intervalId = setInterval(fetchCurrentVersion, 30000);
+    
+    // Wyczyść interwał przy odmontowaniu komponentu
+    return () => clearInterval(intervalId);
+  }, []);
   
   // Obsługa formularza logowania
   const handleSubmit = async (e: React.FormEvent) => {
@@ -324,7 +376,11 @@ export default function Login() {
           <p className="text-xs text-center w-full text-gray-500">
             Dostęp do systemu możliwy tylko dla uprawnionych użytkowników Bel-Pol.<br/>
             Skontaktuj się z administratorem w sprawie dostępu.<br/>
-            <span className="mt-2 inline-block">Wersja aplikacji: {version.toString()}</span>
+            <span className="mt-2 inline-block">
+              Wersja aplikacji: {appVersion}
+              {isLoadingVersion && <RefreshCw className="inline ml-1 h-3 w-3 animate-spin" />}
+              {versionError && <span className="text-red-500 ml-1">!</span>}
+            </span>
           </p>
         </CardFooter>
       </Card>
