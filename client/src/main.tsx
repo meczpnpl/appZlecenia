@@ -63,40 +63,132 @@ window.addEventListener('appinstalled', (e) => {
 });
 
 // Wykrywanie wersji aplikacji i czyszczenie cache
-export const APP_VERSION = "2.1.003"; // zwiększaj wersję przy każdej publikacji
 
-// Funkcja do czyszczenia cache
-const clearCache = () => {
-  console.log("Wykryto nową wersję aplikacji. Czyszczę pamięć podręczną.");
+// Funkcja do czyszczenia wszystkich cache i ciasteczek
+const clearCacheAndCookies = async () => {
+  console.log("Wykryto nową wersję aplikacji. Czyszczę pamięć podręczną i dane sesji.");
+  
+  // 1. Wyczyść localStorage (z wyjątkiem app_version)
+  const tempVersion = localStorage.getItem('app_version');
+  const keys = Object.keys(localStorage);
+  keys.forEach(key => {
+    if (key !== 'app_version') localStorage.removeItem(key);
+  });
+  
+  // 2. Wyczyść sessionStorage
+  sessionStorage.clear();
+  
+  // 3. Usuń ciasteczka
+  document.cookie.split(";").forEach(cookie => {
+    const name = cookie.split("=")[0].trim();
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
+  });
+  
+  // 4. Wyczyść cache
   if ('caches' in window) {
-    caches.keys().then(names => {
-      names.forEach(name => caches.delete(name));
+    try {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map(name => caches.delete(name)));
+      console.log("Wszystkie cache zostały wyczyszczone");
+    } catch (e) {
+      console.error("Błąd podczas czyszczenia cache:", e);
+    }
+  }
+  
+  // 5. Wyślij żądanie wylogowania na serwer (dla ciasteczek HTTP-only)
+  try {
+    await fetch('/api/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' }
     });
+    console.log("Sesja serwera została wyczyszczona");
+  } catch (e) {
+    console.error("Błąd podczas wylogowywania:", e);
+  }
+  
+  // 6. Wyrejestruj service workery
+  if ('serviceWorker' in navigator) {
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map(reg => reg.unregister()));
+      console.log("Service Workery zostały wyrejestrowane");
+    } catch (e) {
+      console.error("Błąd podczas wyrejestrowywania service workerów:", e);
+    }
+  }
+  
+  // Poczekaj 500ms aby wszystkie operacje mogły się zakończyć
+  return new Promise(resolve => setTimeout(resolve, 500));
+};
+
+// Funkcja sprawdzająca wersję aplikacji na serwerze
+const checkServerVersion = async () => {
+  try {
+    const response = await fetch('/api/version', {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      const serverVersion = data.version;
+      const savedVersion = localStorage.getItem('app_version');
+      
+      console.log(`Wersja na serwerze: ${serverVersion}, zapisana wersja: ${savedVersion || 'brak'}`);
+      
+      // Jeśli nie ma zapisanej wersji lub wersje się różnią
+      if (!savedVersion) {
+        localStorage.setItem('app_version', serverVersion);
+      } else if (savedVersion !== serverVersion) {
+        console.log(`Wykryto nową wersję aplikacji: ${serverVersion} (obecna: ${savedVersion})`);
+        
+        // Wyczyść wszystkie dane przeglądarki i odśwież stronę
+        await clearCacheAndCookies();
+        
+        // Zaktualizuj wersję w localStorage przed odświeżeniem
+        localStorage.setItem('app_version', serverVersion);
+        
+        // Odśwież stronę z parametrem zapobiegającym cachowaniu
+        window.location.href = `/?force=${Date.now()}`;
+        return false; // Przerwij dalsze wykonanie
+      }
+      
+      return true; // Kontynuuj normalnie
+    }
+    return true;
+  } catch (error) {
+    console.error("Błąd podczas sprawdzania wersji:", error);
+    return true; // Kontynuuj normalnie mimo błędu
   }
 };
 
 // Rejestracja Service Workera dla PWA
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    // Sprawdź zapisaną wersję aplikacji
-    const savedVersion = localStorage.getItem('app_version');
-    if (savedVersion !== APP_VERSION) {
-      console.log("Wykryto nową wersję aplikacji. Wymuszam odświeżenie cache.");
-      // Wyczyść cache przy wykryciu nowej wersji
-      clearCache();
-      // Zapisz nową wersję w localStorage
-      localStorage.setItem('app_version', APP_VERSION);
+  window.addEventListener('load', async () => {
+    // Najpierw sprawdź wersję aplikacji - jeśli funkcja zwróci false, nie kontynuuj
+    const shouldContinue = await checkServerVersion();
+    if (!shouldContinue) return;
+    
+    // Usuń parametr force, jeśli istnieje w URL
+    if (window.location.search.includes('force')) {
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
-
+    
     // Dodaj obsługę controllerchange, aby automatycznie odświeżyć stronę
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       console.log("Service Worker uaktualniony. Odświeżam stronę.");
       window.location.reload();
     });
-
+    
+    // Rejestruj service worker
     navigator.serviceWorker.register('/service-worker.js')
       .then(registration => {
         console.log('Service Worker zarejestrowany pomyślnie:', registration);
+        
+        // Dodaj cykliczne sprawdzanie wersji co 5 minut (300000 ms)
+        setInterval(checkServerVersion, 300000);
       })
       .catch(error => {
         console.error('Błąd podczas rejestracji Service Workera:', error);
