@@ -35,9 +35,10 @@ export default function Login() {
     setVersionError(false);
     
     try {
-      // Dodaj parametr czasowy, aby uniknąć cache
+      // Dodaj unikalny parametr czasowy, aby zawsze uniknąć cache
       const timestamp = Date.now();
-      const response = await fetch(`/api/version?t=${timestamp}`, {
+      const random = Math.random().toString(36).substring(2, 12);
+      const response = await fetch(`/api/version?t=${timestamp}&r=${random}`, {
         method: 'GET',
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -50,9 +51,47 @@ export default function Login() {
       if (response.ok) {
         const data = await response.json();
         if (data && data.version) {
-          setAppVersion(data.version);
-          // Zaktualizuj również w localStorage
-          localStorage.setItem('app_version', data.version);
+          // Sprawdź czy wersja się zmieniła
+          const oldVersion = localStorage.getItem('app_version');
+          const newVersion = data.version;
+          
+          console.log(`[Login] Pobrano wersję: ${newVersion}, stara wersja: ${oldVersion || 'brak'}`);
+          
+          // Zapisz nową wersję
+          localStorage.setItem('app_version', newVersion);
+          
+          // Sprawdź, czy musimy odświeżyć stronę
+          if (oldVersion && oldVersion !== newVersion) {
+            console.log(`[Login] Wykryto zmianę wersji: ${oldVersion} -> ${newVersion}. Odświeżam stronę.`);
+            
+            // Wyświetl krótkie powiadomienie
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+              position: fixed;
+              top: 20px;
+              left: 50%;
+              transform: translateX(-50%);
+              background: #2563eb;
+              color: white;
+              padding: 10px 20px;
+              border-radius: 4px;
+              box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+              z-index: 9999;
+              font-family: Arial, sans-serif;
+            `;
+            notification.innerHTML = `Wykryto nową wersję aplikacji. Odświeżanie...`;
+            document.body.appendChild(notification);
+            
+            // Odśwież stronę po krótkim opóźnieniu (1 sekunda)
+            setTimeout(() => {
+              window.location.href = `/?force_reload=${Date.now()}`;
+            }, 1000);
+            
+            return;
+          }
+          
+          // Jeśli nie ma potrzeby odświeżania, po prostu zaktualizuj stan
+          setAppVersion(newVersion);
         }
       } else {
         setVersionError(true);
@@ -65,12 +104,34 @@ export default function Login() {
     }
   };
   
+  // Sprawdź, czy ładujemy stronę z parametrem force_reload
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('force_reload')) {
+      console.log('[Login] Wykryto parametr force_reload, czyszczę cache...');
+      
+      // Wyczyść cache przeglądarki
+      if ('caches' in window) {
+        caches.keys().then(cacheNames => {
+          cacheNames.forEach(cacheName => {
+            caches.delete(cacheName);
+            console.log(`[Login] Wyczyszczono cache: ${cacheName}`);
+          });
+        });
+      }
+      
+      // Usuń parametr z URL
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+  }, []);
+  
   // Pobierz wersję przy montowaniu komponentu
   useEffect(() => {
     fetchCurrentVersion();
     
-    // Ustaw interwał do okresowego sprawdzania wersji (co 30 sekund)
-    const intervalId = setInterval(fetchCurrentVersion, 30000);
+    // Ustaw interwał do okresowego sprawdzania wersji (co 10 sekund)
+    const intervalId = setInterval(fetchCurrentVersion, 10000);
     
     // Wyczyść interwał przy odmontowaniu komponentu
     return () => clearInterval(intervalId);
