@@ -8,6 +8,7 @@ import * as uuid from "uuid";
 import nodemailer from "nodemailer";
 import webpush from "web-push";
 import { sendNotification } from "./utils/notifications";
+import { version } from "@shared/config";
 import { format } from "date-fns";
 import { 
   authMiddleware, 
