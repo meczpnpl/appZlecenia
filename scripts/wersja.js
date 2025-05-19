@@ -98,39 +98,41 @@ try {
   // Przygotuj nową wersję w formacie string
   const newVersion = `v.${major}.${minor}.${String(patch).padStart(3, '0')}`;
   
-  // Funkcja do aktualizacji wersji w plikach HTML
-  function updateVersionInHtmlFiles() {
+  // Funkcja sprawdzająca istnienie pliku
+  function fileExists(filePath) {
     try {
-      // Aktualizacja dla login.html
-      const loginPath = path.resolve(__dirname, '../client/public/login.html');
-      if (fs.existsSync(loginPath)) {
-        let loginContent = fs.readFileSync(loginPath, 'utf8');
-        loginContent = loginContent.replace(
-          /&copy; \d{4} Zlecenia v\.\d+\.\d+\.\d+ - System zarządzania zleceniami/g,
-          `&copy; 2025 Zlecenia ${newVersion} - System zarządzania zleceniami`
-        );
-        fs.writeFileSync(loginPath, loginContent);
-        console.log(`\x1b[32mZaktualizowano wersję w login.html\x1b[0m`);
+      return fs.existsSync(filePath);
+    } catch (err) {
+      console.error(`Błąd sprawdzania pliku ${filePath}: ${err.message}`);
+      return false;
+    }
+  }
+  
+  // Funkcja do aktualizacji komponentów React i innych plików
+  function updateVersionInFiles() {
+    try {
+      // Sprawdzenie czy konfiguracja została zaktualizowana
+      const configResult = fs.readFileSync(configPath, 'utf8');
+      
+      // Aktualizacja package.json
+      const packageJsonPath = path.resolve(__dirname, '../package.json');
+      if (fileExists(packageJsonPath)) {
+        let packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+        packageJson.version = `${major}.${minor}.${patch}`;
+        fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+        console.log(`\x1b[32mZaktualizowano wersję w package.json: ${packageJson.version}\x1b[0m`);
       }
       
-      // Aktualizacja dla dashboard.html
-      const dashboardPath = path.resolve(__dirname, '../server/static/dashboard.html');
-      if (fs.existsSync(dashboardPath)) {
-        let dashboardContent = fs.readFileSync(dashboardPath, 'utf8');
-        dashboardContent = dashboardContent.replace(
-          /&copy; \d{4} Zlecenia v\.\d+\.\d+\.\d+ - System zarządzania zleceniami/g,
-          `&copy; 2025 Zlecenia ${newVersion} - System zarządzania zleceniami`
-        );
-        fs.writeFileSync(dashboardPath, dashboardContent);
-        console.log(`\x1b[32mZaktualizowano wersję w dashboard.html\x1b[0m`);
-      }
+      // Na koniec wypisz informację o aktualnej konfiguracji wersji
+      console.log(`\x1b[32mZaktualizowano konfigurację wersji w shared/config.ts\x1b[0m`);
+      console.log(`\x1b[34m${configResult}\x1b[0m`);
     } catch (err) {
-      console.error(`\x1b[31mBłąd podczas aktualizacji wersji w plikach HTML: ${err.message}\x1b[0m`);
+      console.error(`\x1b[31mBłąd podczas aktualizacji wersji w plikach: ${err.message}\x1b[0m`);
     }
   }
   
   // Wywołaj funkcję aktualizacji
-  updateVersionInHtmlFiles();
+  updateVersionInFiles();
 
   // Wyświetl informację o nowej wersji
   console.log(`\x1b[32mWersja zaktualizowana do: ${newVersion}\x1b[0m`);
