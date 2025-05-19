@@ -1,5 +1,5 @@
 // Używamy wersji aplikacji w nazwie cache, aby wymusić odświeżenie po zmianie wersji
-const APP_VERSION = '2.1.13';  // Ta wartość będzie aktualizowana automatycznie przez skrypt wersjonowania
+const APP_VERSION = '2.1.15';  // Ta wartość będzie aktualizowana automatycznie przez skrypt wersjonowania
 const CACHE_NAME = `bel-pol-cache-${APP_VERSION}`;
 
 // Zwiększamy liczbę cachowanych plików dla lepszej pracy offline
@@ -13,11 +13,14 @@ const urlsToCache = [
   '/assets/logo-dark.svg'
 ];
 
-// Sprawdzanie wersji aplikacji co 1 minutę
-const VERSION_CHECK_INTERVAL = 60 * 1000; // 1 minuta
+// Sprawdzanie wersji aplikacji co 15 sekund dla szybszego testowania
+const VERSION_CHECK_INTERVAL = 15 * 1000; // 15 sekund
 
 // Flaga kontrolująca, czy sprawdzanie jest w toku
 let isCheckingVersion = false;
+
+// Zapisana wersja aplikacji - do porównywania
+let lastKnownVersion = APP_VERSION;
 
 // Instalacja service workera
 self.addEventListener('install', (event) => {
@@ -136,7 +139,7 @@ self.addEventListener('notificationclick', (event) => {
   }
 });
 
-// Funkcja sprawdzająca wersję aplikacji
+// Bardzo prosta funkcja sprawdzająca wersję aplikacji
 async function checkAppVersion() {
   if (isCheckingVersion) return;
   
@@ -146,36 +149,79 @@ async function checkAppVersion() {
     
     // Dodaj losowy parametr, aby zapobiec cachowaniu
     const timestamp = Date.now();
-    const response = await fetch(`/api/version?t=${timestamp}`, {
+    const requestUrl = `/api/version?nocache=${timestamp}`;
+    console.log(`[Service Worker] Wysyłam żądanie do: ${requestUrl}`);
+    
+    const response = await fetch(requestUrl, {
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache'
-      }
+        'Pragma': 'no-cache',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      cache: 'no-store'
     });
+    
+    console.log('[Service Worker] Otrzymano odpowiedź od serwera:', response.status);
     
     if (response.ok) {
       const data = await response.json();
       const serverVersion = data.version;
+      const versionString = `v.${APP_VERSION}`;
       
-      console.log(`[Service Worker] Wersja serwera: ${serverVersion}, wersja service workera: ${APP_VERSION}`);
+      console.log(`[Service Worker] Wersja serwera: ${serverVersion}, wersja service workera: ${versionString}`);
       
       // Jeśli wersje się różnią - odśwież wszystkie okna
-      if (serverVersion !== `v.${APP_VERSION}`) {
-        console.log('[Service Worker] Wykryto nową wersję! Odświeżam wszystkie okna...');
+      if (serverVersion !== versionString) {
+        console.log('[Service Worker] Wykryto nową wersję!', {
+          server: serverVersion,
+          serviceWorker: versionString,
+          lastKnown: lastKnownVersion
+        });
         
-        const windowClients = await clients.matchAll({ type: 'window' });
-        windowClients.forEach(client => {
-          // Powiadom klienta o nowej wersji
-          client.postMessage({ 
-            type: 'VERSION_UPDATE',
-            oldVersion: APP_VERSION,
-            newVersion: serverVersion
+        // Aktualizuj zapisaną wersję
+        lastKnownVersion = APP_VERSION;
+        
+        try {
+          // Znajdź wszystkie otwarte okna
+          const windowClients = await clients.matchAll({ 
+            type: 'window',
+            includeUncontrolled: true
           });
           
-          // Odśwież stronę klienta
-          client.navigate(client.url);
-        });
+          console.log(`[Service Worker] Znaleziono ${windowClients.length} otwartych okien`);
+          
+          // Dla każdego okna
+          for (const client of windowClients) {
+            try {
+              console.log(`[Service Worker] Wysyłam komunikat i odświeżam okno: ${client.url}`);
+              
+              // 1. Najpierw wyślij wiadomość do klienta
+              await client.postMessage({
+                type: 'VERSION_UPDATE',
+                oldVersion: APP_VERSION,
+                newVersion: serverVersion,
+                timestamp: Date.now()
+              });
+              
+              // 2. Poczekaj moment
+              await new Promise(resolve => setTimeout(resolve, 500));
+              
+              // 3. Odśwież stronę
+              await client.navigate(client.url);
+              
+              console.log('[Service Worker] Okno odświeżone pomyślnie');
+            } catch (clientError) {
+              console.error('[Service Worker] Błąd podczas odświeżania okna:', clientError);
+            }
+          }
+        } catch (clientsError) {
+          console.error('[Service Worker] Błąd podczas pobierania klientów:', clientsError);
+        }
+      } else {
+        console.log('[Service Worker] Wersja aplikacji jest aktualna');
       }
+    } else {
+      console.error('[Service Worker] Błędna odpowiedź z serwera:', response.status);
     }
   } catch (error) {
     console.error('[Service Worker] Błąd podczas sprawdzania wersji:', error);

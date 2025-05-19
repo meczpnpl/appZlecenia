@@ -174,7 +174,7 @@ const clearCacheAndCookies = async () => {
 // Zmienna do śledzenia aktualnie trwającego sprawdzenia
 let isCheckingVersion = false;
 
-// Funkcja sprawdzająca wersję aplikacji na serwerze - UPROSZCZONA WERSJA
+// Funkcja sprawdzająca wersję aplikacji na serwerze - MAKSYMALNIE PROSTA WERSJA
 const checkServerVersion = async () => {
   // Zapobiegaj równoczesnym wywołaniom
   if (isCheckingVersion) {
@@ -184,98 +184,103 @@ const checkServerVersion = async () => {
   
   try {
     isCheckingVersion = true;
+    console.log("Sprawdzam wersję aplikacji na serwerze...");
     
-    // Sprawdź parametr refresh w URL - jeśli istnieje, pomijamy sprawdzanie
-    if (window.location.search.includes('refresh')) {
-      // Usuń parametr z URL, ale nie odświeżaj strony
-      const newUrl = window.location.pathname + 
-                    window.location.search.replace(/[?&]refresh=[^&]+/, '') +
-                    window.location.hash;
-      window.history.replaceState({}, document.title, newUrl);
-      
-      console.log("Wykryto parametr refresh, pomijam sprawdzanie wersji...");
+    // W przypadku wersji testowej, dodaj flagę do URL
+    if (window.location.search.includes('test_version')) {
+      console.log("Wykryto tryb testowy wersji");
       isCheckingVersion = false;
       return true;
     }
     
-    console.log("Sprawdzam wersję aplikacji na serwerze...");
-    
-    // Używamy XMLHttpRequest zamiast fetch dla lepszego omijania cache
-    return new Promise((resolve) => {
-      const xhr = new XMLHttpRequest();
-      // Dodajemy losowy parametr, aby uniknąć cache
-      xhr.open('GET', '/api/version?nocache=' + Date.now(), true);
-      xhr.setRequestHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      xhr.setRequestHeader('Pragma', 'no-cache');
-      xhr.setRequestHeader('Expires', '0');
-      xhr.responseType = 'json';
-      
-      xhr.onload = function() {
-        if (xhr.status === 200 && xhr.response) {
-          const data = xhr.response;
-          const serverVersion = data.version;
-          const serverInstanceId = data.serverInstanceId;
-          
-          // Pobierz zapisane wartości
-          const savedVersion = localStorage.getItem('app_version');
-          const savedInstanceId = localStorage.getItem('server_instance_id');
-          
-          console.log(`Wersja na serwerze: ${serverVersion}, zapisana wersja: ${savedVersion || 'brak'}`);
-          console.log(`ID instancji serwera: ${serverInstanceId}, zapisane ID: ${savedInstanceId || 'brak'}`);
-          
-          // Sprawdź czy serwer został zrestartowany (nowa instancja)
-          const serverRestarted = savedInstanceId && savedInstanceId !== serverInstanceId;
-          
-          // Jeśli nie ma zapisanej wersji lub ID instancji, zapisz je
-          if (!savedVersion || !savedInstanceId) {
-            localStorage.setItem('app_version', serverVersion);
-            localStorage.setItem('server_instance_id', serverInstanceId);
-            isCheckingVersion = false;
-            resolve(true); // Kontynuuj normalnie
-          } 
-          // Jeśli wersje się różnią lub serwer został zrestartowany
-          else if (savedVersion !== serverVersion || serverRestarted) {
-            console.log(`Wykryto zmianę: ${serverRestarted ? 'restart serwera' : 'nowa wersja aplikacji'}`);
-            
-            // Zaktualizuj wersję w localStorage
-            localStorage.setItem('app_version', serverVersion);
-            localStorage.setItem('server_instance_id', serverInstanceId);
-            
-            // BARDZO PROSTY MECHANIZM ODŚWIEŻANIA:
-            // 1. Zapisz informację o wykryciu nowej wersji
-            sessionStorage.setItem('version_changed', 'true');
-            sessionStorage.setItem('new_version', serverVersion);
-            
-            // 2. Natychmiast odśwież stronę używając location.replace - omija historię i cache
-            console.log("Wykryto nową wersję. Odświeżam stronę...");
-            
-            // Dodaj parametr z czasem do URL, aby wymusić odświeżenie
-            const refreshUrl = window.location.pathname + '?refresh=' + Date.now();
-            
-            // Użyj window.location.replace zamiast reload/href - bardziej radykalne
-            window.location.replace(refreshUrl);
-            
-            isCheckingVersion = false;
-            resolve(false); // Przerwij dalsze wykonanie
-          } else {
-            isCheckingVersion = false;
-            resolve(true); // Kontynuuj normalnie
-          }
-        } else {
-          console.error("Błąd podczas pobierania wersji:", xhr.statusText);
-          isCheckingVersion = false;
-          resolve(true); // Kontynuuj mimo błędu
-        }
-      };
-      
-      xhr.onerror = function() {
-        console.error("Błąd sieciowy podczas sprawdzania wersji");
-        isCheckingVersion = false;
-        resolve(true); // Kontynuuj mimo błędu
-      };
-      
-      xhr.send();
+    // Użyj zwykłego fetch z parametrami zapobiegającymi cache
+    const timestamp = Date.now();
+    const response = await fetch(`/api/version?t=${timestamp}`, {
+      method: 'GET',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'X-Requested-Time': String(timestamp)
+      },
+      cache: 'no-store'
     });
+    
+    if (response.ok) {
+      const data = await response.json();
+      const serverVersion = data.version;
+      
+      // Pobierz zapisaną wersję z localStorage
+      const savedVersion = localStorage.getItem('app_version');
+      
+      console.log(`Wersja na serwerze: ${serverVersion}, zapisana wersja: ${savedVersion || 'brak'}`);
+      
+      // Jeśli nie ma zapisanej wersji, zapisz ją
+      if (!savedVersion) {
+        localStorage.setItem('app_version', serverVersion);
+        isCheckingVersion = false;
+        return true;
+      }
+      
+      // Jeśli wersje się różnią, odśwież stronę
+      if (savedVersion !== serverVersion) {
+        console.log(`Wykryto nową wersję aplikacji: ${serverVersion} (obecna: ${savedVersion})`);
+        
+        // Zapisz nową wersję w localStorage
+        localStorage.setItem('app_version', serverVersion);
+        
+        // Stwórz interfejs informujący o aktualizacji
+        const updateNotification = document.createElement('div');
+        updateNotification.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.8);
+          color: white;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+          font-family: Arial, sans-serif;
+        `;
+        
+        updateNotification.innerHTML = `
+          <div style="background: white; padding: 20px; border-radius: 8px; max-width: 400px; text-align: center;">
+            <h2 style="color: #2563eb; margin-top: 0;">Nowa wersja dostępna!</h2>
+            <p style="color: #333;">Wykryto nową wersję aplikacji (${serverVersion}).</p>
+            <p style="color: #333;">Twoja obecna wersja: ${savedVersion}</p>
+            <p style="color: #333;">Strona zostanie odświeżona za 3 sekundy.</p>
+            <div style="margin: 20px auto; width: 40px; height: 40px; border: 4px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: #2563eb; animation: spin 1s linear infinite;"></div>
+            <style>
+              @keyframes spin {
+                to { transform: rotate(360deg); }
+              }
+            </style>
+          </div>
+        `;
+        
+        document.body.appendChild(updateNotification);
+        
+        // Poczekaj 3 sekundy i odśwież stronę
+        setTimeout(() => {
+          console.log("Odświeżam stronę do nowej wersji...");
+          window.location.href = `/?force_reload=${Date.now()}`;
+        }, 3000);
+        
+        isCheckingVersion = false;
+        return false; // Przerwij dalsze wykonanie
+      }
+      
+      isCheckingVersion = false;
+      return true; // Kontynuuj normalnie
+    } else {
+      console.error("Błąd podczas pobierania wersji:", response.statusText);
+      isCheckingVersion = false;
+      return true; // Kontynuuj mimo błędu
+    }
   } catch (error) {
     console.error("Błąd podczas sprawdzania wersji:", error);
     isCheckingVersion = false;
