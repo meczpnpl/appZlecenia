@@ -29,6 +29,37 @@ export default function Login() {
   const [isLoadingVersion, setIsLoadingVersion] = useState(false);
   const [versionError, setVersionError] = useState(false);
   
+  // Funkcja do wykonania automatycznego odświeżenia strony
+  const forceRefresh = () => {
+    console.log("[Login] Wymuszam odświeżenie strony...");
+    
+    // Wyświetl krótkie powiadomienie
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #2563eb;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 4px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      z-index: 9999;
+      font-family: Arial, sans-serif;
+    `;
+    notification.innerHTML = `Wykryto nową wersję aplikacji. Odświeżanie...`;
+    document.body.appendChild(notification);
+    
+    // Wyczyść localStorage dla app_version
+    localStorage.removeItem('app_version');
+    
+    // Odśwież stronę po krótkim opóźnieniu (1 sekunda)
+    setTimeout(() => {
+      window.location.href = `/?force_reload=${Date.now()}`;
+    }, 1000);
+  };
+  
   // Funkcja do pobierania aktualnej wersji z serwera
   const fetchCurrentVersion = async () => {
     setIsLoadingVersion(true);
@@ -55,42 +86,30 @@ export default function Login() {
           const oldVersion = localStorage.getItem('app_version');
           const newVersion = data.version;
           
-          console.log(`[Login] Pobrano wersję: ${newVersion}, stara wersja: ${oldVersion || 'brak'}`);
+          console.log(`[Login] Pobrano wersję z serwera: ${newVersion}, zapisana wersja w localStorage: ${oldVersion || 'brak'}`);
           
-          // Zapisz nową wersję
-          localStorage.setItem('app_version', newVersion);
-          
-          // Sprawdź, czy musimy odświeżyć stronę
-          if (oldVersion && oldVersion !== newVersion) {
-            console.log(`[Login] Wykryto zmianę wersji: ${oldVersion} -> ${newVersion}. Odświeżam stronę.`);
+          // Sprawdź, czy wersja na serwerze różni się od konfiguracji klienta
+          if (configVersion.toString() !== newVersion) {
+            console.log(`[Login] Wykryto różnicę między wersją klienta (${configVersion.toString()}) a serwera (${newVersion})`);
             
-            // Wyświetl krótkie powiadomienie
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-              position: fixed;
-              top: 20px;
-              left: 50%;
-              transform: translateX(-50%);
-              background: #2563eb;
-              color: white;
-              padding: 10px 20px;
-              border-radius: 4px;
-              box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-              z-index: 9999;
-              font-family: Arial, sans-serif;
-            `;
-            notification.innerHTML = `Wykryto nową wersję aplikacji. Odświeżanie...`;
-            document.body.appendChild(notification);
-            
-            // Odśwież stronę po krótkim opóźnieniu (1 sekunda)
-            setTimeout(() => {
-              window.location.href = `/?force_reload=${Date.now()}`;
-            }, 1000);
-            
+            // Automatyczne odświeżenie przy różnicy wersji
+            forceRefresh();
             return;
           }
           
-          // Jeśli nie ma potrzeby odświeżania, po prostu zaktualizuj stan
+          // Sprawdź, czy wersja w localStorage się zmieniła
+          if (oldVersion && oldVersion !== newVersion) {
+            console.log(`[Login] Wykryto zmianę wersji: ${oldVersion} -> ${newVersion}.`);
+            
+            // Automatyczne odświeżenie przy zmianie wersji
+            forceRefresh();
+            return;
+          }
+          
+          // Zapisz nową wersję do localStorage
+          localStorage.setItem('app_version', newVersion);
+          
+          // Zaktualizuj stan
           setAppVersion(newVersion);
         }
       } else {
@@ -128,13 +147,23 @@ export default function Login() {
   
   // Pobierz wersję przy montowaniu komponentu
   useEffect(() => {
+    // Natychmiast sprawdź wersję
     fetchCurrentVersion();
     
-    // Ustaw interwał do okresowego sprawdzania wersji (co 10 sekund)
-    const intervalId = setInterval(fetchCurrentVersion, 10000);
+    // Ustaw interwał do okresowego sprawdzania wersji (co 5 sekund)
+    const intervalId = setInterval(fetchCurrentVersion, 5000);
     
-    // Wyczyść interwał przy odmontowaniu komponentu
-    return () => clearInterval(intervalId);
+    // Dodaj jeszcze jedno sprawdzenie z opóźnieniem 1 sekunda (duże szanse na odświeżenie)
+    const timeoutId = setTimeout(() => {
+      console.log("[Login] Dodatkowe sprawdzenie wersji po opóźnieniu...");
+      fetchCurrentVersion();
+    }, 1000);
+    
+    // Wyczyść interwał i timeout przy odmontowaniu komponentu
+    return () => {
+      clearInterval(intervalId);
+      clearTimeout(timeoutId);
+    };
   }, []);
   
   // Obsługa formularza logowania
