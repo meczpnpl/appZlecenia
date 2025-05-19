@@ -123,12 +123,34 @@ const clearCacheAndCookies = async () => {
   return new Promise(resolve => setTimeout(resolve, 500));
 };
 
+// Zmienna do śledzenia aktualnie trwającego sprawdzenia
+let isCheckingVersion = false;
+
 // Funkcja sprawdzająca wersję aplikacji na serwerze
 const checkServerVersion = async () => {
+  // Zapobiegaj równoczesnym wywołaniom
+  if (isCheckingVersion) {
+    console.log("Sprawdzanie wersji jest już w toku, pomijam...");
+    return true;
+  }
+  
   try {
+    isCheckingVersion = true;
+    
+    // Sprawdź, czy nie jesteśmy w trakcie odświeżania z parametrem force
+    if (window.location.search.includes('force')) {
+      console.log("Wykryto parametr force, pomijam sprawdzanie wersji...");
+      isCheckingVersion = false;
+      return true;
+    }
+    
+    console.log("Sprawdzam wersję aplikacji na serwerze...");
+    
     const response = await fetch('/api/version', {
       cache: 'no-store',
-      headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+      headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' },
+      // Dodaj losowy parametr dla uniknięcia cache
+      credentials: 'same-origin'
     });
     
     if (response.ok) {
@@ -151,15 +173,22 @@ const checkServerVersion = async () => {
         localStorage.setItem('app_version', serverVersion);
         
         // Odśwież stronę z parametrem zapobiegającym cachowaniu
+        console.log("Przekierowuję do nowej wersji aplikacji...");
         window.location.href = `/?force=${Date.now()}`;
+        
+        isCheckingVersion = false;
         return false; // Przerwij dalsze wykonanie
       }
       
+      isCheckingVersion = false;
       return true; // Kontynuuj normalnie
     }
+    
+    isCheckingVersion = false;
     return true;
   } catch (error) {
     console.error("Błąd podczas sprawdzania wersji:", error);
+    isCheckingVersion = false;
     return true; // Kontynuuj normalnie mimo błędu
   }
 };
