@@ -78,51 +78,146 @@ const App = () => {
     };
   }, []);
   
-  // Funkcja do czyszczenia pamięci podręcznej i odświeżania aplikacji
+  // Funkcja do czyszczenia pamięci podręcznej, ciasteczek i odświeżania aplikacji
   const clearCacheAndReload = () => {
-    if ('serviceWorker' in navigator) {
-      // Odrejestruj wszystkie Service Workery
-      navigator.serviceWorker.getRegistrations().then(registrations => {
-        const unregisterPromises = registrations.map(registration => {
-          console.log("Wyrejestrowuję Service Worker...");
-          return registration.unregister();
-        });
+    // Usuń wszystkie ciasteczka (łącznie z tymi z flagą httpOnly)
+    const clearCookies = async () => {
+      // 1. Próba ręcznego usunięcia ciasteczek
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i];
+        const eqPos = cookie.indexOf("=");
+        const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
         
-        Promise.all(unregisterPromises).then(() => {
-          // Wyczyść wszystkie cache
-          if ('caches' in window) {
-            caches.keys().then(names => {
-              const deletePromises = names.map(name => {
-                console.log("Usuwam cache:", name);
-                return caches.delete(name);
-              });
-              
-              Promise.all(deletePromises).then(() => {
-                console.log("Wszystkie cache wyczyszczone, odświeżam stronę...");
-                window.location.reload();
-              });
-            });
-          } else {
-            window.location.reload();
+        // Usuń ciasteczko na kilka sposobów, aby upewnić się, że zostanie usunięte
+        // Usuń dla wszystkich ścieżek
+        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
+        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${window.location.hostname}`;
+        console.log(`Próba usunięcia ciasteczka: ${name}`);
+      }
+      
+      // 2. Wyczyść sessionStorage i localStorage (zachowując tylko app_version)
+      const appVersion = localStorage.getItem('app_version');
+      sessionStorage.clear();
+      localStorage.clear();
+      if (appVersion) localStorage.setItem('app_version', appVersion);
+      
+      // 3. Próba usunięcia sesji przez wywołanie API - to najlepszy sposób na ciasteczka httpOnly
+      try {
+        const response = await fetch('/api/auth/logout', {
+          method: 'POST',
+          credentials: 'include', // Ważne: dołącz ciasteczka
+          headers: {
+            'Content-Type': 'application/json'
           }
         });
-      });
-    } else {
-      window.location.reload();
-    }
+        
+        if (response.ok) {
+          console.log("Sesja na serwerze zakończona pomyślnie");
+        }
+      } catch (error) {
+        console.error("Błąd podczas kończenia sesji:", error);
+      }
+      
+      console.log("Operacja czyszczenia ciasteczek i lokalnych danych zakończona");
+    };
+    
+    // Wyloguj użytkownika przed odświeżeniem (opcjonalne, możesz to usunąć, jeśli chcesz zachować sesję)
+    const logout = async () => {
+      try {
+        // Wylogowujemy użytkownika przez API
+        const response = await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          console.log("Użytkownik wylogowany pomyślnie");
+        }
+      } catch (error) {
+        console.error("Błąd podczas wylogowywania:", error);
+      }
+    };
+    
+    // Używamy async/await dla lepszej czytelności i obsługi błędów
+    const performFullCleanupAndReload = async () => {
+      try {
+        console.log("Rozpoczynam pełną procedurę czyszczenia i odświeżania...");
+        
+        // 1. Wyczyść ciasteczka i sesję
+        await clearCookies();
+        
+        // 2. Odrejestruj Service Workery (jeśli są dostępne)
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          
+          if (registrations.length > 0) {
+            console.log(`Znaleziono ${registrations.length} service worker(ów) do wyrejestrowania`);
+            
+            const unregisterPromises = registrations.map(registration => {
+              console.log("Wyrejestrowuję Service Worker...");
+              return registration.unregister();
+            });
+            
+            await Promise.all(unregisterPromises);
+            console.log("Wszystkie Service Workery zostały wyrejestrowane");
+          } else {
+            console.log("Nie znaleziono aktywnych Service Workerów");
+          }
+        }
+        
+        // 3. Wyczyść cache (jeśli API cache jest dostępne)
+        if ('caches' in window) {
+          const cacheKeys = await caches.keys();
+          
+          if (cacheKeys.length > 0) {
+            console.log(`Znaleziono ${cacheKeys.length} cache do wyczyszczenia`);
+            
+            const deletePromises = cacheKeys.map(name => {
+              console.log("Usuwam cache:", name);
+              return caches.delete(name);
+            });
+            
+            await Promise.all(deletePromises);
+            console.log("Wszystkie cache zostały wyczyszczone");
+          } else {
+            console.log("Nie znaleziono cache do wyczyszczenia");
+          }
+        }
+        
+        // 4. Finalne przekierowanie z parametrem wymuszającym pełne odświeżenie
+        console.log("Wszystkie operacje czyszczenia zakończone, odświeżam stronę...");
+        window.location.href = "/?forcereload=" + new Date().getTime();
+        
+      } catch (error) {
+        console.error("Wystąpił błąd podczas czyszczenia:", error);
+        // Nawet jeśli wystąpi błąd, próbujemy odświeżyć stronę
+        window.location.href = "/?forcereload=" + new Date().getTime();
+      }
+    };
+    
+    // Uruchom procedurę czyszczenia
+    performFullCleanupAndReload();
   };
   
   // Obsługa błędów i odświeżania Service Workera
   useEffect(() => {
-    function handleServiceWorkerFailure() {
-      clearCacheAndReload();
+    // Sprawdź, czy jesteśmy po wymuszonym odświeżeniu
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('forcereload')) {
+      // Jesteśmy po wymuszonym odświeżeniu, więc usuwamy parametr z URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      console.log("Zakończono odświeżanie aplikacji");
     }
     
     // Obserwuj zmiany w Service Workerze
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         console.log("Service Worker został zaktualizowany, odświeżam stronę...");
-        window.location.reload();
+        clearCacheAndReload();
       });
     }
     
@@ -131,7 +226,7 @@ const App = () => {
       console.error("Złapano błąd:", event.error);
       // Jeśli aplikacja nie załadowała się poprawnie, wymuszamy reset
       if (document.body.childElementCount <= 1) {
-        handleServiceWorkerFailure();
+        clearCacheAndReload();
       }
     });
   }, []);
